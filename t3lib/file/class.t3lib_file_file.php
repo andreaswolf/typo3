@@ -35,7 +35,47 @@
  */
 class t3lib_file_File {
 
+	/**
+	 * The filename
+	 *
+	 * @var string
+	 */
+	protected $name;
 
+	/**
+	 * The extension of the file
+	 *
+	 * @var string
+	 */
+	protected $extension;
+
+	/**
+	 * The mimetype of the file
+	 *
+	 * @var string
+	 */
+	protected $mimetype;
+
+	/**
+	 * The SHA1 hash of the file
+	 *
+	 * @var string
+	 */
+	protected $sha1;
+
+	/**
+	 * The file size
+	 *
+	 * @var integer
+	 */
+	protected $size;
+
+	/**
+	 * Pointer to the folder this file resides in
+	 *
+	 * @var t3lib_file_Folder
+	 */
+	protected $parent;
 }
 
 

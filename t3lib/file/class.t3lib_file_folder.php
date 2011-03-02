@@ -35,6 +35,33 @@
  */
 class t3lib_file_Folder {
 
+	/**
+	 * The folder name
+	 *
+	 * @var string
+	 */
+	protected $name;
+
+	/**
+	 * The driver this folder comes from
+	 *
+	 * @var t3lib_file_driver_Abstract
+	 */
+	protected $driver;
+
+	/**
+	 * The parent folder of this item
+	 *
+	 * @var t3lib_file_Folder
+	 */
+	protected $parent;
+
+	/**
+	 * The configuration for the driver
+	 *
+	 * @var string/array
+	 */
+	protected $driverConfiguration;
 
 }
 
