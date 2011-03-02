@@ -30,12 +30,23 @@
  * File system driver.
  *
  * @author	Ingo Renner <ingo@typo3.org>
+ * @author  Andreas Wolf <andreas.wolf@ikt-werk.de>
  * @package	TYPO3
  * @subpackage	t3lib
  */
 class t3lib_file_driver_Abstract {
 
 	protected $configuration = array();
+
+	/**
+	 * The capabilities of this driver. See CAPABILITY_* constants for possible values
+	 *
+	 * @var integer
+	 */
+	protected $capabilities;
+
+	const CAPABILITY_WRITABLE = 1;
+	const CAPABILITY_SUPPORTS_FOLDERS = 2;
 
 	/**
 	 * Constructor for t3lib_file_driver_Abstract.
@@ -61,6 +72,14 @@ class t3lib_file_driver_Abstract {
 		}
 
 		return $configuration;
+	}
+
+	public function getCapabilities() {
+		return $this->capabilities;
+	}
+
+	public function hasCapability($capability) {
+		return ($this->capabilities & $capability) == $capability;
 	}
 }
 
