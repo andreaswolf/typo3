@@ -30,10 +30,18 @@
  * Folder representation in the file abstraction layer.
  *
  * @author	Ingo Renner <ingo@typo3.org>
+ * @author  Andreas Wolf <andreas.wolf@ikt-werk.de>
  * @package	TYPO3
  * @subpackage	t3lib
  */
 class t3lib_file_Folder {
+
+	/**
+	 * The unique id of this folder
+	 *
+	 * @var integer
+	 */
+	protected $uid;
 
 	/**
 	 * The folder name
@@ -63,6 +71,44 @@ class t3lib_file_Folder {
 	 */
 	protected $driverConfiguration;
 
+	/**
+	 * Constructor for a folder object.
+	 *
+	 * @param array $folder The folder row from the database
+	 */
+	public function __construct(array $folder) {
+		// TODO: check who creates folder objects (= where the config could come from)
+	}
+
+	/**
+	 * Creates a new folder below this folder
+	 *
+	 * @param  $name
+	 * @param null|t3lib_file_driver_Abstract $driver The driver to use. Is inherited from this folder if NULL
+	 * @return void
+	 */
+	public function createSubfolder($name, t3lib_file_driver_Abstract $driver = NULL) {
+		// TODO check if creating folder is supported by driver
+	}
+
+	/**
+	 * Returns a list of all subfolders; if it is given, the list is filtered by pattern.
+	 *
+	 * @return void
+	 */
+	public function getSubfolders($pattern = '') {
+		// TODO fetch folders
+	}
+
+	/**
+	 * Returns an array of file objects from this folder; if it is given, the list is filtered by pattern.
+	 *
+	 * @param string $pattern The pattern to search for. Optional.
+	 * @return array
+	 */
+	public function getFiles($pattern = '') {
+		// TODO fetch files
+	}
 }
 
 

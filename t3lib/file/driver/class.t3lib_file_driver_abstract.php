@@ -57,6 +57,8 @@ class t3lib_file_driver_Abstract {
 		$this->configuration = $configuration;
 	}
 
+	abstract protected function verifyConfiguration();
+
 	/**
 	 * Gets the complete configuration or a specific configuration option for
 	 * the driver.
@@ -80,6 +82,10 @@ class t3lib_file_driver_Abstract {
 
 	public function hasCapability($capability) {
 		return ($this->capabilities & $capability) == $capability;
+	}
+
+	public function getFileHandle(t3lib_file_File $file, $mode = 'r') {
+		//
 	}
 }
 

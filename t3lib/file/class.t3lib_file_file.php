@@ -30,6 +30,7 @@
  * File representation in the file abstraction layer.
  *
  * @author	Ingo Renner <ingo@typo3.org>
+ * @author  Andreas Wolf <andreas.wolf@ikt-werk.de>
  * @package	TYPO3
  * @subpackage	t3lib
  */
@@ -76,6 +77,14 @@ class t3lib_file_File {
 	 * @var t3lib_file_Folder
 	 */
 	protected $parent;
+
+	public function __construct() {
+		//
+	}
+
+	public function getName() {
+		return $this->name;
+	}
 }
 
 
