@@ -33,7 +33,7 @@
  * @package	TYPO3
  * @subpackage	t3lib
  */
-class t3lib_file_driver_Local extends t3lib_file_driver_Abstract {
+class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 
 	/**
 	 * The absolute base path.
@@ -53,8 +53,8 @@ class t3lib_file_driver_Local extends t3lib_file_driver_Abstract {
 }
 
 
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_file_file.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_file_file.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php']);
 }
 
 ?>

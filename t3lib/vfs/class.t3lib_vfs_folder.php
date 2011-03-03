@@ -34,7 +34,7 @@
  * @package	TYPO3
  * @subpackage	t3lib
  */
-class t3lib_file_Folder {
+class t3lib_vfs_Folder {
 
 	/**
 	 * The unique id of this folder
@@ -60,7 +60,7 @@ class t3lib_file_Folder {
 	/**
 	 * The parent folder of this item
 	 *
-	 * @var t3lib_file_Folder
+	 * @var t3lib_vfs_Folder
 	 */
 	protected $parent;
 
@@ -84,11 +84,11 @@ class t3lib_file_Folder {
 	 * Creates a new folder below this folder
 	 *
 	 * @param  $name
-	 * @param null|t3lib_file_driver_Abstract $driver The driver to use. Is inherited from this folder if NULL
+	 * @param null|t3lib_vfs_driver_Abstract $driver The driver to use. Is inherited from this folder if NULL
 	 * @return void
 	 */
-	public function createSubfolder($name, t3lib_file_driver_Abstract $driver = NULL) {
-		// TODO check if creating folder is supported by driver
+	public function createSubfolder($name, t3lib_vfs_driver_Abstract $driver = NULL) {
+		// TODO check if creating folder is supported by driver, create folder
 	}
 
 	/**
@@ -112,8 +112,8 @@ class t3lib_file_Folder {
 }
 
 
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_file_folder.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_file_folder.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_folder.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_folder.php']);
 }
 
 ?>

@@ -34,7 +34,7 @@
  * @package	TYPO3
  * @subpackage	t3lib
  */
-class t3lib_file_File {
+class t3lib_vfs_File {
 
 	/**
 	 * The filename
@@ -74,7 +74,7 @@ class t3lib_file_File {
 	/**
 	 * Pointer to the folder this file resides in
 	 *
-	 * @var t3lib_file_Folder
+	 * @var t3lib_vfs_Folder
 	 */
 	protected $parent;
 
@@ -88,8 +88,8 @@ class t3lib_file_File {
 }
 
 
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_file_file.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_file_file.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php']);
 }
 
 ?>
