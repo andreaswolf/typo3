@@ -40,16 +40,170 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 	 *
 	 * @var string
 	 */
-	protected $basePath;
+	protected $absoluteBasePath;
+
+	/**
+	 * The base url to this drive
+	 *
+	 * @var string
+	 */
+	protected $baseUrl;
 
 	protected function verifyConfiguration() {
-		$this->basePath = $this->configuration['basePath'];
+		$this->absoluteBasePath = $this->configuration['basePath'];
+		$this->absoluteBasePath = rtrim($this->absoluteBasePath, '/') . '/';
 
-		if (!file_exists($this->basePath) || !is_dir($this->basePath)) {
-			throw new RuntimeException("Base path $this->basePath does not exist.");
+		if (!file_exists($this->absoluteBasePath) || !is_dir($this->absoluteBasePath)) {
+			throw new RuntimeException("Base path $this->absoluteBasePath does not exist.", 1299233097);
 		}
 	}
 
+	public function getAbsoluteBasePath() {
+		return $this->absoluteBasePath;
+	}
+
+	protected function getAbsolutePath(t3lib_vfs_File $file) {
+		$path = $this->absoluteBasePath;
+
+		$folder = $file->getParentFolder();
+		$pathParts = array();
+		while(!$folder->isMountpoint()) {
+			$pathParts[] = $folder->getName();
+			$folder = $folder->getParent();
+		}
+		return rtrim($path . implode('/', $pathParts), '/') . '/' . $file->getName();
+	}
+
+	public function getPublicUrl(t3lib_vfs_File $file) {
+		// TODO: Implement getPublicUrl() method.
+	}
+
+	public function stat(t3lib_vfs_File $file) {
+		// TODO define which data should be returned
+		// TODO write unit test
+		$fileStat = stat($this->getAbsolutePath($file));
+		return $fileStat;
+	}
+
+	public function getFileHandle(t3lib_vfs_File $file, $mode = 'r') {
+		$filePath = $this->getAbsolutePath($file);
+
+		$capabilities = NULL;
+		if ($mode != 'r') {
+			$capabilities = $capabilities | t3lib_vfs_FileHandle::CAP_WRITABLE;
+		}
+
+		$resourcePointer = fopen($filePath, $mode);
+		if ($resourcePointer === FALSE) {
+			throw new RuntimeException("Opening file \"$filePath\" in mode $mode failed.", 1299784211);
+		}
+
+		return new t3lib_vfs_FileHandle($file, $resourcePointer, $capabilities);
+	}
+
+	public function closeFileHandle(t3lib_vfs_FileHandle $handle) {
+		// TODO check if additional things should be done in this method
+		$handle->close();
+	}
+
+	/**
+	 * Creates a folder at the specified (relative) path.
+	 *
+	 * @param  $path The relative path incl. the name of the new folder
+	 * @return t3lib_vfs_Folder
+	 */
+	public function createFolder($path) {
+		$path = $this->absoluteBasePath . $path;
+		$name = basename($path);
+
+		if (file_exists($path)) {
+			throw new RuntimeException("Folder \"$path\" already exists.", 1299761890);
+		}
+
+		mkdir($path);
+		return new t3lib_vfs_Folder(array('name' => $name));
+	}
+
+	/**
+	 * Returns the contents of a file.
+	 *
+	 * @param t3lib_vfs_File $file
+	 * @return void
+	 */
+	public function getFileContents(t3lib_vfs_File $file) {
+		// TODO: Implement getFileContents() method.
+	}
+
+	/**
+	 * Reads a given amount of bytes from a file handle, at max until EOF.
+	 *
+	 * @param  $handle
+	 * @param  $numBytes
+	 * @return mixed The contents read from the file
+	 */
+	public function readFromFile(t3lib_vfs_FileHandle $handle, $numBytes) {
+		$resource = $handle->getResource();
+
+		$fcontents = fread($resource, $numBytes);
+		return $fcontents;
+	}
+
+	/**
+	 * Writes given data to a file opened with file handle.
+	 *
+	 * @param  $handle
+	 * @param  $contents
+	 * @return void
+	 */
+	public function writeToFile(t3lib_vfs_FileHandle $handle, $contents) {
+		$resource = $handle->getResource();
+
+		if (!$handle->hasCapability(t3lib_vfs_FileHandle::CAP_WRITABLE)) {
+			// TODO add file path
+			throw new RuntimeException('File is not writable!', 1299851832);
+		}
+
+		fwrite($resource, $contents);
+	}
+
+	/**
+	 * Moves the cursor to the specified position; if no position is given, the current position of the cursor is returned
+	 *
+	 * @param  $fileHandle
+	 * @param  $position
+	 * @return void
+	 */
+	public function seek(t3lib_vfs_FileHandle $fileHandle, $position = NULL, $seekMode = t3lib_vfs::SEEK_MODE_SET) {
+		if ($position === NULL) {
+			return ftell($fileHandle->getResource());
+		} else {
+			fseek($fileHandle->getResource(), $position, $seekMode);
+		}
+	}
+
+	/**
+	 * Creates a new file and returns the matching file object for it.
+	 *
+	 * @param  $path
+	 * @return void
+	 */
+	public function createFile($path) {
+		$path = $this->absoluteBasePath . $path;
+
+		if (!file_exists(dirname($path))) {
+			throw new RuntimeException("Folder \"" . dirname($path) . "\" does not exist.", 1299761888);
+		}
+		if (!is_dir(dirname($path))) {
+			throw new RuntimeException("\"" . dirname($path) . "\" is not a folder.", 1299761889);
+		}
+		if (file_exists($path)) {
+			throw new RuntimeException("File \"$path\" already exists.", 1299761887);
+		}
+
+			// using file_put_contents() because touch() doesn't work together with stream wrappers (see http://bugs.php.net/bug.php?id=38025)
+		file_put_contents($path, '');
+		return new t3lib_vfs_File(basename($path), NULL);
+	}
 }
 
 

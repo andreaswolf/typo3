@@ -205,6 +205,12 @@ $t3libClasses = array(
 	't3lib_contextmenu_pagetree_dataprovider' => PATH_t3lib . 'contextmenu/pagetree/class.t3lib_contextmenu_pagetree_dataprovider.php',
 	't3lib_tree_pagetree_indicator' => PATH_t3lib . 'tree/pagetree/class.t3lib_tree_pagetree_indicator.php',
 	't3lib_tree_pagetree_indicatorprovider' => PATH_t3lib . 'tree/pagetree/interfaces/interface.t3lib_tree_pagetree_interfaces_indicatorprovider.php',
+	't3lib_vfs' => PATH_t3lib . 'class.t3lib_vfs.php',
+	't3lib_vfs_file' => PATH_t3lib . 'vfs/class.t3lib_vfs_file.php',
+	't3lib_vfs_filehandle' => PATH_t3lib . 'vfs/class.t3lib_vfs_filehandle.php',
+	't3lib_vfs_folder' => PATH_t3lib . 'vfs/class.t3lib_vfs_folder.php',
+	't3lib_vfs_driver_abstract' => PATH_t3lib . 'vfs/driver/class.t3lib_vfs_driver_abstract.php',
+	't3lib_vfs_driver_local' => PATH_t3lib . 'vfs/driver/class.t3lib_vfs_driver_local.php',
 );
 
 $tslibClasses = require(PATH_typo3 . 'sysext/cms/ext_autoload.php');

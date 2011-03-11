@@ -78,12 +78,74 @@ class t3lib_vfs_File {
 	 */
 	protected $parent;
 
-	public function __construct() {
-		//
+	/**
+	 * The driver used to store this file
+	 *
+	 * @var t3lib_vfs_driver_Abstract
+	 */
+	protected $storageDriver;
+
+	public function __construct($name, $parentFolder) {
+		$this->parent = $parentFolder;
+		$this->name = $name;
 	}
 
 	public function getName() {
 		return $this->name;
+	}
+
+	/**
+	 * Returns a publicly accessible URL for this file.
+	 *
+	 * WARNING: Access to the file may be restricted by further means, e.g. some web-based authentication. You have to take care of this
+	 * yourself.
+	 *
+	 * @return void
+	 */
+	public function getPublicUrl() {
+		return $this->storageDriver->getPublicUrl($this);
+	}
+
+	public function getParentFolder() {
+		return $this->parent;
+	}
+
+	public function getContents() {
+		return $this->storageDriver->getContents($this);
+	}
+
+	/**
+	 * Opens the file in the specified mode. The mode is specified the same way as with the PHP function fopen()
+	 *
+	 * @param  $mode
+	 * @return void
+	 *
+	 * @see http://de3.php.net/manual/de/function.fopen.php
+	 */
+	public function open($mode = 'r') {
+		return $this->storageDriver->getFileHandle($this, $mode);
+	}
+
+	public function close() {
+		//
+	}
+
+	public function read($numBytes) {
+		//
+	}
+
+	public function write($contents) {
+		//
+	}
+
+	/**
+	 * Sets the file pointer to the specified position or, if none is given, returns the current position.
+	 *
+	 * @param integer $position
+	 * @return void
+	 */
+	public function seek($position = NULL) {
+		//
 	}
 }
 

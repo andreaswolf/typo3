@@ -47,6 +47,7 @@ abstract class t3lib_vfs_driver_Abstract {
 
 	const CAPABILITY_WRITABLE = 1;
 	const CAPABILITY_SUPPORTS_FOLDERS = 2;
+	const CAPABILITY_RANDOM_ACCESS = 4;
 
 	/**
 	 * Constructor for t3lib_vfs_driver_Abstract.
@@ -55,6 +56,7 @@ abstract class t3lib_vfs_driver_Abstract {
 	 */
 	public function __construct($configuration) {
 		$this->configuration = $configuration;
+		$this->verifyConfiguration();
 	}
 
 	abstract protected function verifyConfiguration();
@@ -84,9 +86,96 @@ abstract class t3lib_vfs_driver_Abstract {
 		return ($this->capabilities & $capability) == $capability;
 	}
 
-	public function getFileHandle(t3lib_file_File $file, $mode = 'r') {
-		//
-	}
+	/**
+	 * Creates a new file and returns the matching file object for it.
+	 *
+	 * @abstract
+	 * @param  $path
+	 * @return void
+	 */
+	abstract public function createFile($path);
+
+	/**
+	 * @abstract
+	 * @param t3lib_vfs_File $file
+	 * @param string $mode
+	 * @return mixed A file handle used for accessing the file. The type of this depends on the underlying storage.
+	 */
+	abstract public function getFileHandle(t3lib_vfs_File $file, $mode = 'r');
+
+	/**
+	 * Reads a given amount of bytes from a file handle, at max until EOF.
+	 *
+	 * @abstract
+	 * @param  $handle
+	 * @param  $numBytes
+	 * @return mixed The contents read from the file
+	 */
+	abstract public function readFromFile(t3lib_vfs_FileHandle $handle, $numBytes);
+
+	/**
+	 * Writes given data to a file opened with file handle.
+	 *
+	 * @abstract
+	 * @param  $handle
+	 * @param  $contents
+	 * @return void
+	 */
+	abstract public function writeToFile(t3lib_vfs_FileHandle $handle, $contents);
+
+	abstract public function closeFileHandle(t3lib_vfs_FileHandle $handle);
+
+	/**
+	 * Returns the contents of a file. Beware that this requires to load the complete file into memory and also may
+	 * require fetching the file from an external location. So this might be an expensive operation (both in terms of
+	 * processing resources and money) for large files.
+	 *
+	 * @param t3lib_vfs_File $file
+	 * @return string The file contents
+	 */
+	abstract public function getFileContents(t3lib_vfs_File $file);
+
+	/**
+	 * Moves the cursor to the specified position; if no position is given, the current position of the cursor is returned
+	 *
+	 * @param  $fileHandle
+	 * @param  $position
+	 * @param  $seekMode  The mode for setting the cursor position; one of the t3lib_vfs::SEEK_MODE_* constants
+	 * @return void
+	 */
+	abstract public function seek(t3lib_vfs_FileHandle $fileHandle, $position = NULL, $seekMode = t3lib_vfs::SEEK_MODE_SET);
+
+	/**
+	 * Returns various information about a file. This heavily depends on the information provided by the underlying
+	 * storage layer, so don't expect it to return much useful information.
+	 *
+	 * @abstract
+	 * @param t3lib_vfs_File $file
+	 * @return array
+	 *
+	 * @see http://de3.php.net/manual/de/function.stat.php
+	 */
+	abstract public function stat(t3lib_vfs_File $file);
+
+	/**
+	 * Returns the URL for publicly accessing a file.
+	 *
+	 * WARNING: There might be additional access checks outside of TYPO3 that prevent access to this file.
+	 *
+	 * @abstract
+	 * @param t3lib_vfs_File $file
+	 * @return void
+	 */
+	abstract public function getPublicUrl(t3lib_vfs_File $file);
+
+	/**
+	 * Creates a folder at the specified (relative) path.
+	 *
+	 * @abstract
+	 * @param  $path The relative path
+	 * @return t3lib_vfs_Folder
+	 */
+	abstract public function createFolder($path);
 }
 
 
