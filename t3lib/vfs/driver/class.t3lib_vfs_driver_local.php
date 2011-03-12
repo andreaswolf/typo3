@@ -173,7 +173,7 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 	 * @param  $position
 	 * @return void
 	 */
-	public function seek(t3lib_vfs_FileHandle $fileHandle, $position = NULL, $seekMode = t3lib_vfs::SEEK_MODE_SET) {
+	public function seek(t3lib_vfs_FileHandle $fileHandle, $position = NULL, $seekMode = t3lib_VFS::SEEK_MODE_SET) {
 		if ($position === NULL) {
 			return ftell($fileHandle->getResource());
 		} else {

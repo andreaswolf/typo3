@@ -242,11 +242,11 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 
 			// test if cursor is moved forward correctly
 		$this->fixture->seek($mockedFileHandle, 10);
-		$this->fixture->seek($mockedFileHandle, 5, t3lib_vfs::SEEK_MODE_CUR);
+		$this->fixture->seek($mockedFileHandle, 5, t3lib_VFS::SEEK_MODE_CUR);
 		$this->assertEquals(15, $this->fixture->seek($mockedFileHandle), 'Seek mode "current" does not set cursor to correct position');
 
 			// test if cursor is moved to EOF correctly
-		$this->fixture->seek($mockedFileHandle, 0, t3lib_vfs::SEEK_MODE_END);
+		$this->fixture->seek($mockedFileHandle, 0, t3lib_VFS::SEEK_MODE_END);
 		$this->assertEquals(filesize($fileUrl), $this->fixture->seek($mockedFileHandle), 'Seek mode "end" does not set cursor to correct position');
 	}
 

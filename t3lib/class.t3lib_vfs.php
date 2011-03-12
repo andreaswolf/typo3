@@ -33,7 +33,7 @@
  * @package  TYPO3
  * @subpackage  t3lib
  */
-final class t3lib_vfs {
+final class t3lib_VFS {
 	/**
 	 * Sets the cursor to the specified position
 	 */

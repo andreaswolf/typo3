@@ -140,10 +140,10 @@ abstract class t3lib_vfs_driver_Abstract {
 	 *
 	 * @param  $fileHandle
 	 * @param  $position
-	 * @param  $seekMode  The mode for setting the cursor position; one of the t3lib_vfs::SEEK_MODE_* constants
+	 * @param  $seekMode  The mode for setting the cursor position; one of the t3lib_VFS::SEEK_MODE_* constants
 	 * @return void
 	 */
-	abstract public function seek(t3lib_vfs_FileHandle $fileHandle, $position = NULL, $seekMode = t3lib_vfs::SEEK_MODE_SET);
+	abstract public function seek(t3lib_vfs_FileHandle $fileHandle, $position = NULL, $seekMode = t3lib_VFS::SEEK_MODE_SET);
 
 	/**
 	 * Returns various information about a file. This heavily depends on the information provided by the underlying
