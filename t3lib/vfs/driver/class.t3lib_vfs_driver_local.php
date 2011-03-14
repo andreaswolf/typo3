@@ -65,7 +65,7 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 	protected function getAbsolutePath(t3lib_vfs_File $file) {
 		$path = $this->absoluteBasePath;
 
-		$folder = $file->getParentFolder();
+		$folder = $file->getParent();
 		$pathParts = array();
 		while(!$folder->isMountpoint()) {
 			$pathParts[] = $folder->getName();

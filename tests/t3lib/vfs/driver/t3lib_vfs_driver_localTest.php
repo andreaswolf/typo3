@@ -216,7 +216,7 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 		$folderMock->expects($this->any())->method('getName')->will($this->returnValue(vfsStreamWrapper::getRoot()->getName()));
 		//$folderMock->expects($this->any())->method('getPath')->will($this->returnValue(TRUE));
 		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
-		$fileMock->expects($this->any())->method('getParentFolder')->will($this->returnValue($folderMock));
+		$fileMock->expects($this->any())->method('getParent')->will($this->returnValue($folderMock));
 		$fileMock->expects($this->any())->method('getName')->will($this->returnValue($fileName));
 
 		$handleObject = $this->fixture->getFileHandle($fileMock, 'r');

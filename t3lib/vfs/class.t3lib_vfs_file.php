@@ -106,7 +106,7 @@ class t3lib_vfs_File {
 		return $this->storageDriver->getPublicUrl($this);
 	}
 
-	public function getParentFolder() {
+	public function getParent() {
 		return $this->parent;
 	}
 
