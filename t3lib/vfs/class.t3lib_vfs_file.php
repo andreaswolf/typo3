@@ -85,12 +85,24 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	 */
 	protected $storageDriver;
 
+	/**
+	 * The handle used when this file is open
+	 *
+	 * @var t3lib_vfs_FileHandle
+	 */
+	protected $fileHandle;
+
+
 	public function __construct($name) {
 		$this->name = $name;
 	}
 
 	public function setParent(t3lib_vfs_Folder $parentFolder) {
 		$this->parent = $parentFolder;
+	}
+
+	public function setStorageDriver(t3lib_vfs_driver_Abstract $driver) {
+		$this->storageDriver = $driver;
 	}
 
 	public function getName() {
@@ -114,7 +126,7 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	}
 
 	public function getContents() {
-		return $this->storageDriver->getContents($this);
+		return $this->storageDriver->getFileContents($this);
 	}
 
 	/**
@@ -126,28 +138,76 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	 * @see http://de3.php.net/manual/de/function.fopen.php
 	 */
 	public function open($mode = 'r') {
-		return $this->storageDriver->getFileHandle($this, $mode);
+		$this->fileHandle = $this->storageDriver->getFileHandle($this, $mode);
+	}
+
+	/**
+	 * Returns TRUE if the file is open.
+	 *
+	 * @return boolean
+	 */
+	public function isOpen() {
+		return ($this->fileHandle !== NULL && $this->fileHandle->isOpen());
 	}
 
 	public function close() {
-		//
+		$this->fileHandle->close();
+		$this->fileHandle = NULL;
 	}
 
 	public function read($numBytes) {
-		//
+		if (!$this->isOpen()) {
+			throw new RuntimeException('File is closed.', 1299863431);
+		}
+
+		return $this->storageDriver->readFromFile($this->fileHandle, $numBytes);
 	}
 
+	/**
+	 * @param  $contents
+	 * @return boolean
+	 */
 	public function write($contents) {
-		//
+		if (!$this->isOpen()) {
+			throw new RuntimeException('File is closed.', 1299863432);
+		}
+
+		return $this->storageDriver->writeToFile($this->fileHandle, $contents);
 	}
 
 	/**
 	 * Sets the file pointer to the specified position or, if none is given, returns the current position.
 	 *
 	 * @param integer $position
-	 * @return void
+	 * @param integer $seekMode  A seek mode as defined in the constants in t3lib_VFS; defaults to SEEK_MODE_SET
+	 * @return FIXME
 	 */
-	public function seek($position = NULL) {
+	public function seek($position = NULL, $seekMode = t3lib_VFS::SEEK_MODE_SET) {
+		// TODO write unit tests
+		return $this->storageDriver->seek($this->fileHandle, $position, $seekMode);
+	}
+
+	/**
+	 * Moves this file to the specified path.
+	 *
+	 * WARNING: This operation might involve costly path calculations - use it only if you don't have the folder object
+	 * of the target folder at hand! Otherwise, use moveToFolder().
+	 *
+	 * @param  $path The new path. If a filename is given, the file is renamed; if not, the old name is kept
+	 * @return boolean TRUE if moving the file succeeded.
+	 */
+	public function moveToPath($path) {
+		//
+	}
+
+	/**
+	 * Moves this file to the specified folder. If $name is given, the file is also renamed.
+	 *
+	 * @param t3lib_vfs_Folder $folder
+	 * @param string $name
+	 * @return boolean TRUE if moving the file succeeded
+	 */
+	public function moveToFolder(t3lib_vfs_Folder $folder, $name = NULL) {
 		//
 	}
 }
