@@ -34,7 +34,7 @@
  * @package	TYPO3
  * @subpackage	t3lib
  */
-class t3lib_vfs_Folder {
+class t3lib_vfs_Folder extends t3lib_vfs_Node {
 
 	/**
 	 * The unique id of this folder
@@ -73,19 +73,6 @@ class t3lib_vfs_Folder {
 		// TODO: check who creates folder objects (= where the config could come from)
 		$this->uid = $folder['uid'];
 		$this->name = $folder['name'];
-		// TODO check for parent
-
-		if ($folder['driver'] != '') {
-			$this->initDriver($folder['driver'], $folder['driverConfig']);
-
-			$this->mountpoint = $this;
-		} else {
-			//$this->mountpoint = $this->parent->getMountpoint();
-		}
-	}
-
-	protected function initDriver($type, $config) {
-		// TODO: init driver with config
 	}
 
 	/**
@@ -95,6 +82,18 @@ class t3lib_vfs_Folder {
 	 */
 	public function getName() {
 		return $this->name;
+	}
+
+	/**
+	 * Sets the parent folder of this folder
+	 *
+	 * @param t3lib_vfs_Folder $parent
+	 * @return void
+	 */
+	public function setParent(t3lib_vfs_Folder $parent) {
+		// TODO check if id of parent is different from the pid given with the record -> behaviour in this case has to be defined
+		$this->parent = $parent;
+		return $this;
 	}
 
 	/**
@@ -112,7 +111,9 @@ class t3lib_vfs_Folder {
 	 * Creates a new folder below this folder
 	 *
 	 * @param  $name
-	 * @param null|t3lib_vfs_driver_Abstract $driver The driver to use. Is inherited from this folder if NULL
+	 * @param null|t3lib_vfs_driver_Abstract $driver
+	 *        The driver to use. If this is given, the folder constitutes a new mountpoint inside the TYPO3 virtual file
+	 *        system (VFS)
 	 * @return void
 	 */
 	public function createSubfolder($name, t3lib_vfs_driver_Abstract $driver = NULL) {
@@ -139,22 +140,12 @@ class t3lib_vfs_Folder {
 	}
 
 	/**
-	 * Returns the mountpoint this folder resides in. The mountpoint is the root of a subtree inside the virtual file system.
-	 * Usually, mountpoints are used to mount a different storage at a certain location.
-	 *
-	 * @return t3lib_vfs_Folder
-	 */
-	public function getMountpoint() {
-		return $this->mountpoint;
-	}
-
-	/**
 	 * Returns TRUE if this folder is the start of a new subtree
 	 *
 	 * @return boolean
 	 */
 	public function isMountpoint() {
-		return ($this->mountpoint == $this);
+		return FALSE;
 	}
 }
 

@@ -34,7 +34,7 @@
  * @package	TYPO3
  * @subpackage	t3lib
  */
-class t3lib_vfs_File {
+class t3lib_vfs_File extends t3lib_vfs_Node {
 
 	/**
 	 * The filename
@@ -85,9 +85,12 @@ class t3lib_vfs_File {
 	 */
 	protected $storageDriver;
 
-	public function __construct($name, $parentFolder) {
-		$this->parent = $parentFolder;
+	public function __construct($name) {
 		$this->name = $name;
+	}
+
+	public function setParent(t3lib_vfs_Folder $parentFolder) {
+		$this->parent = $parentFolder;
 	}
 
 	public function getName() {
