@@ -66,6 +66,15 @@ class t3lib_vfs_Mount extends t3lib_vfs_Folder {
 	}
 
 	/**
+	 * Returns the storage driver for this mountpoint.
+	 *
+	 * @return t3lib_vfs_driver_Abstract
+	 */
+	public function getStorageDriver() {
+		return $this->storageDriver;
+	}
+
+	/**
 	 * Returns TRUE if this folder is the start of a new subtree
 	 *
 	 * @return boolean

@@ -113,4 +113,25 @@ class t3lib_vfs_factoryTest extends tx_phpunit_testcase {
 
 		$this->assertSame($mockedMountObject, $this->fixture->createFolderObject($mockedFolderData));
 	}
+
+	/**
+	 * @test
+	 */
+	public function createFolderObjectReturnsFolderObjectForNormalFolder() {
+		$mockedMountObject = $this->getMock('t3lib_vfs_Mount', NULL, array(), '', FALSE);
+
+		$mockedParentFolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedParentFolder->expects($this->any())->method('getMountpoint')->will($this->returnValue($mockedMountObject));
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getFolderObject'));
+		$this->fixture->expects($this->once())->method('getFolderObject')->will($this->returnValue($mockedParentFolder));
+		$mockedFolderData = array(
+			'uid' => 1,
+			'pid' => 0,
+		);
+
+		$folderObject = $this->fixture->createFolderObject($mockedFolderData);
+
+		$this->assertInstanceOf('t3lib_vfs_Folder', $folderObject);
+	}
 }

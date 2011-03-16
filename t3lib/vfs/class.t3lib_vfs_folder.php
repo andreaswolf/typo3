@@ -60,7 +60,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	/**
 	 * The mount point this folder resides in. This is the basis of the subtree inside TYPO3s virtual file system
 	 *
-	 * @var t3lib_vfs_Folder
+	 * @var t3lib_vfs_Mount
 	 */
 	protected $mountpoint;
 
@@ -117,7 +117,15 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	 * @return void
 	 */
 	public function createSubfolder($name, t3lib_vfs_driver_Abstract $driver = NULL) {
-		// TODO check if creating folder is supported by driver, create folder
+		$storageDriver = $this->mountpoint->getStorageDriver();
+		if (!$storageDriver->hasCapability(t3lib_vfs_driver_Abstract::CAPABILITY_SUPPORTS_FOLDERS)) {
+			throw new RuntimeException("Driver for folder $this->uid does not support folder creation.", 1300287831);
+		}
+		// TODO get relative path of this folder, create folder
+
+		$relativePath = $this->getPathInMountpoint() . '/' . $name;
+
+		$storageDriver->createFolder($relativePath);
 	}
 
 	/**
