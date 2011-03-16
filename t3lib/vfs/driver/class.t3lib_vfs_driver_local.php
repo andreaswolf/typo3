@@ -62,16 +62,11 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 		return $this->absoluteBasePath;
 	}
 
-	protected function getAbsolutePath(t3lib_vfs_File $file) {
+	public function getAbsolutePath(t3lib_vfs_File $file) {
 		$path = $this->absoluteBasePath;
 
-		$folder = $file->getParent();
-		$pathParts = array();
-		while(!$folder->isMountpoint()) {
-			$pathParts[] = $folder->getName();
-			$folder = $folder->getParent();
-		}
-		return rtrim($path . implode('/', $pathParts), '/') . '/' . $file->getName();
+		$path .= $file->getPathInMountpoint(TRUE);
+		return $path;
 	}
 
 	public function getPublicUrl(t3lib_vfs_File $file) {
@@ -89,6 +84,7 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 		$filePath = $this->getAbsolutePath($file);
 
 		$capabilities = NULL;
+			// the file is opened writable for all modes except 'r' -- see http://de.php.net/manual/en/function.fopen.php
 		if ($mode != 'r') {
 			$capabilities = $capabilities | t3lib_vfs_FileHandle::CAP_WRITABLE;
 		}

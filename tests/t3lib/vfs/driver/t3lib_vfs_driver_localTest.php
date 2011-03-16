@@ -78,6 +78,29 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 	/**
 	 * @test
 	 */
+	public function getAbsoluteBasePathReturnsCorrectPathForFile() {
+			// please note: mountFolder is only part of the virtual path (.../mountFolder/subFolder/fileName),
+			// not of the physical path, which we handle here
+		$mockedMount = $this->getMock('t3lib_vfs_Mount', array('getName', 'isMountpoint'), array(), '', FALSE);
+		$mockedMount->expects($this->any())->method('getName')->will($this->returnValue('mountFolder'));
+		$mockedMount->expects($this->any())->method('isMountpoint')->will($this->returnValue(TRUE));
+		$mockedSubFolder = $this->getMock('t3lib_vfs_Folder', array('getName', 'getParent'), array(), '', FALSE);
+		$mockedSubFolder->expects($this->any())->method('getName')->will($this->returnValue('subFolder'));
+		$mockedFile = $this->getMock('t3lib_vfs_File', array('getName', 'getParent'), array(), '', FALSE);
+		$mockedFile->expects($this->any())->method('getName')->will($this->returnValue('fileName'));
+
+		$mockedFile->expects($this->any())->method('getParent')->will($this->returnValue($mockedSubFolder));
+		$mockedSubFolder->expects($this->any())->method('getParent')->will($this->returnValue($mockedMount));
+
+		$path = $this->fixture->getAbsolutePath($mockedFile);
+		$expectedPath = vfsStream::url($this->basedir) . '/subFolder/fileName';
+
+		$this->assertEquals($expectedPath, $path);
+	}
+
+	/**
+	 * @test
+	 */
 	public function instantiatingDriverFailsIfBasePathDoesNotExist() {
 		$this->setExpectedException('RuntimeException', '', 1299233097);
 
@@ -205,17 +228,18 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 
 	/**
 	 * @test
+	 *
+	 * @covers t3lib_vfs_driver_Local::getFileHandle
 	 */
 	public function getFileHandleReturnsHandleObject() {
-		//$this->markTestIncomplete();
 		$fileName = 'testFile';
 
 		vfsStreamWrapper::getRoot()->addChild(vfsStream::newFile($fileName));
-		$folderMock = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$folderMock = $this->getMock('t3lib_vfs_Folder', array('isMountpoint', 'getName'), array(), '', FALSE);
 		$folderMock->expects($this->any())->method('isMountpoint')->will($this->returnValue(TRUE));
 		$folderMock->expects($this->any())->method('getName')->will($this->returnValue(vfsStreamWrapper::getRoot()->getName()));
 		//$folderMock->expects($this->any())->method('getPath')->will($this->returnValue(TRUE));
-		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		$fileMock = $this->getMock('t3lib_vfs_File', array('getParent', 'getName'), array(), '', FALSE);
 		$fileMock->expects($this->any())->method('getParent')->will($this->returnValue($folderMock));
 		$fileMock->expects($this->any())->method('getName')->will($this->returnValue($fileName));
 

@@ -1,9 +1,12 @@
 <?php
 
-class t3lib_vfs_Node {
+abstract class t3lib_vfs_Node {
 
 	protected $name;
 
+	/**
+	 * @var t3lib_vfs_Node
+	 */
 	protected $parent;
 
 	/**
@@ -30,6 +33,19 @@ class t3lib_vfs_Node {
 
 	public function __construct(array $properties) {
 		$this->properties = $properties;
+	}
+
+	public function setParent(t3lib_vfs_Node $parent) {
+		$this->parent = $parent;
+		return $this;
+	}
+
+	public function getParent() {
+		return $this->parent;
+	}
+
+	public function getName() {
+		return $this->name;
 	}
 
 	/**
@@ -118,6 +134,29 @@ class t3lib_vfs_Node {
 	 */
 	public function getMountpoint() {
 		return $this->mountpoint;
+	}
+
+	public function isMountpoint() {
+		return FALSE;
+	}
+
+	/**
+	 * Returns the path of this node inside its mountpoint, with the name of the mountpoint NOT included.
+	 */
+	public function getPathInMountpoint($includeCurrent = FALSE) {
+		$pathParts = array();
+
+		if ($includeCurrent) {
+			$pathParts[] = $this->getName();
+		}
+		$node = $this->getParent();
+		while(!$node->isMountpoint()) {
+			$pathParts[] = $node->getName();
+			$node = $node->getParent();
+		}
+		$pathParts = array_reverse($pathParts);
+
+		return implode('/', $pathParts);
 	}
 }
 
