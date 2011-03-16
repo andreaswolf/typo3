@@ -121,9 +121,18 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	}
 
 	/**
+	 * Returns the object for a subfolder of the current folder, if it exists.
+	 *
+	 * @param  $name
+	 * @return t3lib_vfs_Folder
+	 */
+	public function getSubfolder($name) {
+	}
+
+	/**
 	 * Returns a list of all subfolders; if it is given, the list is filtered by pattern.
 	 *
-	 * @return void
+	 * @return t3lib_vfs_Folder[]
 	 */
 	public function getSubfolders($pattern = '') {
 		// TODO fetch folders
