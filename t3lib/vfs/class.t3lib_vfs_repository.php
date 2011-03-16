@@ -55,12 +55,17 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 	 * @return void
 	 */
 	public function getFolderNode($path) {
+		$path = trim($path, '/');
 		$pathParts = explode('/', $path);
 
 		$node = $this->getRootNode();
 		foreach ($pathParts as $pathPart) {
+			if ($pathPart === '') continue;
+
 			$node = $node->getSubfolder($pathPart);
 		}
+
+		return $node;
 	}
 
 	public function updateNodeInDatabase(t3lib_vfs_Node $node) {

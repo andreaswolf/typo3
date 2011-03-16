@@ -121,6 +121,60 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 		$this->assertArrayNotHasKey('crdate', $updateFields);
 		$this->assertArrayNotHasKey('cruser_id', $updateFields);
 	}
+
+	/**
+	 * @test
+	 */
+	public function getFolderNodeTraversesPathFromRootnode() {
+		$pathParts = array(
+			'subfolder',
+			'anothersubfolder'
+		);
+
+		$mockedFolder1 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedFolder2 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedFolder2->expects($this->once())->method('getSubfolder')->with($pathParts[1])->will($this->returnValue($mockedFolder1));
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->with($pathParts[0])->will($this->returnValue($mockedFolder2));
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+
+		$folder = $this->fixture->getFolderNode(implode('/', $pathParts));
+		$this->assertEquals($mockedFolder1, $folder);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFolderNodeIgnoresLeadingAndTrailingSlash() {
+		$pathParts = array(
+			'subfolder'
+		);
+
+		$mockedFolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->with($pathParts[0])->will($this->returnValue($mockedFolder));
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+
+		$folder = $this->fixture->getFolderNode('/' . implode('/', $pathParts) . '/');
+		$this->assertEquals($mockedFolder, $folder);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFolderNodeIgnoresEmptyPathParts() {
+		$path = '/subfolder//anothersubfolder/';
+
+		$mockedFolder1 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedFolder2 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedFolder2->expects($this->once())->method('getSubfolder')->with('anothersubfolder')->will($this->returnValue($mockedFolder1));
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->with('subfolder')->will($this->returnValue($mockedFolder2));
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+
+		$folder = $this->fixture->getFolderNode($path);
+		$this->assertEquals($mockedFolder1, $folder);
+	}
 }
 
 ?>
