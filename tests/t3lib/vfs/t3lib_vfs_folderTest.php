@@ -45,9 +45,20 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	public function setUp() {
 		$this->fixtureData = array(
 			'name' => uniqid(),
-			'uid' => uniqid()
+			'uid' => uniqid(),
+			'driver' => uniqid()
 		);
 		$this->fixture = new t3lib_vfs_Folder($this->fixtureData);
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Folder::getValue
+	 */
+	public function getValueReturnsDataInjectedViaConstructor() {
+		foreach ($this->fixtureData as $key => $value) {
+			$this->assertEquals($value, $this->fixture->getValue($key));
+		}
 	}
 
 	/**
@@ -84,9 +95,11 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @test
 	 */
 	public function createSubfolderFailsIfDriverDoesntSupportFolders() {
+		$this->markTestIncomplete('This test requires functionality in PHPUnit which is currently not available (mocking concrete methods in abstract classes); a patch for this is pending, see https://github.com/sebastianbergmann/phpunit-mock-objects/issues#issue/49');
 		$this->setExpectedException('RuntimeException', 1300287831);
 
 		$mockedDriver = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract');
+		// TODO: mock behaviour of hasCapabiltiy() as soon as PHPUnit supports mocking concrete methods in abstract classes
 		$mockedMount = $this->getMock('t3lib_vfs_Mount', array(), array(), '', FALSE);
 		$mockedMount->expects($this->any())->method('getStorageDriver')->will($this->returnValue($mockedDriver));
 		$this->fixture->setMountpoint($mockedMount);

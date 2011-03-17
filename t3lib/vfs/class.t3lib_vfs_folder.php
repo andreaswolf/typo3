@@ -71,6 +71,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	 */
 	public function __construct(array $folder) {
 		// TODO: check who creates folder objects (= where the config could come from)
+		$this->properties = $folder;
 		$this->uid = $folder['uid'];
 		$this->name = $folder['name'];
 	}
