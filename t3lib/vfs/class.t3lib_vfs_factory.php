@@ -36,8 +36,9 @@
  * @subpackage  t3lib
  */
 class t3lib_vfs_Factory implements t3lib_Singleton {
+
 	/**
-	 * Returns a folder object for a given folder uid. The result
+	 * Returns a folder object for a given folder uid. The resulting object is cached.
 	 *
 	 * @param  integer  $folderUid  The uid of the folder to return
 	 * @return t3lib_vfs_Folder
@@ -75,28 +76,31 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	public function createFolderObject($folderData) {
 		if ($folderData['driver']) {
 			// folder is mountpoint
-			$isMountpoint = TRUE;
 			$class = 't3lib_vfs_Mount';
 		} else {
 			// regular folder
-			$isMountpoint = FALSE;
 			$class = 't3lib_vfs_Folder';
 		}
 
 		/** @var t3lib_vfs_Mount $folderObject */
 		$folderObject = t3lib_div::makeInstance($class, $folderData);
-		$parentFolder = $this->getFolderObject($folderData['pid']);
+		$this->injectDependenciesForFolderObject($folderObject);
 
-		if ($isMountpoint) {
-			$driverObject = $this->getDriverInstance($folderData['driver'], $folderData['driverConfiguration']);
+		return $folderObject;
+	}
+
+	protected function injectDependenciesForFolderObject(t3lib_vfs_Folder $folderObject) {
+		$pid = $folderObject->getValue('pid');
+		$parentFolder = $this->getFolderObject($pid);
+
+		if ($folderObject->isMountpoint()) {
+			$driverObject = $this->getDriverInstance($folderObject->getValue('driver'), $folderObject->getValue('driverConfiguration'));
 			$folderObject->setStorageDriver($driverObject);
 		} else {
 			$mountpoint = $parentFolder->getMountpoint();
 			$folderObject->setMountpoint($mountpoint);
 			$folderObject->setParent($parentFolder);
 		}
-
-		return $folderObject;
 	}
 
 	public function getFileObject($uid) {
