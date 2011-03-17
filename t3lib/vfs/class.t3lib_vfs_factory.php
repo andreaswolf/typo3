@@ -38,6 +38,11 @@
 class t3lib_vfs_Factory implements t3lib_Singleton {
 
 	/**
+	 * @var t3lib_vfs_Folder[]
+	 */
+	protected $folderInstances = array();
+
+	/**
 	 * Returns a folder object for a given folder uid. The resulting object is cached.
 	 *
 	 * @param  integer  $folderUid  The uid of the folder to return
@@ -56,13 +61,39 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 			return t3lib_div::makeInstance('t3lib_vfs_RootNode');
 		}
 
-		if (!$instances[$folderUid]) {
+		if (!$this->folderInstances[$folderUid]) {
 			$folderData = array(); // TODO really fetch folder data
 
-			$instances[$folderUid] = $this->createFolderObject($folderData);
+			$this->folderInstances[$folderUid] = $this->createFolderObject($folderData);
 		}
 
-		return $instances[$folderUid];
+		return $this->folderInstances[$folderUid];
+	}
+
+	/**
+	 * Returns a folder object from given folder record data. The resulting object is cached, so it is also available
+	 * via getFolderObject().
+	 *
+	 * WARNING: Only call this method with a complete folder record, otherwise the object will miss information!
+	 *
+	 * @param array $folderData The data to construct the object from
+	 * @return t3lib_vfs_Folder
+	 *
+	 * @throws InvalidArgumentException
+	 */
+	public function getFolderObjectFromData(array $folderData) {
+		static $instances;
+
+		if (!is_int($folderData['uid'])) {
+			// FAIL
+		}
+
+		$folderUid = $folderData['uid'];
+		if (!$this->folderInstances[$folderUid]) {
+			$this->folderInstances[$folderUid] = $this->createFolderObject($folderData);
+		}
+
+		return $this->folderInstances[$folderUid];
 	}
 
 	/**

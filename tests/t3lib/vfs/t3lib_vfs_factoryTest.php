@@ -153,4 +153,48 @@ class t3lib_vfs_factoryTest extends tx_phpunit_testcase {
 
 		$this->assertInstanceOf('t3lib_vfs_Folder', $folderObject);
 	}
+
+	/**
+	 * @test
+	 */
+	public function getFolderObjectFromDataUsesInternalCache() {
+		$mockedMountObject = $this->getMock('t3lib_vfs_Mount', NULL, array(), '', FALSE);
+
+		$mockedParentFolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedParentFolder->expects($this->any())->method('getMountpoint')->will($this->returnValue($mockedMountObject));
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getFolderObject'));
+		$this->fixture->expects($this->any())->method('getFolderObject')->will($this->returnValue($mockedParentFolder));
+
+		$folderData = array(
+			'uid' => 1,
+			'pid' => 0
+		);
+
+		$folderObject1 = $this->fixture->getFolderObjectFromData($folderData);
+		$folderObject2 = $this->fixture->getFolderObjectFromData($folderData);
+
+		$this->assertSame($folderObject1, $folderObject2);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFolderObjectMethodsUseSameCache() {
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('injectDependenciesForFolderObject'));
+
+		$folderData = array(
+			'uid' => 1,
+			'pid' => 0
+		);
+
+			// we don't have to mock data retrieval for getFolderObject because if the test succeeds, it will just
+			// use the cache and not query the database
+		$folderObject1 = $this->fixture->getFolderObjectFromData($folderData);
+		$folderObject2 = $this->fixture->getFolderObject($folderData['uid']);
+
+		$this->assertSame($folderObject1, $folderObject2);
+	}
 }
+
+?>
