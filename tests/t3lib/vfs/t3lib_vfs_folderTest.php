@@ -73,7 +73,7 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @test
 	 */
 	public function createSubfolderCallsDriverWithCorrectArguments() {
-		$this->markTestSkipped('This test requires functionality in PHPUnit which is currently not available (mocking concrete methods in abstract classes; patch for this is pending, see https://github.com/sebastianbergmann/phpunit-mock-objects/issues#issue/49');
+		$this->markTestSkipped('This test requires functionality in PHPUnit which is currently not available (mocking concrete methods in abstract classes); a patch for this is pending, see https://github.com/sebastianbergmann/phpunit-mock-objects/issues#issue/49');
 		$basePath = 'someFolder/someSubfolder';
 		$folderName = uniqid();
 		$path = $basePath . '/' . $folderName;
@@ -95,7 +95,7 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @test
 	 */
 	public function createSubfolderFailsIfDriverDoesntSupportFolders() {
-		$this->markTestIncomplete('This test requires functionality in PHPUnit which is currently not available (mocking concrete methods in abstract classes); a patch for this is pending, see https://github.com/sebastianbergmann/phpunit-mock-objects/issues#issue/49');
+		$this->markTestSkipped('This test requires functionality in PHPUnit which is currently not available (mocking concrete methods in abstract classes); a patch for this is pending, see https://github.com/sebastianbergmann/phpunit-mock-objects/issues#issue/49');
 		$this->setExpectedException('RuntimeException', 1300287831);
 
 		$mockedDriver = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract');
