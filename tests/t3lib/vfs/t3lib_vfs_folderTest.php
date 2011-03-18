@@ -106,4 +106,44 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 
 		$this->fixture->createSubfolder(uniqid());
 	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getSubfolderQueriesDatabaseWithCorrectArguments() {
+			// mock a folder instance for the getSubfolder() method to return, so we don't have to fake a folder array here
+		$mockedSubfolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		t3lib_div::addInstance('t3lib_vfs_Folder', $mockedSubfolder);
+
+		//$this->markTestIncomplete();
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$subfolderName = uniqid();
+		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'], 'name' => $subfolderName)));
+
+		$this->fixture->getSubfolder($subfolderName);
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getSubfolderUsesCorrectProtocolOnPreparedStatement() {
+			// mock a folder instance for the getSubfolder() method to return, so we don't have to fake a folder array here
+		$mockedSubfolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		t3lib_div::addInstance('t3lib_vfs_Folder', $mockedSubfolder);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+
+		$mockedStatement->expects($this->once())->method('execute');
+		$mockedStatement->expects($this->once())->method('fetch');
+		$mockedStatement->expects($this->once())->method('free');
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getSubfolder(uniqid());
+	}
 }
