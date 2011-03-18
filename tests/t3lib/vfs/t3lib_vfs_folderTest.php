@@ -112,17 +112,11 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @runInSeparateProcess
 	 */
 	public function getSubfolderQueriesDatabaseWithCorrectArguments() {
-			// mock a folder instance for the getSubfolder() method to return, so we don't have to fake a folder array here
-		$mockedSubfolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
-		t3lib_div::addInstance('t3lib_vfs_Folder', $mockedSubfolder);
-
-		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
-		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
+			// just expect this exception because we don't return any folder rows and thus will have an exception
+		$this->setExpectedException('RuntimeException', 1300481287);
 
 		//$this->markTestIncomplete();
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
-		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array()));
-		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$subfolderName = uniqid();
@@ -136,17 +130,13 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @runInSeparateProcess
 	 */
 	public function getSubfolderUsesCorrectProtocolOnPreparedStatement() {
-			// mock a folder instance for the getSubfolder() method to return, so we don't have to fake a folder array here
-		$mockedSubfolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
-		t3lib_div::addInstance('t3lib_vfs_Folder', $mockedSubfolder);
-
 		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
 		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
 
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
 
 		$mockedStatement->expects($this->once())->method('execute');
-		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array()));
+		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array('uid' => 1)));
 		$mockedStatement->expects($this->once())->method('free');
 		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);

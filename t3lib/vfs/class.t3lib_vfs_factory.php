@@ -85,7 +85,7 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 		static $instances;
 
 		if (!is_int($folderData['uid'])) {
-			// FAIL
+			throw new InvalidArgumentException('uid of folder has to be numeric.', 1299957014);
 		}
 
 		$folderUid = $folderData['uid'];

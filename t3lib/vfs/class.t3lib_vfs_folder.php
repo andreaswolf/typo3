@@ -145,7 +145,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		$statement->execute(array('pid' => $this->uid, 'name' => $name));
 
 		if ($statement->rowCount() == 0) {
-			throw new RuntimeException("Folder $this->uid has no subfolder '$name'.");
+			throw new RuntimeException("Folder $this->uid has no subfolder '$name'.", 1300481287);
 		}
 
 		$folderRow = $statement->fetch();
