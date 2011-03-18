@@ -108,6 +108,26 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	}
 
 	/**
+	 * NOTE: All tests on methods getSubfolder() and getSubfolders() have to run in their own processes because of a
+	 *       PHPUnit misbehaviour with backups of static class attributes. If ran within the same process, all tests for
+	 *       each method except the first will fail.
+	 */
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getSubfolderThrowsExceptionIfNoSubfoldersAreFound() {
+		$this->setExpectedException('RuntimeException', 1300481287);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(0));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getSubfolder('asdf');
+	}
+
+	/**
 	 * @test
 	 * @runInSeparateProcess
 	 */
@@ -142,5 +162,64 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$this->fixture->getSubfolder(uniqid());
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getSubfoldersThrowsExceptionIfNoSubfoldersAreFound() {
+		$this->setExpectedException('RuntimeException', 1300481288);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(0));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getSubfolders();
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getSubfoldersQueriesDatabaseWithCorrectArguments() {
+			// just expect this exception because we don't return any folder rows and thus will have an exception
+		$this->setExpectedException('RuntimeException', 1300481288);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getSubfolders();
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getSubfoldersCreatesObjectsForAllReturnedRows() {
+		$folderData1 = array(
+			'uid' => uniqid()
+		);
+		$folderData2 = array(
+			'uid' => uniqid()
+		);
+
+		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
+		$mockedFactory->expects($this->at(0))->method('getFolderObjectFromData')
+		  ->with($this->equalTo($folderData1));
+		$mockedFactory->expects($this->at(1))->method('getFolderObjectFromData')
+		  ->with($this->equalTo($folderData2));
+		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
+		$mockedStatement->expects($this->once())->method('rowCount')->will($this->returnValue(2));
+		$mockedStatement->expects($this->any())->method('fetch')
+		  ->will($this->onConsecutiveCalls($this->returnValue($folderData1), $this->returnValue($folderData2),
+		    $this->returnValue(NULL)));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getSubfolders();
 	}
 }

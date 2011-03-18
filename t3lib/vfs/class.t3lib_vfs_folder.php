@@ -163,7 +163,28 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	 * @return t3lib_vfs_Folder[]
 	 */
 	public function getSubfolders($pattern = '') {
-		// TODO fetch folders
+		// TODO implement pattern matching
+		/** @var $statement t3lib_db_PreparedStatement */
+		static $statement;
+
+		if (!$statement) {
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_Folder', 'pid = :pid');
+		}
+		$statement->execute(array('pid' => $this->uid));
+
+		if ($statement->rowCount() == 0) {
+			throw new RuntimeException("Folder $this->uid has no subfolders.", 1300481288);
+		}
+
+		/** @var t3lib_vfs_Factory $factory */
+		$factory = t3lib_div::makeInstance('t3lib_vfs_Factory');
+
+		while ($row = $statement->fetch()) {
+			$folders[] = $factory->getFolderObjectFromData($row);
+		}
+		$statement->free();
+
+		return $folders;
 	}
 
 	/**
