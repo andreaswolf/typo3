@@ -168,14 +168,14 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @test
 	 * @runInSeparateProcess
 	 */
-	public function getSubfoldersThrowsExceptionIfNoSubfoldersAreFound() {
-		$this->setExpectedException('RuntimeException', 1300481288);
-
+	public function getSubfoldersReturnsEmptyArrayIfNoSubfoldersAreFound() {
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
 		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(0));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
-		$this->fixture->getSubfolders();
+		$folders = $this->fixture->getSubfolders();
+		$this->assertEmpty($folders);
+		$this->assertInternalType('array', $folders);
 	}
 
 	/**
@@ -183,9 +183,6 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @runInSeparateProcess
 	 */
 	public function getSubfoldersQueriesDatabaseWithCorrectArguments() {
-			// just expect this exception because we don't return any folder rows and thus will have an exception
-		$this->setExpectedException('RuntimeException', 1300481288);
-
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
 		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
