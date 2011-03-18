@@ -140,7 +140,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		static $statement;
 
 		if (!$statement) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_Folder', 'pid = :pid AND name = :name');
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_folder', 'pid = :pid AND name = :name');
 		}
 		$statement->execute(array('pid' => $this->uid, 'name' => $name));
 
@@ -168,7 +168,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		static $statement;
 
 		if (!$statement) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_Folder', 'pid = :pid');
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_folder', 'pid = :pid');
 		}
 		$statement->execute(array('pid' => $this->uid));
 
@@ -194,7 +194,26 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	 * @return array
 	 */
 	public function getFiles($pattern = '') {
-		// TODO fetch files
+		/** @var $statement t3lib_db_PreparedStatement */
+		static $statement;
+
+		if (!$statement) {
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_file', 'pid = :pid');
+		}
+		$statement->execute(array('pid' => $this->uid));
+
+		if ($statement->rowCount() == 0) {
+			return array();
+		}
+
+		/** @var $factory t3lib_vfs_Factory */
+		$factory = t3lib_div::makeInstance('t3lib_vfs_Factory');
+
+		while ($row = $statement->fetch()) {
+			$fileObjects[] = $factory->getFileObjectFromData($row);
+		}
+
+		return $fileObjects;
 	}
 
 	/**
