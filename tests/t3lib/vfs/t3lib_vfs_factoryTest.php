@@ -195,6 +195,94 @@ class t3lib_vfs_factoryTest extends tx_phpunit_testcase {
 
 		$this->assertSame($folderObject1, $folderObject2);
 	}
+
+	/**
+	 * @test
+	 */
+	public function createFileObjectReturnsFileObject() {
+		$mockedFile = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		t3lib_div::addInstance('t3lib_vfs_File', $mockedFile);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('injectDependenciesForFileObject'));
+
+		$this->assertSame($mockedFile, $this->fixture->createFileObject(array()));
+	}
+
+	/**
+	 * @test
+	 */
+	public function createFileObjectInjectsParentFolder() {
+		$mockedFileData = array(
+			'uid' => uniqid(),
+			'pid' => rand(1, 100)
+		);
+
+		$mockedParentFolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedFile = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		$mockedFile->expects($this->any())->method('getValue')->with($this->equalTo('pid'))
+		  ->will($this->returnValue($mockedFileData['pid']));
+		$mockedFile->expects($this->once())->method('setParent')->with($this->equalTo($mockedParentFolder));
+		t3lib_div::addInstance('t3lib_vfs_File', $mockedFile);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getFolderObject'));
+		$this->fixture->expects($this->once())->method('getFolderObject')->with($this->equalTo($mockedFileData['pid']))
+		  ->will($this->returnValue($mockedParentFolder));
+
+		$this->fixture->createFileObject($mockedFileData);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFileObjectReturnsSameObjectForSameUid() {
+		$mockedFile = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		t3lib_div::addInstance('t3lib_vfs_File', $mockedFile);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('injectDependenciesForFileObject'));
+
+		$obj1 = $this->fixture->getFileObject(1);
+		$obj2 = $this->fixture->getFileObject(1);
+		$this->assertSame($mockedFile, $obj1);
+		$this->assertSame($obj1, $obj2);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFileObjectFromDataReturnsSameObjectForSameUid() {
+		$mockedFileData = array(
+			'uid' => 1
+		);
+
+		$mockedFile = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		t3lib_div::addInstance('t3lib_vfs_File', $mockedFile);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('injectDependenciesForFileObject'));
+
+		$obj1 = $this->fixture->getFileObjectFromData($mockedFileData);
+		$obj2 = $this->fixture->getFileObjectFromData($mockedFileData);
+		$this->assertSame($mockedFile, $obj1);
+		$this->assertSame($obj1, $obj2);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFileObjectMethodsUseSameCache() {
+		$mockedFileData = array(
+			'uid' => 1
+		);
+
+		$mockedFile = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		t3lib_div::addInstance('t3lib_vfs_File', $mockedFile);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('injectDependenciesForFileObject'));
+
+		$obj1 = $this->fixture->getFileObjectFromData($mockedFileData);
+		$obj2 = $this->fixture->getFileObject($mockedFileData['uid']);
+		$this->assertSame($mockedFile, $obj1);
+		$this->assertSame($obj1, $obj2);
+	}
 }
 
 ?>

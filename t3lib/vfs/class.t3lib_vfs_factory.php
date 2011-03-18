@@ -43,6 +43,11 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	protected $folderInstances = array();
 
 	/**
+	 * @var t3lib_vfs_File[]
+	 */
+	protected $fileInstances = array();
+
+	/**
 	 * Returns a folder object for a given folder uid. The resulting object is cached.
 	 *
 	 * @param  integer  $folderUid  The uid of the folder to return
@@ -51,8 +56,6 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	 * @throws InvalidArgumentException
 	 */
 	public function getFolderObject($folderUid) {
-		static $instances;
-
 		if (!is_int($folderUid)) {
 			throw new InvalidArgumentException('uid of folder has to be numeric.', 1299957013);
 		}
@@ -82,8 +85,6 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	 * @throws InvalidArgumentException
 	 */
 	public function getFolderObjectFromData(array $folderData) {
-		static $instances;
-
 		if (!is_int($folderData['uid'])) {
 			throw new InvalidArgumentException('uid of folder has to be numeric.', 1299957014);
 		}
@@ -135,25 +136,42 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	}
 
 	public function getFileObject($uid) {
-		static $instances;
-
 		if (!is_numeric($uid)) {
 			throw new InvalidArgumentException('uid of file has to be numeric.', 1300096564);
 		}
 
-		if (!$instances[$uid]) {
+		if (!$this->fileInstances[$uid]) {
 			$fileData = array(); // TODO fetch file data
 
-			$instances[$uid] = $this->createFileObject($fileData);
+			$this->fileInstances[$uid] = $this->createFileObject($fileData);
 		}
 
-		return $instances[$uid];
+		return $this->fileInstances[$uid];
+	}
+
+	public function getFileObjectFromData($fileData) {
+		if (!is_numeric($fileData['uid'])) {
+			throw new InvalidArgumentException('uid of file has to be numeric.', 1300096565);
+		}
+
+		if (!$this->fileInstances[$fileData['uid']]) {
+			$this->fileInstances[$fileData['uid']] = $this->createFileObject($fileData);
+		}
+
+		return $this->fileInstances[$fileData['uid']];
 	}
 
 	public function createFileObject($fileData) {
-		// TODO
 		/** @var t3lib_vfs_File $fileObject */
 		$fileObject = t3lib_div::makeInstance('t3lib_vfs_File', $fileData);
+		$this->injectDependenciesForFileObject($fileObject);
+
+		return $fileObject;
+	}
+
+	protected function injectDependenciesForFileObject(t3lib_vfs_File $fileObject) {
+		$pid = $fileObject->getValue('pid');
+		$fileObject->setParent($this->getFolderObject($pid));
 	}
 
 	protected function getDriverInstance($driver, $configuration) {
