@@ -116,8 +116,12 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 		$mockedSubfolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
 		t3lib_div::addInstance('t3lib_vfs_Folder', $mockedSubfolder);
 
+		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
+		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
+
 		//$this->markTestIncomplete();
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array()));
 		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
@@ -136,10 +140,13 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 		$mockedSubfolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
 		t3lib_div::addInstance('t3lib_vfs_Folder', $mockedSubfolder);
 
+		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
+		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
+
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
 
 		$mockedStatement->expects($this->once())->method('execute');
-		$mockedStatement->expects($this->once())->method('fetch');
+		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array()));
 		$mockedStatement->expects($this->once())->method('free');
 		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
