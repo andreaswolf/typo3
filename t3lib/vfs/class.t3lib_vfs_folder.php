@@ -188,6 +188,36 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	}
 
 	/**
+	 * Returns the file object for a given file name
+	 *
+	 * @param string $name The file name
+	 * @return t3lib_vfs_File
+	 *
+	 * @throws RuntimeException If the file was not found
+	 */
+	public function getFile($name) {
+		/** @var $statement t3lib_db_PreparedStatement */
+		static $statement;
+
+		if (!$statement) {
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_file', 'pid = :pid AND name = :name');
+		}
+		$statement->execute(array('pid' => $this->uid, 'name' => $name));
+
+		if ($statement->rowCount() == 0) {
+			throw new RuntimeException("Folder $this->uid contains no file '$name'.", 1300481287);
+		}
+
+		$fileRow = $statement->fetch();
+		$statement->free();
+
+		/** @var t3lib_vfs_Factory $factory */
+		$factory = t3lib_div::makeInstance('t3lib_vfs_Factory');
+
+		return $factory->getFileObjectFromData($fileRow);
+	}
+
+	/**
 	 * Returns an array of file objects from this folder; if it is given, the list is filtered by pattern.
 	 *
 	 * @param string $pattern The pattern to search for. Optional.

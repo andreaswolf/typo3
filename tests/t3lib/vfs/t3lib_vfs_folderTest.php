@@ -117,7 +117,7 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @test
 	 * @runInSeparateProcess
 	 */
-	public function getSubfolderThrowsExceptionIfNoSubfoldersAreFound() {
+	public function getSubfolderThrowsExceptionIfNoSubfolderIsFound() {
 		$this->setExpectedException('RuntimeException', 1300481287);
 
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
@@ -135,7 +135,6 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 			// just expect this exception because we don't return any folder rows and thus will have an exception
 		$this->setExpectedException('RuntimeException', 1300481287);
 
-		//$this->markTestIncomplete();
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
@@ -218,6 +217,74 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$this->fixture->getSubfolders();
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getFileThrowsExceptionIfFileIsNotFound() {
+		$this->setExpectedException('RuntimeException', 1304703064);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(0));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getFile('asdf');
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getFileQueriesDatabaseWithCorrectArguments() {
+			// just expect this exception because we don't return any folder rows and thus will have an exception
+		$this->setExpectedException('RuntimeException', 1304703065);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$fileName = uniqid();
+		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'], 'name' => $fileName)));
+
+		$this->fixture->getFile($fileName);
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getFileUsesCorrectProtocolOnPreparedStatement() {
+		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
+		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+
+		$mockedStatement->expects($this->once())->method('execute');
+		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array('uid' => 1)));
+		$mockedStatement->expects($this->once())->method('free');
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->fixture->getFile(uniqid());
+	}
+
+	/**
+	 * @test
+	 * @runInSeparateProcess
+	 */
+	public function getFileReturnsFileObject() {
+		$mockedFileObject = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
+		$mockedFactory->expects($this->once())->method('getFileObjectFromData')->will($this->returnValue($mockedFileObject));
+		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
+
+		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
+		$mockedStatement->expects($this->once())->method('fetch')->will($this->returnValue(array('uid' => 1)));
+		$mockedStatement->expects($this->any())->method('rowCount')->will($this->returnValue(1));
+		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
+
+		$this->assertSame($mockedFileObject, $this->fixture->getFile(uniqid()));
 	}
 
 	/**
