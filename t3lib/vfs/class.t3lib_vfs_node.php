@@ -146,7 +146,30 @@ abstract class t3lib_vfs_Node {
 	}
 
 	/**
-	 * Returns the path of this node inside its mountpoint, with the name of the mountpoint NOT included.
+	 * Returns the path to this node, the node's name NOT included by default
+	 *
+	 * @param bool $includeCurrent If this node should be included in the path
+	 * @return string The node path separated by slashes
+	 */
+	public function getPath($includeCurrent = FALSE) {
+		$pathParts = array();
+
+		$pathInMountpoint = $this->getPathInMountpoint($includeCurrent);
+		$node = $this->getMountpoint();
+		while (!$node->isRootNode()) {
+			$pathParts[] = $node->getName();
+			$node = $node->getParent();
+		}
+		$pathParts = array_reverse($pathParts);
+
+		return implode('/', $pathParts) . '/' . $pathInMountpoint;
+	}
+
+	/**
+	 * Returns the path of this node inside its mountpoint, with the name of the mountpoint NOT included by default.
+	 *
+	 * @param bool $includeCurrent If this node should be included in the path 
+	 * @return string The node path separated by slashes; if the current node is not included, it ends with a slash
 	 */
 	public function getPathInMountpoint($includeCurrent = FALSE) {
 		$pathParts = array();
@@ -161,7 +184,7 @@ abstract class t3lib_vfs_Node {
 		}
 		$pathParts = array_reverse($pathParts);
 
-		return implode('/', $pathParts);
+		return implode('/', $pathParts) . ($includeCurrent ? '' : '/');
 	}
 }
 

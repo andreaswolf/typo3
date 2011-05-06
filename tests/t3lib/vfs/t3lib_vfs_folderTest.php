@@ -108,6 +108,27 @@ class t3lib_vfs_FolderTest extends tx_phpunit_testcase {
 	}
 
 	/**
+	 * @test
+	 */
+	public function getPathAlwaysReturnsPathWithTrailingSlash() {
+			// please note: the name of the mountpoint is not included in the path used here
+		$mockedNodesData = array(
+			array(uniqid('rootnode-'), 'RootNode'), // Root node
+			array(uniqid('mount-'), 'Mount'), // Mount
+			array(uniqid('folder-'), 'Folder'), // Folder 1
+			array(uniqid('folder-'), 'Folder'), // Folder 2
+		);
+
+		list($mockedNodes, $pathParts) = t3lib_vfs_NodeTestHelper::prepareNodeHierarchyForPathTests($mockedNodesData, $this);
+
+		$path = $mockedNodes[count($mockedNodes)-1]->getPath(TRUE);
+		$this->assertEquals(implode('/', $pathParts) . '/', $path);
+
+		$path = $mockedNodes[count($mockedNodes)-1]->getPath(FALSE);
+		$this->assertEquals(implode('/', array_slice($pathParts, 0, -1)) . '/', $path);
+	}
+
+	/**
 	 * NOTE: All tests on methods getSubfolder() and getSubfolders() have to run in their own processes because of a
 	 *       PHPUnit misbehaviour with backups of static class attributes. If ran within the same process, all tests for
 	 *       each method except the first will fail.

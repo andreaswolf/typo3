@@ -255,6 +255,16 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	public function isMountpoint() {
 		return FALSE;
 	}
+
+	/**
+	 * Returns the path to this folder, the folder's name NOT included by default
+	 *
+	 * @param bool $includeCurrent If this node should be included in the path
+	 * @return string The node path separated by slashes
+	 */
+	public function getPath($includeCurrent = FALSE) {
+		return parent::getPath($includeCurrent) . ($includeCurrent ? '/' : '');
+	}
 }
 
 

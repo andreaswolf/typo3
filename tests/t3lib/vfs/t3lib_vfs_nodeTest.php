@@ -24,6 +24,7 @@
 
 
 require_once 'vfsStream/vfsStream.php';
+require_once 'tests/t3lib/vfs/t3lib_vfs_nodeTestHelper.php';
 
 /**
  * Testcase for the abstract basic node class of
@@ -205,29 +206,44 @@ class t3lib_vfs_nodeTest extends tx_phpunit_testcase {
 	 */
 	public function getPathInMountpointReturnsCorrectPath() {
 			// please note: the name of the mountpoint is not included in the path used here
-		$pathParts = array(
-			uniqid(), // Mount
-			uniqid(), // Folder 1
-			uniqid(), // Folder 2
-			uniqid(), // File
+		$mockedNodesData = array(
+			array(uniqid('mount-'), 'Mount'), // Mount
+			array(uniqid('folder-'), 'Folder'), // Folder 1
+			array(uniqid('folder-'), 'Folder'), // Folder 2
+			array(uniqid('file-'), 'File'), // File
 		);
 
-		$mockedMount = $this->getMock('t3lib_vfs_Mount', array('getName', 'isMountpoint'), array(), '', FALSE);
-		$mockedMount->expects($this->any())->method('getName')->will($this->returnValue($pathParts[0]));
-		$mockedMount->expects($this->any())->method('isMountpoint')->will($this->returnValue(TRUE));
-		$mockedSubFolder = $this->getMock('t3lib_vfs_Node', array('getName', 'getParent'), array(), '', FALSE);
-		$mockedSubFolder->expects($this->any())->method('getName')->will($this->returnValue($pathParts[1]));
-		$mockedSubSubFolder = $this->getMock('t3lib_vfs_Node', array('getName', 'getParent'), array(), '', FALSE);
-		$mockedSubSubFolder->expects($this->any())->method('getName')->will($this->returnValue($pathParts[2]));
-		$mockedNode = $this->getMock('t3lib_vfs_Node', array('getName', 'getParent'), array(), '', FALSE);
-		$mockedNode->expects($this->any())->method('getName')->will($this->returnValue($pathParts[3]));
+		list($mockedNodes, $pathParts) = t3lib_vfs_NodeTestHelper::prepareNodeHierarchyForPathTests($mockedNodesData, $this);
 
-		$mockedNode->expects($this->any())->method('getParent')->will($this->returnValue($mockedSubSubFolder));
-		$mockedSubSubFolder->expects($this->any())->method('getParent')->will($this->returnValue($mockedSubFolder));
-		$mockedSubFolder->expects($this->any())->method('getParent')->will($this->returnValue($mockedMount));
+		$path = $mockedNodes[count($mockedNodes)-1]->getPathInMountpoint(TRUE);
+		$this->assertEquals(implode('/', array_slice($pathParts, 1)), $path);
 
-		$this->assertEquals(implode('/', array_slice($pathParts, 1)), $mockedNode->getPathInMountpoint(TRUE), 'Incorrect path with current node returned by getPathInMountpoint');
-		$this->assertEquals(implode('/', array_slice($pathParts, 1, 2)), $mockedNode->getPathInMountpoint(FALSE), 'Incorrect path without current node returned by getPathInMountpoint');
+		$path = $mockedNodes[count($mockedNodes)-1]->getPathInMountpoint(FALSE);
+		$this->assertEquals(implode('/', array_slice($pathParts, 1, -1)) . '/', $path);
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::getPath
+	 */
+	public function getPathReturnsCorrectPath() {
+			// please note: the name of the mountpoint is not included in the path used here
+		$mockedNodesData = array(
+			array('', 'RootNode'),
+			array(uniqid('mount-'), 'Mount'), // Mount 1
+			array(uniqid('folder-'), 'Folder'), // Folder 1
+			array(uniqid('mount-'), 'Mount'), // Mount 2
+			array(uniqid('folder-'), 'Folder'), // Folder 2
+			array(uniqid('file-'), 'File'), // File
+		);
+
+		list($mockedNodes, $pathParts) = t3lib_vfs_NodeTestHelper::prepareNodeHierarchyForPathTests($mockedNodesData, $this);
+
+		$path = $mockedNodes[count($mockedNodes)-1]->getPath(TRUE);
+		$this->assertEquals(implode('/', $pathParts), $path);
+
+		$path = $mockedNodes[count($mockedNodes)-1]->getPath(FALSE);
+		$this->assertEquals(implode('/', array_slice($pathParts, 0, -1)) . '/', $path);
 	}
 }
 
