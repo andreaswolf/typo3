@@ -72,13 +72,6 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	protected $size;
 
 	/**
-	 * Pointer to the folder this file resides in
-	 *
-	 * @var t3lib_vfs_Folder
-	 */
-	protected $parent;
-
-	/**
 	 * The driver used to store this file
 	 *
 	 * @var t3lib_vfs_driver_Abstract
@@ -95,10 +88,6 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 
 	public function __construct($name) {
 		$this->name = $name;
-	}
-
-	public function setParent(t3lib_vfs_Folder $parentFolder) {
-		$this->parent = $parentFolder;
 	}
 
 	public function setStorageDriver(t3lib_vfs_driver_Abstract $driver) {
@@ -119,10 +108,6 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	 */
 	public function getPublicUrl() {
 		return $this->storageDriver->getPublicUrl($this);
-	}
-
-	public function getParent() {
-		return $this->parent;
 	}
 
 	public function getContents() {
