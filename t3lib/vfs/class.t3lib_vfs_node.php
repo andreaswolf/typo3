@@ -140,6 +140,10 @@ abstract class t3lib_vfs_Node {
 		return FALSE;
 	}
 
+	public function isRootNode() {
+		return FALSE;
+	}
+
 	/**
 	 * Returns the path of this node inside its mountpoint, with the name of the mountpoint NOT included.
 	 */

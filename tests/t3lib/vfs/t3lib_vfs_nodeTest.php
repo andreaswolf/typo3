@@ -61,6 +61,16 @@ class t3lib_vfs_nodeTest extends tx_phpunit_testcase {
 
 	/**
 	 * @test
+	 * @covers t3lib_vfs_Node::isMountpoint
+	 * @covers t3lib_vfs_Node::isRootNode
+	 */
+	public function nodeIsNeitherMountpointNorRootNode() {
+		$this->assertFalse($this->fixture->isMountpoint());
+		$this->assertFalse($this->fixture->isRootNode());
+	}
+
+	/**
+	 * @test
 	 */
 	public function setValueChangesPropertyValues() {
 		$newValue = uniqid();
