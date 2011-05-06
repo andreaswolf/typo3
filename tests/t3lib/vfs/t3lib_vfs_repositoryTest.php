@@ -175,6 +175,59 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 		$folder = $this->fixture->getFolderNode($path);
 		$this->assertEquals($mockedFolder1, $folder);
 	}
+
+	/**
+	 * @test
+	 */
+	public function getNearestIndexedNodeReturnsIndexedNodeAndMissingParts() {
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+		$mockedFolder1 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE); // foo/
+
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->will($this->returnValue($mockedFolder1));
+		$mockedFolder1->expects($this->once())->method('getSubfolder')->will($this->throwException(new RuntimeException()));
+
+			// we only have the node "foo", "bar" does not exist (and thus also not "baz")
+		list($folder, $notIndexedParts) = $this->fixture->getNearestIndexedNode('foo/bar/baz');
+
+		$this->assertSame($mockedFolder1, $folder);
+		$this->assertEquals(array('bar', 'baz'), $notIndexedParts);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getNearestIndexedNodeReturnsEmptyMissingNodesArrayIfQueriedNodeWasIndexed() {
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+		$mockedFolder1 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE); // foo/
+		$mockedFolder2 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE); // foo/bar/
+
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->will($this->returnValue($mockedFolder1));
+		$mockedFolder1->expects($this->once())->method('getSubfolder')->will($this->returnValue($mockedFolder2));
+
+		list($folder, $notIndexedParts) = $this->fixture->getNearestIndexedNode('foo/bar/');
+
+		$this->assertSame($mockedFolder2, $folder);
+		$this->assertEquals(array(), $notIndexedParts);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getNearestIndexedNodeDetectsFileInPath() {
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+		$mockedFolder1 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE); // foo/
+		$mockedFolder2 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE); // foo/bar/
+
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->will($this->returnValue($mockedFolder1));
+		$mockedFolder1->expects($this->once())->method('getSubfolder')->will($this->returnValue($mockedFolder2));
+		$mockedFolder2->expects($this->never())->method('getSubfolder');
+		$mockedFolder2->expects($this->once())->method('getFile')->with($this->equalTo('file.baz'));
+
+		list($folder, $notIndexedParts) = $this->fixture->getNearestIndexedNode('foo/bar/file.baz');
+	}
 }
 
 ?>

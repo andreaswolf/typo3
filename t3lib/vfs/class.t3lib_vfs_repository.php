@@ -68,6 +68,36 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 		return $node;
 	}
 
+	/**
+	 * Checks if all parts from a path are indexed and if not, returns the deepest node that is indexed and additionally
+	 * all missing parts
+	 *
+	 * @param string $path
+	 * @return array The found node as first element, an array with all missing parts as second element
+	 */
+	public function getNearestIndexedNode($path) {
+		$pathParts = explode('/', $path);
+
+		$node = $this->getRootNode();
+		while (count($pathParts) > 0) {
+			$pathPart = array_shift($pathParts);
+			if ($pathPart === '') continue;
+
+			try {
+				if (count($pathParts) == 0) {
+					$node = $node->getFile($pathPart);
+				} else {
+					$node = $node->getSubfolder($pathPart);
+				}
+			} catch (RuntimeException $e) {
+				array_unshift($pathParts, $pathPart);
+				return array($node, $pathParts);
+			}
+		}
+
+		return array($node, array());
+	}
+
 	public function updateNodeInDatabase(t3lib_vfs_Node $node) {
 		$immutableProperties = array(
 			'crdate',
