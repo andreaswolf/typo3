@@ -34,7 +34,7 @@ require_once 'vfsStream/vfsStream.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_folderTest extends tx_phpunit_testcase {
+class t3lib_vfs_FolderTest extends tx_phpunit_testcase {
 	/**
 	 * @var t3lib_vfs_Folder
 	 */
@@ -197,26 +197,30 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 		$folderData1 = array(
 			'uid' => uniqid()
 		);
+		$folderObject1 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
 		$folderData2 = array(
 			'uid' => uniqid()
 		);
+		$folderObject2 = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
 
 		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
 		$mockedFactory->expects($this->at(0))->method('getFolderObjectFromData')
-		  ->with($this->equalTo($folderData1));
+		  ->with($this->equalTo($folderData1))->will($this->returnValue($folderObject1));
 		$mockedFactory->expects($this->at(1))->method('getFolderObjectFromData')
-		  ->with($this->equalTo($folderData2));
+		  ->with($this->equalTo($folderData2))->will($this->returnValue($folderObject2));
 		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
 
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
-		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
 		$mockedStatement->expects($this->once())->method('rowCount')->will($this->returnValue(2));
 		$mockedStatement->expects($this->any())->method('fetch')
 		  ->will($this->onConsecutiveCalls($this->returnValue($folderData1), $this->returnValue($folderData2),
 		    $this->returnValue(NULL)));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
-		$this->fixture->getSubfolders();
+		$folderObjects = $this->fixture->getSubfolders();
+
+		$this->assertSame($folderObject1, $folderObjects[0]);
+		$this->assertSame($folderObject2, $folderObjects[1]);
 	}
 
 	/**
@@ -318,29 +322,32 @@ class t3lib_vfs_folderTest extends tx_phpunit_testcase {
 	 * @runInSeparateProcess
 	 */
 	public function getFilesCreatesObjectsForAllReturnedRows() {
-		$this->markTestIncomplete('Can\'t complete this method because the methods in Factory are not finished yet.');
 		$fileData1 = array(
 			'uid' => uniqid()
 		);
+		$fileObject1 = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
 		$fileData2 = array(
 			'uid' => uniqid()
 		);
+		$fileObject2 = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
 
 		$mockedFactory = $this->getMock('t3lib_vfs_Factory', array(), array(), '', FALSE);
-		$mockedFactory->expects($this->at(0))->method('getFolderObjectFromData')
-		  ->with($this->equalTo($fileData1));
-		$mockedFactory->expects($this->at(1))->method('getFolderObjectFromData')
-		  ->with($this->equalTo($fileData2));
+		$mockedFactory->expects($this->at(0))->method('getFileObjectFromData')
+		  ->with($this->equalTo($fileData1))->will($this->returnValue($fileObject1));
+		$mockedFactory->expects($this->at(1))->method('getFileObjectFromData')
+		  ->with($this->equalTo($fileData2))->will($this->returnValue($fileObject2));
 		t3lib_div::setSingletonInstance('t3lib_vfs_Factory', $mockedFactory);
 
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
-		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
 		$mockedStatement->expects($this->once())->method('rowCount')->will($this->returnValue(2));
 		$mockedStatement->expects($this->any())->method('fetch')
 		  ->will($this->onConsecutiveCalls($this->returnValue($fileData1), $this->returnValue($fileData2),
 		    $this->returnValue(NULL)));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
-		$this->fixture->getFiles();
+		$fileObjects = $this->fixture->getFiles();
+
+		$this->assertSame($fileObject1, $fileObjects[0]);
+		$this->assertSame($fileObject2, $fileObjects[1]);
 	}
 }

@@ -179,6 +179,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		/** @var t3lib_vfs_Factory $factory */
 		$factory = t3lib_div::makeInstance('t3lib_vfs_Factory');
 
+		$folders = array();
 		while ($row = $statement->fetch()) {
 			$folders[] = $factory->getFolderObjectFromData($row);
 		}
