@@ -58,6 +58,20 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 		}
 	}
 
+	/**
+	 * Converts a relative path inside this driver's root into an absolute path (with correct directory separators).
+	 *
+	 * @param  $relativePath
+	 * @return string
+	 */
+	protected function makePathAbsolute($relativePath) {
+		$path = $this->absoluteBasePath . $relativePath;
+		//$path = str_replace('/', DIRECTORY_SEPARATOR, $path);
+		// TODO implement directory separator conversion if it is not a slash
+
+		return $path;
+	}
+
 	public function getAbsoluteBasePath() {
 		return $this->absoluteBasePath;
 	}
@@ -199,6 +213,18 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 			// using file_put_contents() because touch() doesn't work together with stream wrappers (see http://bugs.php.net/bug.php?id=38025)
 		file_put_contents($path, '');
 		return new t3lib_vfs_File(basename($path), NULL);
+	}
+
+	/**
+	 * Checks for existence of a given file or folder (with relative path inside this drivers base path)
+	 *
+	 * @param string $path The path to check
+	 * @return bool
+	 */
+	public function nodeExists($path) {
+		$path = $this->makePathAbsolute($path);
+
+		return file_exists($path);
 	}
 }
 

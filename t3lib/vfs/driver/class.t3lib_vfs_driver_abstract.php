@@ -176,6 +176,15 @@ abstract class t3lib_vfs_driver_Abstract {
 	 * @return t3lib_vfs_Folder
 	 */
 	abstract public function createFolder($path);
+
+	/**
+	 * Checks for existence of a given file or folder (with relative path inside this drivers base path)
+	 *
+	 * @abstract
+	 * @param string $path The path to check
+	 * @return bool
+	 */
+	abstract public function nodeExists($path);
 }
 
 

@@ -325,6 +325,26 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 
 		$this->fixture->writeToFile($mockedFileHandle, 'Random contents');
 	}
+
+	/**
+	 * @test
+	 */
+	public function nodeExistsReturnsCorrectValuesForFiles() {
+		vfsStream::newFile('existingFile')->at(vfsStreamWrapper::getRoot());
+
+		$this->assertTrue($this->fixture->nodeExists('existingFile'));
+		$this->assertFalse($this->fixture->nodeExists('nonexistingFile'));
+	}
+
+	/**
+	 * @test
+	 */
+	public function nodeExistsReturnsCorrectValuesForFolders() {
+		vfsStream::newDirectory('existingFolder')->at(vfsStreamWrapper::getRoot());
+
+		$this->assertTrue($this->fixture->nodeExists('existingFolder'));
+		$this->assertFalse($this->fixture->nodeExists('nonexistingFolder'));
+	}
 }
 
 ?>
