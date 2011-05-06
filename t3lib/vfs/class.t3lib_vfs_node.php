@@ -33,6 +33,7 @@ abstract class t3lib_vfs_Node {
 
 	public function __construct(array $properties) {
 		$this->properties = $properties;
+		$this->name = $this->properties['name'];
 	}
 
 	public function setParent(t3lib_vfs_Node $parent) {

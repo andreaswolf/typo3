@@ -46,7 +46,8 @@ class t3lib_vfs_nodeTest extends tx_phpunit_testcase {
 		$this->fixtureConstructorData = array(
 		array(
 			'propA' => uniqid(),
-			'propB' => uniqid()
+			'propB' => uniqid(),
+			'name' => uniqid()
 		)
 	);
 		$this->fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', $this->fixtureConstructorData);
@@ -67,6 +68,24 @@ class t3lib_vfs_nodeTest extends tx_phpunit_testcase {
 	public function nodeIsNeitherMountpointNorRootNode() {
 		$this->assertFalse($this->fixture->isMountpoint());
 		$this->assertFalse($this->fixture->isRootNode());
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::getName
+	 */
+	public function nodeNameIsSetFromConstructorArguments() {
+		$this->assertEquals($this->fixtureConstructorData[0]['name'], $this->fixture->getName());
+	}
+
+	/**
+	 * @test
+	 */
+	public function parentMayBeSetAndRetrieved() {
+		$mockedParent = $this->getMockForAbstractClass('t3lib_vfs_Node', array(), '', FALSE);
+
+		$this->fixture->setParent($mockedParent);
+		$this->assertSame($mockedParent, $this->fixture->getParent());
 	}
 
 	/**
