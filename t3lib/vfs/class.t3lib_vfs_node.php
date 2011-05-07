@@ -31,9 +31,19 @@ abstract class t3lib_vfs_Node {
 	 */
 	protected $changedProperties = array();
 
+	/**
+	 * The uid of this node. Is -1 if this node has never been persisted to the database (i.e. it is freshly created)
+	 *
+	 * @var int
+	 */
+	protected $uid = -1;
+
 	public function __construct(array $properties) {
 		$this->properties = $properties;
 		$this->name = $this->properties['name'];
+		if (isset($this->properties['uid'])) {
+			$this->uid = $this->properties['uid'];
+		}
 	}
 
 	public function setParent(t3lib_vfs_Node $parent) {
@@ -117,6 +127,39 @@ abstract class t3lib_vfs_Node {
 	}
 
 	/**
+	 * Returns the uid of this node; a value of -1 means it is new
+	 *
+	 * @return int
+	 */
+	public function getUid() {
+		return $this->uid;
+	}
+
+	/**
+	 * Sets the uid of this record. This is only possible as long as the record has no uid, and should only be used
+	 * by the database layer to inject the uid after creating a database record for it.
+	 *
+	 * @param int $uid
+	 * @return t3lib_vfs_Node
+	 */
+	public function setUid($uid) {
+		if (!$this->isNew()) {
+			throw new LogicException("Can't change uid for existing records.", 1304785700);
+		}
+		$this->uid = $uid;
+		return $this;
+	}
+
+	/**
+	 * Returns TRUE if this record has never been persisted to the database
+	 *
+	 * @return bool
+	 */
+	public function isNew() {
+		return $this->uid == -1;
+	}
+
+	/**
 	 * Sets the mountpoint this folder resides in. This might also be this folder itself (in case it is a mountpoint).
 	 *
 	 * @param t3lib_vfs_Mount $mountpoint
@@ -131,7 +174,7 @@ abstract class t3lib_vfs_Node {
 	 * Returns the mountpoint this folder resides in. The mountpoint is the root of a subtree inside the virtual file system.
 	 * Usually, mountpoints are used to mount a different storage at a certain location.
 	 *
-	 * @return t3lib_vfs_Folder
+	 * @return t3lib_vfs_Mount
 	 */
 	public function getMountpoint() {
 		return $this->mountpoint;

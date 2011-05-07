@@ -34,7 +34,7 @@ require_once 'tests/t3lib/vfs/t3lib_vfs_nodeTestHelper.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_nodeTest extends tx_phpunit_testcase {
+class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
 
 	/**
 	 * @var t3lib_vfs_Node
@@ -244,6 +244,70 @@ class t3lib_vfs_nodeTest extends tx_phpunit_testcase {
 
 		$path = $mockedNodes[count($mockedNodes)-1]->getPath(FALSE);
 		$this->assertEquals(implode('/', array_slice($pathParts, 0, -1)) . '/', $path);
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::getUid
+	 */
+	public function getUidReturnsMinusOneForNewRecords() {
+		/** @var $fixture t3lib_vfs_Node */
+		$fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array()));
+
+		$this->assertEquals(-1, $fixture->getUid());
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::getUid
+	 */
+	public function getUidReturnsCorrectValueForExistingRecord() {
+		$uid = uniqid();
+		/** @var $fixture t3lib_vfs_Node */
+		$fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array('uid' => $uid)));
+
+		$this->assertEquals($uid, $fixture->getUid());
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::setUid
+	 */
+	public function setUidSetsUidForNewRecords() {
+		$uid = uniqid();
+		/** @var $fixture t3lib_vfs_Node */
+		$fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array()));
+
+		$fixture->setUid($uid);
+		$this->assertEquals($uid, $fixture->getUid());
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::setUid
+	 */
+	public function setUidThrowsExceptionForExistingRecords() {
+		$this->setExpectedException('LogicException', '', 1304785700);
+
+		$uid = uniqid();
+		/** @var $fixture t3lib_vfs_Node */
+		$fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array('uid' => $uid)));
+
+		$fixture->setUid(1);
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::isNew
+	 */
+	public function isNewReturnsExpectedValuesForNewAndExistingRecords() {
+		/** @var $newNodeFixture t3lib_vfs_Node */
+		$newNodeFixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array()));
+		/** @var $existingNodeFixture t3lib_vfs_Node */
+		$existingNodeFixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array('uid' => 1)));
+
+		$this->assertTrue($newNodeFixture->isNew(), 'New Node was not advertised as new.');
+		$this->assertFalse($existingNodeFixture->isNew(), 'Existing Node was advertised as new.');
 	}
 }
 
