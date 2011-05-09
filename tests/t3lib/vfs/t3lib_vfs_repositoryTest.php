@@ -47,11 +47,13 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 	/**
 	 * @test
 	 */
-	public function updateNodeUsesCorrectTablesForObjects() {
+	public function persistNodeUsesCorrectTablesForObjects() {
 		$changedProperties = array('test' => 'test2');
 		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
 		$fileMock->expects($this->any())->method('getChangedProperties')->will($this->returnValue($changedProperties));
 		$folderMock = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$folderMock->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
 		$folderMock->expects($this->any())->method('getChangedProperties')->will($this->returnValue($changedProperties));
 
 		$dbMock = $this->getMock('t3lib_DB', array('exec_UPDATEquery'), array(), '', FALSE);
@@ -59,46 +61,49 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 		$dbMock->expects($this->at(1))->method('exec_UPDATEquery')->with('sys_folder');
 		$GLOBALS['TYPO3_DB'] = $dbMock;
 
-		$this->fixture->updateNodeInDatabase($fileMock);
-		$this->fixture->updateNodeInDatabase($folderMock);
+		$this->fixture->persistNodeToDatabase($fileMock);
+		$this->fixture->persistNodeToDatabase($folderMock);
 	}
 
 	/**
 	 * @test
 	 */
-	public function updateNodeUsesCorrectRecordIdentity() {
+	public function persistNodeUsesCorrectRecordIdentity() {
 		$uid = rand(1, 100);
 		$changedProperties = array('test' => 'test2');
 		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
 		$fileMock->expects($this->any())->method('getValue')->with($this->equalTo('uid'))->will($this->returnValue($uid));
+		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
 		$fileMock->expects($this->any())->method('getChangedProperties')->will($this->returnValue($changedProperties));
 
 		$dbMock = $this->getMock('t3lib_DB', array(), array(), '', FALSE);
 		$dbMock->expects($this->once())->method('exec_UPDATEquery')->with('sys_file', $this->stringContains((string)$uid));
 		$GLOBALS['TYPO3_DB'] = $dbMock;
 
-		$this->fixture->updateNodeInDatabase($fileMock);
+		$this->fixture->persistNodeToDatabase($fileMock);
 	}
 
 	/**
 	 * @test
 	 */
-	public function updateNodeUpdatesFields() {
+	public function persistNodeUpdatesFields() {
 		$changedProperties = array('test' => 'test2');
 		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
 		$fileMock->expects($this->any())->method('getChangedProperties')->will($this->returnValue($changedProperties));
+		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
 
 		$dbMock = $this->getMock('t3lib_DB', array(), array(), '', FALSE);
-		$dbMock->expects($this->once())->method('exec_UPDATEquery')->with($this->anything(), $this->anything(), $changedProperties);
+		$dbMock->expects($this->once())->method('exec_UPDATEquery')->with($this->anything(), $this->anything(),
+		  $this->logicalAnd($this->contains($changedProperties['test']), $this->arrayHasKey('test')));
 		$GLOBALS['TYPO3_DB'] = $dbMock;
 
-		$this->fixture->updateNodeInDatabase($fileMock);
+		$this->fixture->persistNodeToDatabase($fileMock);
 	}
 
 	/**
 	 * @test
 	 */
-	public function updateNodeRemovesImmutablePropertiesFromUpdateFields() {
+	public function persistNodeRemovesImmutablePropertiesFromUpdateFields() {
 		$changedProperties = array(
 			'test' => uniqid(),
 			'uid' => uniqid(),
@@ -108,18 +113,79 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 
 		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
 		$fileMock->expects($this->any())->method('getChangedProperties')->will($this->returnValue($changedProperties));
+		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
 
 		$dbMock = $this->getMock('t3lib_DB', array('exec_UPDATEquery'), array(), '', FALSE);
-		$dbMock->expects($this->at(0))->method('exec_UPDATEquery')->will($this->returnCallback(array($this, 'updateNodeRemovesImmutablePropertiesFromUpdateFields_callback')));
+		$dbMock->expects($this->at(0))->method('exec_UPDATEquery')->will($this->returnCallback(array($this, 'persistNodeRemovesImmutablePropertiesFromUpdateFields_callback')));
 		$GLOBALS['TYPO3_DB'] = $dbMock;
 
-		$this->fixture->updateNodeInDatabase($fileMock);
+		$this->fixture->persistNodeToDatabase($fileMock);
 	}
 
-	public function updateNodeRemovesImmutablePropertiesFromUpdateFields_callback($table, $where, $updateFields) {
+	public function persistNodeRemovesImmutablePropertiesFromUpdateFields_callback($table, $where, $updateFields) {
 		$this->assertArrayNotHasKey('uid', $updateFields);
 		$this->assertArrayNotHasKey('crdate', $updateFields);
 		$this->assertArrayNotHasKey('cruser_id', $updateFields);
+	}
+
+	/**
+	 * @test
+	 */
+	public function persistNodeCreatesNewRecordForNewNodes() {
+		$properties = array(
+			'test' => uniqid()
+		);
+		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		$fileMock->expects($this->any())->method('getProperties')->will($this->returnValue($properties));
+		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+
+		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery'), array(), '', FALSE);
+		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains($properties['test']));
+		$GLOBALS['TYPO3_DB'] = $dbMock;
+
+		$this->fixture->persistNodeToDatabase($fileMock);
+	}
+
+	/**
+	 * @test
+	 * @depends persistNodeCreatesNewRecordForNewNodes
+	 */
+	public function persistNodeSetsUidOfNewRecordAfterCreatingDatabaseRecord() {
+		$properties = array(
+			'test' => uniqid()
+		);
+		$uid = uniqid();
+		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
+		$fileMock->expects($this->any())->method('getProperties')->will($this->returnValue($properties));
+		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$fileMock->expects($this->once())->method('setUid')->with($this->equalTo($uid));
+
+		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery'), array(), '', FALSE);
+		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains($properties['test']))->will($this->returnValue($uid));
+		$GLOBALS['TYPO3_DB'] = $dbMock;
+
+		$this->fixture->persistNodeToDatabase($fileMock);
+	}
+
+	/**
+	 * @test
+	 */
+	public function persistNodeUpdatesTimestampForNewAndExistingRecords() {
+		$mockedExistingNode = $this->getMock('t3lib_vfs_File', array('getChangedProperties', 'isNew'));
+		$mockedNewNode = $this->getMock('t3lib_vfs_File', array('getProperties', 'isNew'));
+
+		$mockedExistingNode->expects($this->any())->method('getChangedProperties')->will($this->returnValue(array('foo' => 'bar', 'tstamp' => 10)));
+		$mockedExistingNode->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$mockedNewNode->expects($this->any())->method('getProperties')->will($this->returnValue(array('foo' => 'bar')));
+		$mockedNewNode->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
+
+		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery', 'exec_UPDATEquery'), array(), '', FALSE);
+		$dbMock->expects($this->any())->method('exec_INSERTquery')->with($this->anything(), $this->arrayHasKey('tstamp'))->will($this->returnValue(1));
+		$dbMock->expects($this->once())->method('exec_UPDATEquery')->with($this->anything(), $this->anything(), $this->arrayHasKey('tstamp'));
+		$GLOBALS['TYPO3_DB'] = $dbMock;
+
+		$this->fixture->persistNodeToDatabase($mockedExistingNode);
+		$this->fixture->persistNodeToDatabase($mockedNewNode);
 	}
 
 	/**

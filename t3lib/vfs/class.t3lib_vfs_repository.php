@@ -98,26 +98,74 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 		return array($node, array());
 	}
 
-	public function updateNodeInDatabase(t3lib_vfs_Node $node) {
+	/**
+	 * Writes the contents of a node to the database. Existing nodes are updated, for new nodes a new database row
+	 * is created.
+	 *
+	 * @param t3lib_vfs_Node $node
+	 * @return void
+	 */
+	public function persistNodeToDatabase(t3lib_vfs_Node $node) {
+		$table = '';
+		if (is_a($node, 't3lib_vfs_Folder')) {
+			$table = 'sys_folder';
+		} elseif (is_a($node, 't3lib_vfs_File')) {
+			$table = 'sys_file';
+		}
+
+		if (!$node->isNew()) {
+			$uid = (int)$node->getValue('uid');
+
+			$this->updateRowInDatabase($table, $uid, $node->getChangedProperties());
+		} else {
+			$uid = $this->insertRowToDatabase($table, $node->getProperties());
+
+			$node->setUid($uid);
+		}
+	}
+
+	/**
+	 * Inserts a row into the database
+	 *
+	 * @param string $table
+	 * @param array $properties
+	 * @return
+	 */
+	protected function insertRowToDatabase($table, array $properties) {
+		$immutableProperties = array(
+			'cruser_id',
+			'crdate'
+		);
+
+		foreach ($immutableProperties as $property) {
+			unset($properties[$property]);
+		}
+
+		$properties['tstamp'] = time();
+
+		return $GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $properties);
+	}
+
+	/**
+	 * @param string $table
+	 * @param int $uid
+	 * @param array $properties
+	 * @return
+	 */
+	protected function updateRowInDatabase($table, $uid, array $properties) {
 		$immutableProperties = array(
 			'crdate',
 			'cruser_id',
 			'uid'
 		);
 
-		if (is_a($node, 't3lib_vfs_Folder')) {
-			$table = 'sys_folder';
-		} elseif (is_a($node, 't3lib_vfs_File')) {
-			$table = 'sys_file';
-		}
-		$uid = (int)$node->getValue('uid');
-
-		$changedProperties = $node->getChangedProperties();
 		foreach ($immutableProperties as $property) {
-			unset($changedProperties[$property]);
+			unset($properties[$property]);
 		}
 
-		$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, "uid = $uid", $changedProperties);
+		$properties['tstamp'] = time();
+
+		return $GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, "uid = $uid", $properties);
 	}
 }
 
