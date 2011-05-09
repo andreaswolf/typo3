@@ -49,6 +49,13 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 	 */
 	protected $baseUrl;
 
+	/**
+	 * A list of all supported hash algorithms, written all lower case.
+	 *
+	 * @var array
+	 */
+	protected $supportedHashAlgorithms = array('sha1');
+
 	protected function verifyConfiguration() {
 		$this->absoluteBasePath = $this->configuration['basePath'];
 		$this->absoluteBasePath = rtrim($this->absoluteBasePath, '/') . '/';
@@ -92,6 +99,28 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 		// TODO write unit test
 		$fileStat = stat($this->getAbsolutePath($file));
 		return $fileStat;
+	}
+
+	/**
+	 * Creates a (cryptographic) hash for a file.
+	 *
+	 * @param string $hashAlgorithm The hash algorithm to use
+	 * @param t3lib_vfs_File $file
+	 * @return string
+	 */
+	public function hash($hashAlgorithm, t3lib_vfs_File $file) {
+		if (!in_array($hashAlgorithm, $this->getSupportedHashAlgorithms())) {
+			throw new InvalidArgumentException("Hash algorithm $hashAlgorithm is not supported.", 1304964032);
+		}
+
+		switch ($hashAlgorithm) {
+			case 'sha1':
+				$hash = sha1_file($this->getAbsolutePath($file));
+
+				break;
+		}
+
+		return $hash;
 	}
 
 	public function getFileHandle(t3lib_vfs_File $file, $mode = 'r') {

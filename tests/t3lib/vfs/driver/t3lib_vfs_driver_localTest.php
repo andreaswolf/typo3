@@ -345,6 +345,29 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 		$this->assertTrue($this->fixture->nodeExists('existingFolder'));
 		$this->assertFalse($this->fixture->nodeExists('nonexistingFolder'));
 	}
+
+	/**
+	 * @test
+	 */
+	public function hashThrowsExceptionIfAlgorithmIsNotSupported() {
+		$this->setExpectedException('InvalidArgumentException', '', 1304964032);
+		$mockedFile = $this->getMock('t3lib_vfs_File');
+
+		$this->fixture->hash(uniqid('hash-algorithm-'), $mockedFile);
+	}
+
+	/**
+	 * @test
+	 */
+	public function hashGivesCorrectSha1HashForFile() {
+		$mockedContents = uniqid();
+		vfsStream::newFile('testFile')->at(vfsStreamWrapper::getRoot())->withContent($mockedContents);
+
+		$mockedFile = $this->getMock('t3lib_vfs_File');
+		$mockedFile->expects($this->any())->method('getPathInMountpoint')->will($this->returnValue('testFile'));
+
+		$this->assertEquals(sha1($mockedContents), $this->fixture->hash('sha1', $mockedFile));
+	}
 }
 
 ?>

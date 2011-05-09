@@ -39,6 +39,15 @@ abstract class t3lib_vfs_driver_Abstract {
 	protected $configuration = array();
 
 	/**
+	 * A list of all supported hash algorithms, written all lower case and without any dashes etc. (e.g. sha1 instead of SHA-1)
+	 *
+	 * Be sure to set this in inherited classes!
+	 *
+	 * @var array
+	 */
+	protected $supportedHashAlgorithms = array();
+
+	/**
 	 * The capabilities of this driver. See CAPABILITY_* constants for possible values
 	 *
 	 * @var integer
@@ -156,6 +165,25 @@ abstract class t3lib_vfs_driver_Abstract {
 	 * @see http://de3.php.net/manual/de/function.stat.php
 	 */
 	abstract public function stat(t3lib_vfs_File $file);
+
+	/**
+	 * Returns a list of all hashing algorithms this driver supports.
+	 *
+	 * @return array
+	 */
+	public function getSupportedHashAlgorithms() {
+		return $this->supportedHashAlgorithms;
+	}
+
+	/**
+	 * Creates a (cryptographic) hash for a file.
+	 *
+	 * @abstract
+	 * @param string $hashAlgorithm The hash algorithm to use
+	 * @param t3lib_vfs_File $file
+	 * @return string
+	 */
+	abstract public function hash($hashAlgorithm, t3lib_vfs_File $file);
 
 	/**
 	 * Returns the URL for publicly accessing a file.
