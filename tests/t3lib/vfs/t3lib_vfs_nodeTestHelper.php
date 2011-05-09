@@ -34,7 +34,7 @@
  * @package TYPO3
  * @subpackage t3lib
  */
-class t3lib_vfs_NodeTestHelper extends Tx_Phpunit_TestCase {
+class t3lib_vfs_NodeTestHelper {
 	/**
 	 * Prepares a hierarchy of mocked nodes for testing path generation.
 	 * Each node knows about its name, its mountpoint and its direct parent.
