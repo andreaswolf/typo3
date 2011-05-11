@@ -98,7 +98,15 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 		// TODO define which data should be returned
 		// TODO write unit test
 		$fileStat = stat($this->getAbsolutePath($file));
-		return $fileStat;
+
+		$stat = array(
+			'size' => $fileStat['size'],
+			'atime' => $fileStat['atime'],
+			'mtime' => $fileStat['mtime'],
+			'ctime' => $fileStat['ctime'],
+			'nlink' => $fileStat['nlink']
+		);
+		return $stat;
 	}
 
 	/**

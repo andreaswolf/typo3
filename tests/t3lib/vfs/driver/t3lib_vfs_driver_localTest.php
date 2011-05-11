@@ -349,6 +349,26 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 	/**
 	 * @test
 	 */
+	public function statReturnsCorrectInformationForModificationTimeAndSize() {
+		// TODO: vfsStream currently does not support creation time.
+		$mockedContents = uniqid();
+		$lastModified = rand(1, 10000);
+		/** @var $streamFile vfsStreamFile */
+		$streamFile = vfsStream::newFile('testFile')->at(vfsStreamWrapper::getRoot());
+		$streamFile->withContent($mockedContents)->lastModified($lastModified);
+
+		$mockedFile = $this->getMock('t3lib_vfs_File');
+		$mockedFile->expects($this->any())->method('getPathInMountpoint')->will($this->returnValue('testFile'));
+
+		$stat = $this->fixture->stat($mockedFile);
+
+		$this->assertEquals($stat['size'], $streamFile->size());
+		$this->assertEquals($stat['mtime'], $lastModified);
+	}
+
+	/**
+	 * @test
+	 */
 	public function hashThrowsExceptionIfAlgorithmIsNotSupported() {
 		$this->setExpectedException('InvalidArgumentException', '', 1304964032);
 		$mockedFile = $this->getMock('t3lib_vfs_File');
