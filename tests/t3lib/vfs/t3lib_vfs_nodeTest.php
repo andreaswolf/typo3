@@ -92,6 +92,20 @@ class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
 	/**
 	 * @test
 	 */
+	public function settingParentChangesPidAttribute() {
+		$parentUid = uniqid();
+		$mockedParent = $this->getMock('t3lib_vfs_Node', array(), array('getUid'), '', FALSE);
+		$mockedParent->expects($this->once())->method('getUid')->will($this->returnValue($parentUid));
+
+		$fixture = $this->getMock('t3lib_vfs_Node', array('setValue'), array(), '', FALSE);
+		$fixture->expects($this->once())->method('setValue')->with('pid', $parentUid);
+
+		$fixture->setParent($mockedParent);
+	}
+
+	/**
+	 * @test
+	 */
 	public function setValueChangesPropertyValues() {
 		$newValue = uniqid();
 
