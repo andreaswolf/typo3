@@ -224,7 +224,7 @@ class t3lib_vfs_NodeTest extends Tx_Phpunit_TestCase {
 
 	/**
 	 * @test
-	 * @covers t3lib_vfs_Node::hasProperty
+	 * @covers t3lib_vfs_Node::__construct
 	 */
 	public function availablePropertiesAreSetOnObjectCreation() {
 		$mockedClassName = uniqid('Mock_t3lib_vfs_Node');
@@ -309,6 +309,9 @@ class t3lib_vfs_NodeTest extends Tx_Phpunit_TestCase {
 	/**
 	 * @test
 	 * @covers t3lib_vfs_Node::getUid
+	 * @covers t3lib_vfs_Node::__construct
+	 *
+	 * NOTE: This also tests if the uid is correctly extracted from the properties.
 	 */
 	public function getUidReturnsCorrectValueForExistingRecord() {
 		$uid = uniqid();
@@ -343,6 +346,19 @@ class t3lib_vfs_NodeTest extends Tx_Phpunit_TestCase {
 		$fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array('uid' => $uid)));
 
 		$fixture->setUid(1);
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::setUid
+	 */
+	public function setUidAlsoSetsUidProperty() {
+		$uid = uniqid();
+
+		/** @var $fixture t3lib_vfs_Node */
+		$fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array()));
+		$fixture->setUid($uid);
+		$this->assertEquals($uid, $fixture->getValue('uid'));
 	}
 
 	/**

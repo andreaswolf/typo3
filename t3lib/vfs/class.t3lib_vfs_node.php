@@ -172,6 +172,7 @@ abstract class t3lib_vfs_Node {
 			throw new LogicException("Can't change uid for existing records.", 1304785700);
 		}
 		$this->uid = $uid;
+		$this->properties['uid'] = $uid;
 		return $this;
 	}
 
