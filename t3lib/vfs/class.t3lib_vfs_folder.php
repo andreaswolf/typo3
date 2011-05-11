@@ -65,15 +65,21 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	protected $mountpoint;
 
 	/**
+	 * The names of all properties this record has.
+	 *
+	 * @var array
+	 */
+	protected $availableProperties = array('pid', 'crdate', 'cruser_id', 'tstamp', 'name', 'driver', 'config');
+
+	/**
 	 * Constructor for a folder object.
 	 *
 	 * @param array $folder The folder row from the database
 	 */
 	public function __construct(array $folder) {
 		// TODO: check who creates folder objects (= where the config could come from)
-		$this->properties = $folder;
+		parent::__construct($folder);
 		$this->uid = $folder['uid'];
-		$this->name = $folder['name'];
 	}
 
 	/**

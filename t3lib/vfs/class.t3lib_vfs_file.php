@@ -85,8 +85,16 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	 */
 	protected $fileHandle;
 
+	/**
+	 * The names of all properties this record has.
+	 *
+	 * @var array
+	 */
+	protected $availableProperties = array('pid', 'crdate', 'cruser_id', 'tstamp', 'name', 'sha1', 'mimetype', 'size');
+
 
 	public function __construct($name) {
+		parent::__construct(array());
 		$this->name = $name;
 	}
 

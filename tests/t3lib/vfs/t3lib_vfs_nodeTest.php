@@ -34,7 +34,7 @@ require_once 'tests/t3lib/vfs/t3lib_vfs_nodeTestHelper.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
+class t3lib_vfs_NodeTest extends Tx_Phpunit_TestCase {
 
 	/**
 	 * @var t3lib_vfs_Node
@@ -45,12 +45,13 @@ class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
 
 	public function setUp() {
 		$this->fixtureConstructorData = array(
-		array(
-			'propA' => uniqid(),
-			'propB' => uniqid(),
-			'name' => uniqid()
-		)
-	);
+			array(
+				'propA' => uniqid(),
+				'propB' => uniqid(),
+				'name' => uniqid(),
+				'pid' => uniqid()
+			)
+		);
 		$this->fixture = $this->getMockForAbstractClass('t3lib_vfs_Node', $this->fixtureConstructorData);
 	}
 
@@ -83,7 +84,7 @@ class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
 	 * @test
 	 */
 	public function parentMayBeSetAndRetrieved() {
-		$mockedParent = $this->getMockForAbstractClass('t3lib_vfs_Node', array(), '', FALSE);
+		$mockedParent = $this->getMockForAbstractClass('t3lib_vfs_Node', array(array()));
 
 		$this->fixture->setParent($mockedParent);
 		$this->assertSame($mockedParent, $this->fixture->getParent());
@@ -94,7 +95,7 @@ class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
 	 */
 	public function settingParentChangesPidAttribute() {
 		$parentUid = uniqid();
-		$mockedParent = $this->getMock('t3lib_vfs_Node', array(), array('getUid'), '', FALSE);
+		$mockedParent = $this->getMock('t3lib_vfs_Node', array('getUid'), array(), '', FALSE);
 		$mockedParent->expects($this->once())->method('getUid')->will($this->returnValue($parentUid));
 
 		$fixture = $this->getMock('t3lib_vfs_Node', array('setValue'), array(), '', FALSE);
@@ -201,6 +202,40 @@ class t3lib_vfs_NodeTest extends tx_phpunit_testcase {
 	 */
 	public function getPropertiesReturnsAllProperties() {
 		$this->assertEquals($this->fixtureConstructorData[0], $this->fixture->getProperties());
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::hasProperty
+	 */
+	public function hasPropertyReturnsFalseIfPropertyIsNotRegistered() {
+		$this->fixture->hasProperty(uniqid());
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::hasProperty
+	 */
+	public function hasPropertyRecognizesRegisteredProperties() {
+		foreach ($this->fixture->getProperties() as $key => $value) {
+			$this->assertTrue($this->fixture->hasProperty($key));
+		}
+	}
+
+	/**
+	 * @test
+	 * @covers t3lib_vfs_Node::hasProperty
+	 */
+	public function availablePropertiesAreSetOnObjectCreation() {
+		$mockedClassName = uniqid('Mock_t3lib_vfs_Node');
+		$classCode = 'class ' . $mockedClassName . ' extends t3lib_vfs_Node {
+			protected $availableProperties = array("propA", "propB");
+		}';
+		eval($classCode);
+
+		$fixture = new $mockedClassName(array('propC' => ''));
+		$this->assertTrue($fixture->hasProperty('propA'));
+		$this->assertTrue($fixture->hasProperty('propB'));
 	}
 
 	/**

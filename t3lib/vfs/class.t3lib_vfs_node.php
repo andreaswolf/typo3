@@ -17,6 +17,13 @@ abstract class t3lib_vfs_Node {
 	protected $mountpoint;
 
 	/**
+	 * The names of all properties this record has. Set this in inherited classes.
+	 *
+	 * @var array
+	 */
+	protected $availableProperties = array();
+
+	/**
 	 * All properties of this record.
 	 *
 	 * @var array
@@ -39,7 +46,14 @@ abstract class t3lib_vfs_Node {
 	protected $uid = -1;
 
 	public function __construct(array $properties) {
-		$this->properties = $properties;
+		if (count($this->availableProperties) > 0) {
+			$this->properties = t3lib_div::array_merge(
+				array_combine($this->availableProperties, array_pad(array(), count($this->availableProperties), '')),
+				$properties
+			);
+		} else {
+			$this->properties = $properties;
+		}
 		$this->name = $this->properties['name'];
 		if (isset($this->properties['uid'])) {
 			$this->uid = $this->properties['uid'];
@@ -58,6 +72,16 @@ abstract class t3lib_vfs_Node {
 
 	public function getName() {
 		return $this->name;
+	}
+
+	/**
+	 * Returns TRUE if this node has the given property
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	public function hasProperty($name) {
+		return array_key_exists($name, $this->properties);
 	}
 
 	/**
@@ -104,7 +128,7 @@ abstract class t3lib_vfs_Node {
 	 * @return t3lib_vfs_Node This object
 	 */
 	public function setValue($name, $value) {
-		if (!isset($this->properties[$name])) {
+		if (!$this->hasProperty($name)) {
 			throw new InvalidArgumentException("Property $name does not exist.", 1300127094);
 		}
 
