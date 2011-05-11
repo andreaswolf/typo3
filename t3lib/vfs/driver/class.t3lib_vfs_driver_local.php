@@ -263,6 +263,25 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 
 		return file_exists($path);
 	}
+
+	/**
+	 * Returns the type of a node (one of directory, file)
+	 *
+	 * @param string $path The path to return the type for
+	 * @return string
+	 */
+	public function getNodeType($path) {
+		$path = $this->makePathAbsolute($path);
+
+		if (file_exists($path)) {
+			if (is_file($path)) {
+				return 'file';
+			} elseif (is_dir($path)) {
+				return 'dir';
+			}
+		}
+	}
+
 }
 
 

@@ -213,6 +213,15 @@ abstract class t3lib_vfs_driver_Abstract {
 	 * @return bool
 	 */
 	abstract public function nodeExists($path);
+
+	/**
+	 * Returns the type of a node (one of directory, file)
+	 *
+	 * @abstract
+	 * @param string $path The path to return the type for
+	 * @return string
+	 */
+	abstract public function getNodeType($path);
 }
 
 

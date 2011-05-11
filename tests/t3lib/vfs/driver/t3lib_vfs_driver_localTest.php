@@ -388,6 +388,17 @@ class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
 
 		$this->assertEquals(sha1($mockedContents), $this->fixture->hash('sha1', $mockedFile));
 	}
+
+	/**
+	 * @test
+	 */
+	public function getNodeTypeReturnsCorrectTypes() {
+		vfsStream::newFile('testFile')->at(vfsStreamWrapper::getRoot());
+		vfsStream::newDirectory('testDir')->at(vfsStreamWrapper::getRoot());
+
+		$this->assertEquals('file', $this->fixture->getNodeType('testFile'));
+		$this->assertEquals('dir', $this->fixture->getNodeType('testDir/'));
+	}
 }
 
 ?>
