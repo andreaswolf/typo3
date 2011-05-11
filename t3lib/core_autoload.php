@@ -210,6 +210,7 @@ $t3libClasses = array(
 	't3lib_vfs_file' => PATH_t3lib . 'vfs/class.t3lib_vfs_file.php',
 	't3lib_vfs_filehandle' => PATH_t3lib . 'vfs/class.t3lib_vfs_filehandle.php',
 	't3lib_vfs_folder' => PATH_t3lib . 'vfs/class.t3lib_vfs_folder.php',
+	't3lib_vfs_indexer' => PATH_t3lib . 'vfs/class.t3lib_vfs_indexer.php',
 	't3lib_vfs_mount' => PATH_t3lib . 'vfs/class.t3lib_vfs_mount.php',
 	't3lib_vfs_node' => PATH_t3lib . 'vfs/class.t3lib_vfs_node.php',
 	't3lib_vfs_repository' => PATH_t3lib . 'vfs/class.t3lib_vfs_repository.php',
