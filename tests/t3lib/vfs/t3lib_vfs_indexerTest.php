@@ -109,6 +109,20 @@ class t3lib_vfs_IndexerTest extends Tx_Phpunit_TestCase {
 	/**
 	 * @test
 	 */
+	public function indexNodeAtPathFailsIfNoNodeInPathIsIndexed() {
+		$this->setExpectedException('RuntimeException', '', 1305193038);
+
+		$path = 'some/path/file.jpg';
+
+		$this->mockedRepository->expects($this->once())->method('getNearestIndexedNode')->with($this->equalTo($path))
+		  ->will($this->returnValue(array(NULL, array('some', 'path', 'file.jpg'))));
+
+		$this->fixture->indexNodeAtPath($path);
+	}
+
+	/**
+	 * @test
+	 */
 	public function indexFileSetsParentFolderOfNewFile() {
 		$mockedFolder = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
 		$mockedFile = $this->getMock('t3lib_vfs_File');

@@ -71,6 +71,12 @@ class t3lib_vfs_Indexer implements t3lib_Singleton {
 		/** @var $indexedNode t3lib_vfs_Node */
 		list($indexedNode, $missingParts) = $this->repository->getNearestIndexedNode($path);
 
+			// We can't index if no node in the path is available -> no mountpoint available
+		if (!$indexedNode) {
+			throw new RuntimeException('No indexed node has been found in path "' . $path . '". Can\'t continue indexing, as we have no mountpoint available then',
+			  1305193038);
+		}
+
 			// traverse all non-indexed path parts and index these items
 		$currentNode = NULL;
 		if (count($missingParts) > 0) {
