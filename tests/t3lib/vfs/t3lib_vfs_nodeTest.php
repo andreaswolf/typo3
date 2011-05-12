@@ -273,6 +273,21 @@ class t3lib_vfs_NodeTest extends Tx_Phpunit_TestCase {
 
 	/**
 	 * @test
+	 * @covers t3lib_vfs_Node::getPathInMountpoint
+	 */
+	public function getPathInMountpointReturnsEmptyPathForMountpoint() {
+		$mockedNodesData = array(
+			array(uniqid('mount-'), 'Mount'), // Mount
+		);
+
+		list($mockedNodes, $pathParts) = t3lib_vfs_NodeTestHelper::prepareNodeHierarchyForPathTests($mockedNodesData, $this);
+
+		$path = $mockedNodes[0]->getPathInMountpoint();
+		$this->assertEquals('', $path);
+	}
+
+	/**
+	 * @test
 	 * @covers t3lib_vfs_Node::getPath
 	 */
 	public function getPathReturnsCorrectPath() {

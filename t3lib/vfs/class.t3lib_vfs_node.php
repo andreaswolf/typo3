@@ -243,6 +243,10 @@ abstract class t3lib_vfs_Node {
 	public function getPathInMountpoint($includeCurrent = FALSE) {
 		$pathParts = array();
 
+		if ($this->isMountpoint()) {
+			return '';
+		}
+
 		if ($includeCurrent) {
 			$pathParts[] = $this->getName();
 		}
