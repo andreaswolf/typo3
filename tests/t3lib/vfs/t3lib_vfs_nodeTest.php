@@ -107,6 +107,18 @@ class t3lib_vfs_NodeTest extends Tx_Phpunit_TestCase {
 	/**
 	 * @test
 	 */
+	public function setParentAlsoSetsMountpointIfParentIsMountpoint() {
+		$mockedParent = $this->getMock('t3lib_vfs_Mount', array(), array(), '', FALSE);
+
+		$fixture = $this->getMock('t3lib_vfs_Node', array('setMountpoint', 'setValue'), array(), '', FALSE);
+		$fixture->expects($this->once())->method('setMountpoint')->with($mockedParent);
+
+		$fixture->setParent($mockedParent);
+	}
+
+	/**
+	 * @test
+	 */
 	public function setValueChangesPropertyValues() {
 		$newValue = uniqid();
 

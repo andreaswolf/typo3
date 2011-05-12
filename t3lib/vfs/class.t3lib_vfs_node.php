@@ -63,6 +63,11 @@ abstract class t3lib_vfs_Node {
 	public function setParent(t3lib_vfs_Node $parent) {
 		$this->parent = $parent;
 		$this->setValue('pid', $parent->getUid());
+
+		if ($parent instanceof t3lib_vfs_Mount) {
+			$this->setMountpoint($parent);
+		}
+
 		return $this;
 	}
 
