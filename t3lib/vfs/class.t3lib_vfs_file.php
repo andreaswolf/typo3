@@ -93,9 +93,9 @@ class t3lib_vfs_File extends t3lib_vfs_Node {
 	protected $availableProperties = array('pid', 'crdate', 'cruser_id', 'tstamp', 'name', 'sha1', 'mimetype', 'size');
 
 
-	public function __construct($name) {
-		parent::__construct(array());
-		$this->name = $name;
+	public function __construct($properties) {
+			// TODO change $properties to be an array in all calls (esp. unit tests), remove this typecast afterwards
+		parent::__construct((array)$properties);
 	}
 
 	public function setStorageDriver(t3lib_vfs_driver_Abstract $driver) {
