@@ -160,7 +160,8 @@ class t3lib_vfs_FolderTest extends tx_phpunit_testcase {
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$subfolderName = uniqid();
-		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'], 'name' => $subfolderName)));
+		$mockedStatement->expects($this->once())->method('execute')
+		  ->with($this->equalTo(array(':pid' => $this->fixtureData['uid'], ':name' => $subfolderName)));
 
 		$this->fixture->getSubfolder($subfolderName);
 	}
@@ -204,7 +205,7 @@ class t3lib_vfs_FolderTest extends tx_phpunit_testcase {
 	 */
 	public function getSubfoldersQueriesDatabaseWithCorrectArguments() {
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
-		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
+		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array(':pid' => $this->fixtureData['uid'])));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$this->fixture->getSubfolders();
@@ -270,7 +271,8 @@ class t3lib_vfs_FolderTest extends tx_phpunit_testcase {
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$fileName = uniqid();
-		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'], 'name' => $fileName)));
+		$mockedStatement->expects($this->once())->method('execute')
+		   ->with($this->equalTo(array(':pid' => $this->fixtureData['uid'], ':name' => $fileName)));
 
 		$this->fixture->getFile($fileName);
 	}
@@ -332,7 +334,7 @@ class t3lib_vfs_FolderTest extends tx_phpunit_testcase {
 	 */
 	public function getFilesQueriesDatabaseWithCorrectArguments() {
 		$mockedStatement = $this->getMock('t3lib_db_PreparedStatement');
-		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array('pid' => $this->fixtureData['uid'])));
+		$mockedStatement->expects($this->once())->method('execute')->with($this->equalTo(array(':pid' => $this->fixtureData['uid'])));
 		t3lib_div::addInstance('t3lib_db_PreparedStatement', $mockedStatement);
 
 		$this->fixture->getFiles();

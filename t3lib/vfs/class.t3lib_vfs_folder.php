@@ -146,9 +146,9 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		static $statement;
 
 		if (!$statement) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_folder', 'pid = :pid AND name = :name');
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 'sys_folder', 'pid = :pid AND name = :name');
 		}
-		$statement->execute(array('pid' => $this->uid, 'name' => $name));
+		$statement->execute(array(':pid' => $this->uid, ':name' => $name));
 
 		if ($statement->rowCount() == 0) {
 			throw new RuntimeException("Folder $this->uid has no subfolder '$name'.", 1300481287);
@@ -174,9 +174,9 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		static $statement;
 
 		if (!$statement) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_folder', 'pid = :pid');
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 'sys_folder', 'pid = :pid');
 		}
-		$statement->execute(array('pid' => $this->uid));
+		$statement->execute(array(':pid' => $this->uid));
 
 		if ($statement->rowCount() == 0) {
 			return array();
@@ -207,9 +207,9 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		static $statement;
 
 		if (!$statement) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_file', 'pid = :pid AND name = :name');
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 'sys_file', 'pid = :pid AND name = :name');
 		}
-		$statement->execute(array('pid' => $this->uid, 'name' => $name));
+		$statement->execute(array(':pid' => $this->uid, ':name' => $name));
 
 		if ($statement->rowCount() == 0) {
 			throw new RuntimeException("Folder $this->uid contains no file '$name'.", 1300481287);
@@ -235,9 +235,9 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 		static $statement;
 
 		if (!$statement) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 't3lib_vfs_file', 'pid = :pid');
+			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 'sys_file', 'pid = :pid');
 		}
-		$statement->execute(array('pid' => $this->uid));
+		$statement->execute(array(':pid' => $this->uid));
 
 		if ($statement->rowCount() == 0) {
 			return array();
