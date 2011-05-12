@@ -87,8 +87,8 @@ class t3lib_vfs_Indexer implements t3lib_Singleton {
 			/** @var $currentNode t3lib_vfs_Folder */
 			$currentNode = $indexedNode;
 			foreach ($missingParts as $part) {
-				$path = $currentNode->getPathInMountpoint();
-				switch ($storage->getNodeType($path)) {
+				$path = $currentNode->getPathInMountpoint(TRUE);
+				switch ($storage->getNodeType($path . '/' . $part)) {
 					case 'file':
 						$currentNode = $this->indexFile($currentNode, $part);
 
