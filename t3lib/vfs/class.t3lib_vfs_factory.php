@@ -56,7 +56,7 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	 * @throws InvalidArgumentException
 	 */
 	public function getFolderObject($folderUid) {
-		if (!is_int($folderUid)) {
+		if (!is_numeric($folderUid)) {
 			throw new InvalidArgumentException('uid of folder has to be numeric.', 1299957013);
 		}
 
@@ -77,7 +77,7 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	 * Returns a folder object from given folder record data. The resulting object is cached, so it is also available
 	 * via getFolderObject().
 	 *
-	 * WARNING: Only call this method with a complete folder record, otherwise the object will miss information!
+	 * WARNING: Only call this method with a complete folder record, otherwise the object will be missing information!
 	 *
 	 * @param array $folderData The data to construct the object from
 	 * @return t3lib_vfs_Folder
@@ -85,7 +85,7 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 	 * @throws InvalidArgumentException
 	 */
 	public function getFolderObjectFromData(array $folderData) {
-		if (!is_int($folderData['uid'])) {
+		if (!is_numeric($folderData['uid'])) {
 			throw new InvalidArgumentException('uid of folder has to be numeric.', 1299957014);
 		}
 
