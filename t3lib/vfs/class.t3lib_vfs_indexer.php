@@ -162,7 +162,7 @@ class t3lib_vfs_Indexer implements t3lib_Singleton {
 
 		$fileInfo = array(
 			'crdate' => $fileStat['ctime'],
-			'timestamp' => $fileStat['mtime'],
+			'tstamp' => $fileStat['mtime'],
 			'size' => $fileStat['size'],
 			'sha1' => $storageDriver->hash('sha1', $file)
 		);
