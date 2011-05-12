@@ -114,21 +114,70 @@ class t3lib_vfs_factoryTest extends tx_phpunit_testcase {
 	/**
 	 * @test
 	 */
-	public function createFolderObjectReturnsMountObjectForMountpoint() {
-		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getFolderObject'));
-		$this->fixture->expects($this->once())->method('getFolderObject')->will($this->returnValue($this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE)));
+	public function createFolderObjectCreatesDriverForMountpoint() {
+		$mockedDriverClass = uniqid('mockedDriverClass_');
+		$mockedFolderData = array(
+			'uid' => 1,
+			'pid' => 0,
+			'driver' => $mockedDriverClass,
+			'config' => array(
+				'some' => 'driver',
+				'configuration' => 'values'
+			)
+		);
+		$mockedDriver = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract', array(), $mockedDriverClass);
 
-		$driverClass = 'mockedDriverClass';
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getDriverInstance'));
+		$this->fixture->expects($this->once())->method('getDriverInstance')
+		  ->with($this->equalTo($mockedFolderData['driver']), $this->equalTo($mockedFolderData['config']))
+		  ->will($this->returnValue($mockedDriver));
+
+		$this->fixture->createFolderObject($mockedFolderData);
+	}
+
+	/**
+	 * @test
+	 */
+	public function createFolderObjectAcceptsDriverConfigurationAsSerializedString() {
+		$mockedDriverClass = uniqid('mockedDriverClass_');
+		$driverConfig = array(
+			'some' => 'driver',
+			'configuration' => 'values'
+		);
+		$mockedFolderData = array(
+			'uid' => 1,
+			'pid' => 0,
+			'driver' => $mockedDriverClass,
+			'config' => serialize($driverConfig)
+		);
+		$mockedDriver = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract', array(), $mockedDriverClass);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getDriverInstance'));
+		$this->fixture->expects($this->once())->method('getDriverInstance')
+		  ->with($this->equalTo($mockedFolderData['driver']), $this->equalTo($driverConfig))
+		  ->will($this->returnValue($mockedDriver));
+
+		$this->fixture->createFolderObject($mockedFolderData);
+	}
+
+	/**
+	 * @test
+	 */
+	public function createFolderObjectReturnsMountObjectForMountpoint() {
+		$driverClass = uniqid('mockedDriverClass_');
 		$mockedFolderData = array(
 			'uid' => 1,
 			'pid' => 0,
 			'driver' => $driverClass
 		);
 
-		$driverMock = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract', array(), $driverClass);
-		t3lib_div::addInstance($driverClass, $driverMock);
+		$mockedDriver = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract', array(), $driverClass);
 		$mockedMountObject = $this->getMock('t3lib_vfs_Mount', NULL, array($mockedFolderData));
 		t3lib_div::addInstance('t3lib_vfs_Mount', $mockedMountObject);
+
+		$this->fixture = $this->getMock('t3lib_vfs_Factory', array('getFolderObject', 'getDriverInstance'));
+		$this->fixture->expects($this->once())->method('getFolderObject')->will($this->returnValue($this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE)));
+		$this->fixture->expects($this->once())->method('getDriverInstance')->will($this->returnValue($mockedDriver));
 
 		$this->assertSame($mockedMountObject, $this->fixture->createFolderObject($mockedFolderData));
 	}

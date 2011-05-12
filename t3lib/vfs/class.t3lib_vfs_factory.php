@@ -126,7 +126,15 @@ class t3lib_vfs_Factory implements t3lib_Singleton {
 		$parentFolder = $this->getFolderObject($pid);
 
 		if ($folderObject->isMountpoint()) {
-			$driverObject = $this->getDriverInstance($folderObject->getValue('driver'), $folderObject->getValue('driverConfiguration'));
+			$driverConfiguration = $folderObject->getValue('config');
+			if (is_string($driverConfiguration)) {
+				$driverConfiguration = unserialize($driverConfiguration);
+				if (!is_array($driverConfiguration)) {
+					// TODO throw exception
+				}
+			}
+
+			$driverObject = $this->getDriverInstance($folderObject->getValue('driver'), $driverConfiguration);
 			$folderObject->setStorageDriver($driverObject);
 		} else {
 			$mountpoint = $parentFolder->getMountpoint();
