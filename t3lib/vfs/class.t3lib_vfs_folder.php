@@ -37,34 +37,6 @@
 class t3lib_vfs_Folder extends t3lib_vfs_Node {
 
 	/**
-	 * The unique id of this folder
-	 *
-	 * @var integer
-	 */
-	protected $uid;
-
-	/**
-	 * The folder name
-	 *
-	 * @var string
-	 */
-	protected $name;
-
-	/**
-	 * The parent folder of this item
-	 *
-	 * @var t3lib_vfs_Folder
-	 */
-	protected $parent;
-
-	/**
-	 * The mount point this folder resides in. This is the basis of the subtree inside TYPO3s virtual file system
-	 *
-	 * @var t3lib_vfs_Mount
-	 */
-	protected $mountpoint;
-
-	/**
 	 * The names of all properties this record has.
 	 *
 	 * @var array
@@ -79,7 +51,6 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	public function __construct(array $folder) {
 		// TODO: check who creates folder objects (= where the config could come from)
 		parent::__construct($folder);
-		$this->uid = $folder['uid'];
 	}
 
 	/**
@@ -99,8 +70,7 @@ class t3lib_vfs_Folder extends t3lib_vfs_Node {
 	 */
 	public function setParent(t3lib_vfs_Folder $parent) {
 		// TODO check if id of parent is different from the pid given with the record -> behaviour in this case has to be defined
-		$this->parent = $parent;
-		return $this;
+		return parent::setParent($parent);
 	}
 
 	/**
