@@ -91,6 +91,9 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 				}
 			} catch (RuntimeException $e) {
 				array_unshift($pathParts, $pathPart);
+				if ($node instanceof t3lib_vfs_RootNode) {
+					$node = NULL;
+				}
 				return array($node, $pathParts);
 			}
 		}

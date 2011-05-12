@@ -294,6 +294,19 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 
 		list($folder, $notIndexedParts) = $this->fixture->getNearestIndexedNode('foo/bar/file.baz');
 	}
+
+	/**
+	 * @test
+	 */
+	public function getNearestIndexedNodeReturnsNoNodeIfNoPathPartIsIndexed() {
+		$mockedRootNode = $this->getMock('t3lib_vfs_RootNode');
+		t3lib_div::setSingletonInstance('t3lib_vfs_RootNode', $mockedRootNode);
+
+		$mockedRootNode->expects($this->once())->method('getSubfolder')->will($this->throwException(new RuntimeException()));
+
+		list($folder) = $this->fixture->getNearestIndexedNode('some/randome/path/');
+		$this->assertNull($folder);
+	}
 }
 
 ?>
