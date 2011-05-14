@@ -35,7 +35,7 @@ require_once 'vfsStream/vfsStream.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_driver_localTest extends tx_phpunit_testcase {
+class t3lib_vfs_driver_LocalTest extends Tx_Phpunit_TestCase {
 
 	/**
 	 * @var t3lib_vfs_driver_Local

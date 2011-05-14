@@ -285,8 +285,8 @@ class t3lib_vfs_driver_Local extends t3lib_vfs_driver_Abstract {
 }
 
 
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/vfs/driver/class.t3lib_vfs_driver_local.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/vfs/driver/class.t3lib_vfs_driver_local.php']);
 }
 
 ?>

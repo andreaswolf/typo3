@@ -98,4 +98,8 @@ class t3lib_vfs_FileHandle {
 	}
 }
 
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/vfs/class.t3lib_vfs_filehandle.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/vfs/class.t3lib_vfs_filehandle.php']);
+}
+
 ?>

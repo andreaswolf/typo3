@@ -224,9 +224,4 @@ abstract class t3lib_vfs_driver_Abstract {
 	abstract public function getNodeType($path);
 }
 
-
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_file.php']);
-}
-
 ?>

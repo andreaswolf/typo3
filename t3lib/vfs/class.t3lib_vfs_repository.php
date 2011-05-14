@@ -51,8 +51,8 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 	/**
 	 * Traverses the virtual file system to get a folder node
 	 *
-	 * @param  $path
-	 * @return void
+	 * @param string $path
+	 * @return t3lib_vfs_Folder
 	 */
 	public function getFolderNode($path) {
 		$path = trim($path, '/');
@@ -70,7 +70,9 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 
 	/**
 	 * Checks if all parts from a path are indexed and if not, returns the deepest node that is indexed and additionally
-	 * all missing parts
+	 * all missing parts.
+	 *
+	 * NOTE: If the last element in the path is a folder, the path has to end with a slash
 	 *
 	 * @param string $path
 	 * @return array The found node as first element, an array with all missing parts as second element
@@ -163,6 +165,8 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 	}
 
 	/**
+	 * Updates an existing row in database
+	 *
 	 * @param string $table
 	 * @param int $uid
 	 * @param array $properties
@@ -186,8 +190,8 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 }
 
 
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_folder.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/file/class.t3lib_vfs_folder.php']);
+if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/vfs/class.t3lib_vfs_repository.php'])) {
+	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/vfs/class.t3lib_vfs_repository.php']);
 }
 
 ?>
