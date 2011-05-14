@@ -33,7 +33,7 @@ require_once 'vfsStream/vfsStream.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
+class t3lib_vfs_repositoryTest extends Tx_Phpunit_TestCase {
 
 	/**
 	 * @var t3lib_vfs_Repository
@@ -138,6 +138,7 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 		$fileMock = $this->getMock('t3lib_vfs_File', array(), array(), '', FALSE);
 		$fileMock->expects($this->any())->method('getProperties')->will($this->returnValue($properties));
 		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$fileMock->expects($this->any())->method('getParent')->will($this->returnValue($this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE)));
 
 		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery'), array(), '', FALSE);
 		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains($properties['test']));
@@ -159,6 +160,8 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 		$fileMock->expects($this->any())->method('getProperties')->will($this->returnValue($properties));
 		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
 		$fileMock->expects($this->once())->method('setUid')->with($this->equalTo($uid));
+		$fileMock->expects($this->any())->method('getParent')
+		  ->will($this->returnValue($this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE)));
 
 		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery', 'sql_insert_id'), array(), '', FALSE);
 		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains($properties['test']));
@@ -173,12 +176,14 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 	 */
 	public function persistNodeUpdatesTimestampForNewAndExistingRecords() {
 		$mockedExistingNode = $this->getMock('t3lib_vfs_File', array('getChangedProperties', 'isNew'));
-		$mockedNewNode = $this->getMock('t3lib_vfs_File', array('getProperties', 'isNew'));
+		$mockedNewNode = $this->getMock('t3lib_vfs_File', array('getProperties', 'isNew', 'getParent'));
 
 		$mockedExistingNode->expects($this->any())->method('getChangedProperties')->will($this->returnValue(array('foo' => 'bar', 'tstamp' => 10)));
-		$mockedExistingNode->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$mockedExistingNode->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
 		$mockedNewNode->expects($this->any())->method('getProperties')->will($this->returnValue(array('foo' => 'bar')));
-		$mockedNewNode->expects($this->any())->method('isNew')->will($this->returnValue(FALSE));
+		$mockedNewNode->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$mockedNewNode->expects($this->any())->method('getParent')
+		  ->will($this->returnValue($this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE)));
 
 		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery', 'exec_UPDATEquery'), array(), '', FALSE);
 		$dbMock->expects($this->any())->method('exec_INSERTquery')->with($this->anything(), $this->arrayHasKey('tstamp'))->will($this->returnValue(1));
@@ -187,6 +192,33 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 
 		$this->fixture->persistNodeToDatabase($mockedExistingNode);
 		$this->fixture->persistNodeToDatabase($mockedNewNode);
+	}
+
+	/**
+	 * @test
+	 */
+	public function persistNodePersistsNewParentsBeforePersistingChildren() {
+		$folderProperties = array('this is' => 'a folder');
+		$fileProperties = array('this is' => 'a file');
+
+		$mockedFileNode = $this->getMock('t3lib_vfs_File', array());
+		$mockedParent = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+		$mockedGrandparent = $this->getMock('t3lib_vfs_Folder', array(), array(), '', FALSE);
+
+		$mockedFileNode->expects($this->atLeastOnce())->method('getProperties')->will($this->returnValue($fileProperties));
+		$mockedFileNode->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$mockedFileNode->expects($this->any())->method('getParent')->will($this->returnValue($mockedParent));
+		$mockedParent->expects($this->atLeastOnce())->method('getProperties')->will($this->returnValue($folderProperties));
+		$mockedParent->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
+		$mockedParent->expects($this->once())->method('getParent')
+		  ->will($this->returnValue($mockedGrandparent));
+
+		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery'), array(), '', FALSE);
+		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains('a folder'));
+		$dbMock->expects($this->at(1))->method('exec_INSERTquery')->with($this->anything(), $this->contains('a file'));
+		$GLOBALS['TYPO3_DB'] = $dbMock;
+
+		$this->fixture->persistNodeToDatabase($mockedFileNode);
 	}
 
 	/**
