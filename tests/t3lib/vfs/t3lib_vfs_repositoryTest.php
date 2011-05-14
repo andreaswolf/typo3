@@ -160,8 +160,9 @@ class t3lib_vfs_repositoryTest extends tx_phpunit_testcase {
 		$fileMock->expects($this->any())->method('isNew')->will($this->returnValue(TRUE));
 		$fileMock->expects($this->once())->method('setUid')->with($this->equalTo($uid));
 
-		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery'), array(), '', FALSE);
-		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains($properties['test']))->will($this->returnValue($uid));
+		$dbMock = $this->getMock('t3lib_DB', array('exec_INSERTquery', 'sql_insert_id'), array(), '', FALSE);
+		$dbMock->expects($this->at(0))->method('exec_INSERTquery')->with($this->anything(), $this->contains($properties['test']));
+		$dbMock->expects($this->once())->method('sql_insert_id')->will($this->returnValue($uid));
 		$GLOBALS['TYPO3_DB'] = $dbMock;
 
 		$this->fixture->persistNodeToDatabase($fileMock);
