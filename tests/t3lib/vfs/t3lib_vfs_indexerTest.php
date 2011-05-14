@@ -86,7 +86,7 @@ class t3lib_vfs_IndexerTest extends Tx_Phpunit_TestCase {
 		$mockedNewFolder = $this->getMock('t3lib_vfs_Folder', array(), array(), uniqid('folder_'), FALSE);
 		$mockedNewFile = $this->getMock('t3lib_vfs_File', array(), array(), uniqid('file_'), FALSE);
 		$mockedMount = $this->getMock('t3lib_vfs_Mount', array(), array(), uniqid('mount_'), FALSE);
-		$mockedStorage = $this->getMockForAbstractClass('t3lib_vfs_driver_Abstract', array(), uniqid('storage_'), FALSE);
+		$mockedStorage = $this->getMock('t3lib_vfs_driver_Local', array(), array(), uniqid('storage_'), FALSE);
 
 		$mockedIndexedFolder->expects($this->any())->method('getMountpoint')->will($this->returnValue($mockedMount));
 		$mockedMount->expects($this->any())->method('getStorageDriver')->will($this->returnValue($mockedStorage));

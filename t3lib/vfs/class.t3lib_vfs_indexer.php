@@ -121,7 +121,7 @@ class t3lib_vfs_Indexer implements t3lib_Singleton {
 		/** @var $fileObject t3lib_vfs_File */
 		// TODO use factory for this
 		// $this->factory->createFileObject($filename);
-		$fileObject = t3lib_div::makeInstance('t3lib_vfs_File', $name);
+		$fileObject = t3lib_div::makeInstance('t3lib_vfs_File', array('name' => $name));
 		$fileObject->setParent($parentFolder);
 
 		$fileInfo = $this->gatherFileInformation($fileObject);
@@ -156,7 +156,7 @@ class t3lib_vfs_Indexer implements t3lib_Singleton {
 	 */
 	protected function gatherFileInformation(t3lib_vfs_File $file) {
 		$mountpoint = $file->getParent()->getMountpoint();
-		$storageDriver =  $mountpoint->getStorageDriver();
+		$storageDriver = $mountpoint->getStorageDriver();
 
 		$fileStat = $storageDriver->stat($file);
 
