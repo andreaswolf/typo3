@@ -146,7 +146,12 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 
 		$properties['tstamp'] = time();
 
-		return $GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $properties);
+		/** @var $GLOBALS['TYPO3_DB'] t3lib_DB */
+		$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $properties);
+		if ($res === FALSE) {
+			throw new RuntimeException("Inserting node failed: " . $GLOBALS['TYPO3_DB']->sql_error(), 1305389166);
+		}
+		return $GLOBALS['TYPO3_DB']->sql_insert_id();
 	}
 
 	/**
