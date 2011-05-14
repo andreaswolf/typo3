@@ -33,7 +33,7 @@ require_once 'vfsStream/vfsStream.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_repositoryTest extends Tx_Phpunit_TestCase {
+class t3lib_vfs_RepositoryTest extends Tx_Phpunit_TestCase {
 
 	/**
 	 * @var t3lib_vfs_Repository

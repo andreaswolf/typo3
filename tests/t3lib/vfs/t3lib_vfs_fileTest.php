@@ -33,7 +33,7 @@ require_once 'vfsStream/vfsStream.php';
  *
  * @author Andreas Wolf <andreas.wolf@ikt-werk.de>
  */
-class t3lib_vfs_fileTest extends tx_phpunit_testcase {
+class t3lib_vfs_FileTest extends Tx_Phpunit_TestCase {
 
 	protected function prepareFixture() {
 		$fixture = new t3lib_vfs_File('testfile');
