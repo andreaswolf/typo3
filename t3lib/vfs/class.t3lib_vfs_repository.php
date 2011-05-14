@@ -121,9 +121,17 @@ class t3lib_vfs_Repository implements t3lib_Singleton {
 
 			$this->updateRowInDatabase($table, $uid, $node->getChangedProperties());
 		} else {
-			$uid = $this->insertRowToDatabase($table, $node->getProperties());
+			$nodeStack = array();
+			while ($node->isNew()) {
+				$nodeStack[] = $node;
+				$node = $node->getParent();
+			}
 
-			$node->setUid($uid);
+			foreach (array_reverse($nodeStack) as $node) {
+				$uid = $this->insertRowToDatabase($table, $node->getProperties());
+
+				$node->setUid($uid);
+			}
 		}
 	}
 
