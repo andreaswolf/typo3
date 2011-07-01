@@ -410,9 +410,6 @@
 	protected $pageCache;
 	protected $pageCacheTags = array();
 
-		// caches the timestamp until a cache entry for this page is valid
-	protected $getCacheTimeoutCache = NULL;
-
 	/**
 	 * Class constructor
 	 * Takes a number of GET/POST input variable as arguments and stores them internally.
@@ -463,9 +460,7 @@
 			}
 		}
 
-		if (TYPO3_UseCachingFramework) {
-			$this->initCaches();
-		}
+		$this->initCaches();
 	}
 
 	/**
@@ -569,28 +564,10 @@
 	 * @return	void
 	 */
 	protected function initCaches() {
-		if (TYPO3_UseCachingFramework) {
-			$GLOBALS['TT']->push('Initializing the Caching System','');
-
-			t3lib_cache::initializeCachingFramework();
-
-			try {
-				$this->pageCache = $GLOBALS['typo3CacheManager']->getCache(
-					'cache_pages'
-				);
-			} catch(t3lib_cache_exception_NoSuchCache $e) {
-				t3lib_cache::initPageCache();
-
-				$this->pageCache = $GLOBALS['typo3CacheManager']->getCache(
-					'cache_pages'
-				);
-			}
-
-			t3lib_cache::initPageSectionCache();
-			t3lib_cache::initContentHashCache();
-
-			$GLOBALS['TT']->pull();
-		}
+		$GLOBALS['TT']->push('Initializing the Caching System','');
+		t3lib_cache::initializeCachingFramework();
+		$this->pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages');
+		$GLOBALS['TT']->pull();
 	}
 
 	/**
@@ -1922,7 +1899,7 @@
 						}
 
 						$this->config = (array)unserialize($row['cache_data']);		// Fetches the lowlevel config stored with the cached data
-						$this->content = (TYPO3_UseCachingFramework ? $row['content'] : $row['HTML']);	// Getting the content
+						$this->content = $row['content'];	// Getting the content
 						$this->tempContent = $row['temp_content'];	// Flag for temp content
 						$this->cacheContentFlag = 1;	// Setting flag, so we know, that some cached content has been loaded
 						$this->cacheExpires = $row['expires'];
@@ -1948,30 +1925,9 @@
 	 * @return	array		Cached row, if any. Otherwise void.
 	 */
 	function getFromCache_queryRow() {
-		if (TYPO3_UseCachingFramework) {
-			$GLOBALS['TT']->push('Cache Query', '');
-			$row = $this->pageCache->get($this->newHash);
-			$GLOBALS['TT']->pull();
-		} else {
-			$GLOBALS['TT']->push('Cache Query','');
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-				'S.*',
-				'cache_pages S,pages P',
-				'S.hash='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->newHash, 'cache_pages').'
-					AND S.page_id=P.uid
-					AND S.expires > '.intval($GLOBALS['ACCESS_TIME']).'
-					AND P.deleted=0
-					AND P.hidden=0
-					AND P.starttime<='.intval($GLOBALS['ACCESS_TIME']).'
-					AND (P.endtime=0 OR P.endtime>'.intval($GLOBALS['ACCESS_TIME']).')'
-			);
-			$GLOBALS['TT']->pull();
-
-			if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{
-				$this->pageCachePostProcess($row,'get');
-			}
-			$GLOBALS['TYPO3_DB']->sql_free_result($res);
-		}
+		$GLOBALS['TT']->push('Cache Query', '');
+		$row = $this->pageCache->get($this->newHash);
+		$GLOBALS['TT']->pull();
 		return $row;
 	}
 
@@ -2268,7 +2224,7 @@
 			$GLOBALS['TCA'] = array();
 			include (TYPO3_tables_script ? PATH_typo3conf.TYPO3_tables_script : PATH_t3lib.'stddb/tables.php');
 				// Extension additions
-			if ($GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'])	{
+			if ($GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'] && file_exists(PATH_typo3conf . $GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'] . '_ext_tables.php')) {
 				include(PATH_typo3conf.$GLOBALS['TYPO3_LOADED_EXT']['_CACHEFILE'].'_ext_tables.php');
 			} else {
 				include(PATH_t3lib.'stddb/load_ext_tables.php');
@@ -2839,55 +2795,32 @@
 	 * @see realPageCacheContent(), tempPageCacheContent()
 	 */
 	function setPageCacheContent($content, $data, $expirationTstamp) {
+		$cacheData = array(
+			'identifier'	=> $this->newHash,
+			'page_id'		=> $this->id,
+			'content'			=> $content,
+			'temp_content'	=> $this->tempContent,
+			'cache_data'	=> serialize($data),
+			'expires'		=> $expirationTstamp,
+			'tstamp'		=> $GLOBALS['EXEC_TIME']
+		);
 
-		if (TYPO3_UseCachingFramework) {
-			$cacheData = array(
-				'identifier'	=> $this->newHash,
-				'page_id'		=> $this->id,
-				'content'			=> $content,
-				'temp_content'	=> $this->tempContent,
-				'cache_data'	=> serialize($data),
-				'expires'		=> $expirationTstamp,
-				'tstamp'		=> $GLOBALS['EXEC_TIME']
-			);
+		$this->cacheExpires = $expirationTstamp;
 
-			$this->cacheExpires = $expirationTstamp;
+		$this->pageCacheTags[] = 'pageId_' . $cacheData['page_id'];
 
-			$this->pageCacheTags[] = 'pageId_' . $cacheData['page_id'];
-
-			if ($this->page_cache_reg1) {
-				$reg1 = intval($this->page_cache_reg1);
-
-				$cacheData['reg1']     = $reg1;
-				$this->pageCacheTags[] = 'reg1_' . $reg1;
-			}
-
-			$this->pageCache->set(
-				$this->newHash,
-				$cacheData,
-				$this->pageCacheTags,
-				$expirationTstamp - $GLOBALS['EXEC_TIME']
-			);
-		} else {
-			$this->clearPageCacheContent();
-			$insertFields = array(
-				'hash' => $this->newHash,
-				'page_id' => $this->id,
-				'HTML' => $content,
-				'temp_content' => $this->tempContent,
-				'cache_data' => serialize($data),
-				'expires' => $expirationTstamp,
-				'tstamp' => $GLOBALS['EXEC_TIME']
-			);
-
-			$this->cacheExpires = $expirationTstamp;
-
-			if ($this->page_cache_reg1)	{
-				$insertFields['reg1'] = intval($this->page_cache_reg1);
-			}
-			$this->pageCachePostProcess($insertFields,'set');
-			$GLOBALS['TYPO3_DB']->exec_INSERTquery('cache_pages', $insertFields);
+		if ($this->page_cache_reg1) {
+			$reg1 = intval($this->page_cache_reg1);
+			$cacheData['reg1']     = $reg1;
+			$this->pageCacheTags[] = 'reg1_' . $reg1;
 		}
+
+		$this->pageCache->set(
+			$this->newHash,
+			$cacheData,
+			$this->pageCacheTags,
+			$expirationTstamp - $GLOBALS['EXEC_TIME']
+		);
 	}
 
 	/**
@@ -2896,11 +2829,7 @@
 	 * @return	void
 	 */
 	function clearPageCacheContent() {
-		if (TYPO3_UseCachingFramework) {
-			$this->pageCache->remove($this->newHash);
-		} else {
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'hash='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->newHash, 'cache_pages'));
-		}
+		$this->pageCache->remove($this->newHash);
 	}
 
  	/**
@@ -2909,21 +2838,10 @@
 	 * @param	array		Input "cache_pages" row, passed by reference!
 	 * @param	string		Type of operation, either "get" or "set"
 	 * @return	void
+	 * @deprecated since 4.6, will be removed in 4.8
 	 */
 	function pageCachePostProcess(&$row,$type)	{
-
-		if ($this->TYPO3_CONF_VARS['FE']['pageCacheToExternalFiles'])	{
-			$cacheFileName = PATH_site.'typo3temp/cache_pages/'.$row['hash']{0}.$row['hash']{1}.'/'.$row['hash'].'.html';
-			switch((string)$type)	{
-				case 'get':
-					$row['HTML'] = @is_file($cacheFileName) ? t3lib_div::getUrl($cacheFileName) : '<!-- CACHING ERROR, sorry -->';
-				break;
-				case 'set':
-					t3lib_div::writeFileToTypo3tempDir($cacheFileName, $row['HTML']);
-					$row['HTML'] = '';
-				break;
-			}
-		}
+		t3lib_div::logDeprecatedFunction();
 	}
 
 	/**
@@ -2933,13 +2851,9 @@
 	 * @return	void
 	 */
 	function clearPageCacheContent_pidList($pidList) {
-		if (TYPO3_UseCachingFramework) {
-			$pageIds = t3lib_div::trimExplode(',', $pidList);
-			foreach ($pageIds as $pageId) {
-				$this->pageCache->flushByTag('pageId_' . (int) $pageId);
-			}
-		} else {
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id IN ('.$GLOBALS['TYPO3_DB']->cleanIntList($pidList).')');
+		$pageIds = t3lib_div::trimExplode(',', $pidList);
+		foreach ($pageIds as $pageId) {
+			$this->pageCache->flushByTag('pageId_' . (int)$pageId);
 		}
 	}
 
@@ -4620,7 +4534,12 @@ if (version == "n3") {
 	 * @return	integer		The cache timeout for the current page.
 	 */
 	function get_cache_timeout() {
-		if ($this->getCacheTimeoutCache == NULL) {
+			/** @var $runtimeCache t3lib_cache_frontend_AbstractFrontend */
+		$runtimeCache = $GLOBALS['typo3CacheManager']->getCache('cache_runtime');
+		$cachedCacheLifetimeIdentifier = 'core-tslib_fe-get_cache_timeout';
+		$cachedCacheLifetime = $runtimeCache->get($cachedCacheLifetimeIdentifier);
+
+		if ($cachedCacheLifetime === FALSE) {
 			if ($this->page['cache_timeout']) {
 					// Cache period was set for the page:
 				$cacheTimeout = $this->page['cache_timeout'];
@@ -4645,10 +4564,11 @@ if (version == "n3") {
 				$calculatedCacheTimeout = $this->calculatePageCacheTimeout();
 				$cacheTimeout = ($calculatedCacheTimeout < $cacheTimeout) ? $calculatedCacheTimeout : $cacheTimeout;
 			}
-			$this->getCacheTimeoutCache = $cacheTimeout;
+			$runtimeCache->set($cachedCacheLifetimeIdentifier, $cacheTimeout);
+			$cachedCacheLifetime = $cacheTimeout;
 		}
 
-		return $this->getCacheTimeoutCache;
+		return $cachedCacheLifetime;
 	}
 
 	/**

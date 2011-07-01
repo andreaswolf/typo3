@@ -1499,6 +1499,7 @@ class t3lib_TCEforms_inline {
 			$parts = explode('|', $value, 2);
 			$value = $parts[0];
 		}
+		unset($value);
 		return $itemArray;
 	}
 
@@ -1687,8 +1688,7 @@ class t3lib_TCEforms_inline {
 		$trData->disableRTE = $GLOBALS['SOBE']->MOD_SETTINGS['disableRTE'];
 			// if a new record should be created
 		$trData->fetchRecord($table, $uid, ($cmd === 'new' ? 'new' : ''));
-		reset($trData->regTableItems_data);
-		$rec = current($trData->regTableItems_data);
+		$rec = reset($trData->regTableItems_data);
 
 		return $rec;
 	}

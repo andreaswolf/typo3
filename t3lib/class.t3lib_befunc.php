@@ -96,7 +96,7 @@
  * 1449:	 function date($tstamp)
  * 1460:	 function datetime($value)
  * 1472:	 function time($value)
- * 1488:	 function calcAge($seconds,$labels = 'min|hrs|days|yrs')
+ * 1488:	 function calcAge($seconds,$labels = ' min| hrs| days| yrs| min| hour| day| year')
  * 1514:	 function dateTimeAge($tstamp,$prefix=1,$date='')
  * 1532:	 function titleAttrib($content='',$hsc=0)
  * 1545:	 function titleAltAttrib($content)
@@ -1246,23 +1246,12 @@ final class t3lib_BEfunc {
 	 * @return	void
 	 */
 	public static function storeHash($hash, $data, $ident) {
-		if (TYPO3_UseCachingFramework) {
-			$GLOBALS['typo3CacheManager']->getCache('cache_hash')->set(
-				$hash,
-				$data,
-				array('ident_' . $ident),
-				0 // unlimited lifetime
-			);
-		} else {
-			$insertFields = array(
-				'hash' => $hash,
-				'content' => $data,
-				'ident' => $ident,
-				'tstamp' => $GLOBALS['EXEC_TIME']
-			);
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_hash', 'hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($hash, 'cache_hash'));
-			$GLOBALS['TYPO3_DB']->exec_INSERTquery('cache_hash', $insertFields);
-		}
+		$GLOBALS['typo3CacheManager']->getCache('cache_hash')->set(
+			$hash,
+			$data,
+			array('ident_' . $ident),
+			0 // unlimited lifetime
+		);
 	}
 
 	/**
@@ -1276,23 +1265,9 @@ final class t3lib_BEfunc {
 	 */
 	public static function getHash($hash, $expTime = 0) {
 		$hashContent = NULL;
-		if (TYPO3_UseCachingFramework) {
-			$contentHashCache = $GLOBALS['typo3CacheManager']->getCache('cache_hash');
-			$cacheEntry = $contentHashCache->get($hash);
-
-			if ($cacheEntry) {
-				$hashContent = $cacheEntry;
-			}
-		} else {
-			$expTime = intval($expTime);
-			if ($expTime) {
-				$whereAdd = ' AND tstamp > ' . (time() - $expTime);
-			}
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('content', 'cache_hash', 'hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($hash, 'cache_hash') . $whereAdd);
-			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-			$GLOBALS['TYPO3_DB']->sql_free_result($res);
-
-			$hashContent = (is_array($row) ? $row['content'] : NULL);
+		$cacheEntry = $GLOBALS['typo3CacheManager']->getCache('cache_hash')->get($hash);
+		if ($cacheEntry) {
+			$hashContent = $cacheEntry;
 		}
 		return $hashContent;
 	}
@@ -1639,26 +1614,27 @@ final class t3lib_BEfunc {
 	 * Usage: 15
 	 *
 	 * @param	integer		$seconds could be the difference of a certain timestamp and time()
-	 * @param	string		$labels should be something like ' min| hrs| days| yrs'. This value is typically delivered by this function call: $GLOBALS["LANG"]->sL("LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears")
+	 * @param	string		$labels should be something like ' min| hrs| days| yrs| min| hour| day| year'. This value is typically delivered by this function call: $GLOBALS["LANG"]->sL("LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears")
 	 * @return	string		Formatted time
 	 */
-	public static function calcAge($seconds, $labels = 'min|hrs|days|yrs') {
+	public static function calcAge($seconds, $labels = ' min| hrs| days| yrs| min| hour| day| year') {
 		$labelArr = explode('|', $labels);
-		$prefix = '';
-		if ($seconds < 0) {
-			$prefix = '-';
-			$seconds = abs($seconds);
-		}
+		$absSeconds = abs($seconds);
+		$sign = ($seconds > 0 ? 1 : -1);
 		if ($seconds < 3600) {
-			$seconds = round($seconds / 60) . ' ' . trim($labelArr[0]);
+			$val = round($absSeconds / 60);
+			$seconds = ($sign * $val) . ($val == 1 ? $labelArr[4] : $labelArr[0]);
 		} elseif ($seconds < 24 * 3600) {
-			$seconds = round($seconds / 3600) . ' ' . trim($labelArr[1]);
+			$val = round($absSeconds / 3600);
+			$seconds = ($sign * $val) . ($val == 1 ? $labelArr[5] : $labelArr[1]);
 		} elseif ($seconds < 365 * 24 * 3600) {
-			$seconds = round($seconds / (24 * 3600)) . ' ' . trim($labelArr[2]);
+			$val = round($absSeconds / (24 * 3600));
+			$seconds = ($sign * $val) . ($val == 1 ? $labelArr[6] : $labelArr[2]);
 		} else {
-			$seconds = round($seconds / (365 * 24 * 3600)) . ' ' . trim($labelArr[3]);
+			$val = round($absSeconds / (365 * 24 * 3600));
+			$seconds = ($sign * $val) . ($val == 1 ? $labelArr[7] : $labelArr[3]);
 		}
-		return $prefix . $seconds;
+		return $seconds;
 	}
 
 	/**
@@ -3526,8 +3502,7 @@ final class t3lib_BEfunc {
 			foreach ($rootLine as $row) {
 				$dRec = self::getRecordsByField('sys_domain', 'pid', $row['uid'], ' AND redirectTo=\'\' AND hidden=0', '', 'sorting');
 				if (is_array($dRec)) {
-					reset($dRec);
-					$dRecord = current($dRec);
+					$dRecord = reset($dRec);
 					return rtrim($dRecord['domainName'], '/');
 				}
 			}

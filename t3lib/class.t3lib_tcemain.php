@@ -412,7 +412,6 @@ class t3lib_TCEmain {
 		if (is_array($mirror)) {
 			foreach ($mirror as $table => $uid_array) {
 				if (isset($this->datamap[$table])) {
-					reset($uid_array);
 					foreach ($uid_array as $id => $uidList) {
 						if (isset($this->datamap[$table][$id])) {
 							$theIdsInArray = t3lib_div::trimExplode(',', $uidList, 1);
@@ -464,8 +463,7 @@ class t3lib_TCEmain {
 				return FALSE;
 			}
 
-			reset($postFiles);
-			$subA = current($postFiles);
+			$subA = reset($postFiles);
 			if (is_array($subA)) {
 				if (is_array($subA['name']) && is_array($subA['type']) && is_array($subA['tmp_name']) && is_array($subA['size'])) {
 						// Initialize the uploadedFilesArray:
@@ -1839,6 +1837,7 @@ class t3lib_TCEmain {
 							$theFile = substr($theFile, strlen(PATH_site));
 						}
 					}
+					unset($theFile);
 				}
 			}
 		}
@@ -2296,6 +2295,7 @@ class t3lib_TCEmain {
 				str_replace('|', '', rawurldecode($temp[0]))
 			);
 		}
+		unset($newVal);
 		return $valueArray;
 	}
 
@@ -6719,23 +6719,12 @@ class t3lib_TCEmain {
 
 						// Delete cache for selected pages:
 					if (is_array($list_cache)) {
-						if (TYPO3_UseCachingFramework) {
-							$pageCache = $GLOBALS['typo3CacheManager']->getCache(
-								'cache_pages'
-							);
-							$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache(
-								'cache_pagesection'
-							);
-
-							$pageIds = $GLOBALS['TYPO3_DB']->cleanIntArray($list_cache);
-							foreach ($pageIds as $pageId) {
-								$pageCache->flushByTag('pageId_' . $pageId);
-								$pageSectionCache->flushByTag('pageId_' . $pageId);
-							}
-						} else {
-							$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id IN (' . implode(',', $GLOBALS['TYPO3_DB']->cleanIntArray($list_cache)) . ')');
-							$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pagesection', 'page_id IN (' . implode(',', $GLOBALS['TYPO3_DB']->cleanIntArray($list_cache)) . ')');
-
+						$pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages');
+						$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache('cache_pagesection');
+						$pageIds = $GLOBALS['TYPO3_DB']->cleanIntArray($list_cache);
+						foreach ($pageIds as $pageId) {
+							$pageCache->flushByTag('pageId_' . $pageId);
+							$pageSectionCache->flushByTag('pageId_' . $pageId);
 						}
 					}
 				}
@@ -6807,23 +6796,13 @@ class t3lib_TCEmain {
 			case 'all':
 				if ($this->admin || $this->BE_USER->getTSConfigVal('options.clearCache.all')) {
 
-						// Clear all caching framework caches if it is initialized:
-						// (it could be disabled by initialized by an extension)
+						// Clear all caching framework caches
 					if (t3lib_cache::isCachingFrameworkInitialized()) {
 						$GLOBALS['typo3CacheManager']->flushCaches();
 					}
 
-					if (TYPO3_UseCachingFramework) {
-						if (t3lib_extMgm::isLoaded('cms')) {
-							$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_treelist');
-						}
-					} else {
-						if (t3lib_extMgm::isLoaded('cms')) {
-							$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_treelist');
-							$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_pagesection');
-						}
-						$this->internal_clearPageCache();
-						$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_hash');
+					if (t3lib_extMgm::isLoaded('cms')) {
+						$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_treelist');
 					}
 
 						// Clearing additional cache tables:
@@ -6869,22 +6848,16 @@ class t3lib_TCEmain {
 					// Delete cache for selected pages:
 				if (is_array($list_cache)) {
 
-					if (TYPO3_UseCachingFramework) {
-						$pageCache = $GLOBALS['typo3CacheManager']->getCache(
-							'cache_pages'
-						);
-						$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache(
-							'cache_pagesection'
-						);
+					$pageCache = $GLOBALS['typo3CacheManager']->getCache(
+						'cache_pages'
+					);
+					$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache(
+						'cache_pagesection'
+					);
 
-						foreach ($list_cache as $pageId) {
-							$pageCache->flushByTag('pageId_' . (int) $pageId);
-							$pageSectionCache->flushByTag('pageId_' . (int) $pageId);
-						}
-					} else {
-						$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id IN (' . implode(',', $GLOBALS['TYPO3_DB']->cleanIntArray($list_cache)) . ')');
-						$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pagesection', 'page_id IN (' . implode(',', $GLOBALS['TYPO3_DB']->cleanIntArray($list_cache)) . ')'); // Originally, cache_pagesection was not cleared with cache_pages!
-
+					foreach ($list_cache as $pageId) {
+						$pageCache->flushByTag('pageId_' . (int)$pageId);
+						$pageSectionCache->flushByTag('pageId_' . (int)$pageId);
 					}
 				}
 			}
@@ -7006,21 +6979,8 @@ class t3lib_TCEmain {
 	 * @return	void
 	 */
 	function internal_clearPageCache() {
-		if (TYPO3_UseCachingFramework) {
-			if (t3lib_extMgm::isLoaded('cms')) {
-				$GLOBALS['typo3CacheManager']->getCache('cache_pages')->flush();
-			}
-		} else {
-			if (t3lib_extMgm::isLoaded('cms')) {
-				if ($GLOBALS['TYPO3_CONF_VARS']['FE']['pageCacheToExternalFiles']) {
-					$cacheDir = PATH_site . 'typo3temp/cache_pages';
-					$retVal = t3lib_div::rmdir($cacheDir, TRUE);
-					if (!$retVal) {
-						t3lib_div::sysLog('Could not remove page cache files in "' . $cacheDir . '"', 'Core/t3lib_tcemain', 2);
-					}
-				}
-				$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_pages');
-			}
+		if (t3lib_extMgm::isLoaded('cms')) {
+			$GLOBALS['typo3CacheManager']->getCache('cache_pages')->flush();
 		}
 	}
 
@@ -7107,7 +7067,7 @@ class t3lib_TCEmain {
 	 */
 	protected function getOuterMostInstance() {
 		if (!isset($this->outerMostInstance)) {
-			$stack = array_reverse(debug_backtrace(TRUE));
+			$stack = array_reverse(debug_backtrace());
 
 			foreach ($stack as $stackItem) {
 				if (isset($stackItem['object']) && $stackItem['object'] instanceof t3lib_TCEmain) {
@@ -7137,18 +7097,7 @@ class t3lib_TCEmain {
 	 * @return t3lib_cache_frontend_VariableFrontend
 	 */
 	protected function getMemoryCache() {
-		t3lib_cache::initializeCachingFramework();
-		$cacheIdentifier = 't3lib_TCEmain';
-
-		if ($GLOBALS['typo3CacheManager']->hasCache($cacheIdentifier) === FALSE) {
-			$GLOBALS['typo3CacheFactory']->create(
-				$cacheIdentifier,
-				't3lib_cache_frontend_VariableFrontend',
-				't3lib_cache_backend_TransientMemoryBackend'
-			);
-		}
-
-		return $GLOBALS['typo3CacheManager']->getCache($cacheIdentifier);
+		return $GLOBALS['typo3CacheManager']->getCache('cache_runtime');
 	}
 
 	/**
@@ -7163,7 +7112,7 @@ class t3lib_TCEmain {
 	 * @see versionizeRecord
 	 */
 	protected function isElementToBeDeleted($table, $id) {
-		$elementsToBeDeleted = (array) $this->getMemoryCache()->get('elementsToBeDeleted');
+		$elementsToBeDeleted = (array) $this->getMemoryCache()->get('core-t3lib_TCEmain-elementsToBeDeleted');
 		return (isset($elementsToBeDeleted[$table][$id]));
 	}
 
@@ -7174,9 +7123,9 @@ class t3lib_TCEmain {
 	 * @see process_datamap
 	 */
 	protected function registerElementsToBeDeleted() {
-		$elementsToBeDeleted = (array) $this->getMemoryCache()->get('elementsToBeDeleted');
+		$elementsToBeDeleted = (array) $this->getMemoryCache()->get('core-t3lib_TCEmain-elementsToBeDeleted');
 		$this->getMemoryCache()->set(
-			'elementsToBeDeleted',
+			'core-t3lib_TCEmain-elementsToBeDeleted',
 			array_merge($elementsToBeDeleted, $this->getCommandMapElements('delete'))
 		);
 	}
@@ -7188,7 +7137,7 @@ class t3lib_TCEmain {
 	 * @see process_datamap
 	 */
 	protected function resetElementsToBeDeleted() {
-		$this->getMemoryCache()->remove('elementsToBeDeleted');
+		$this->getMemoryCache()->remove('core-t3lib_TCEmain-elementsToBeDeleted');
 	}
 
 	/**

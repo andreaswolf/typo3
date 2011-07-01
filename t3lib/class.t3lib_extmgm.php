@@ -354,6 +354,7 @@ final class t3lib_extMgm {
 					}
 				}
 			}
+			unset($typeDetails);
 		}
 	}
 
@@ -1608,7 +1609,6 @@ $TYPO3_LOADED_EXT = unserialize(stripslashes(\'' . addslashes(serialize($extensi
 
 		$out = 0;
 		if (is_array($cacheFiles)) {
-			reset($cacheFiles);
 			foreach ($cacheFiles as $cfile) {
 				@unlink($cfile);
 				clearstatcache();

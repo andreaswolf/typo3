@@ -3099,9 +3099,9 @@ class tslib_cObj {
 				: $conf['offsetWrap.']['tableParams'];
 		}
 		if ($conf['offsetWrap.']['tdParams'] || $conf['offsetWrap.']['tdParams.']) {
-			$controlTable->tdParams = ' ' . isset($conf['offsetWrap.']['tdParams.'])
+			$controlTable->tdParams = ' ' . (isset($conf['offsetWrap.']['tdParams.'])
 				? $this->stdWrap($conf['offsetWrap.']['tdParams'], $conf['offsetWrap.']['tdParams.'])
-				: $conf['offsetWrap.']['tdParams'];
+				: $conf['offsetWrap.']['tdParams']);
 		}
 		$content = $controlTable->start($content, $conf['offsetWrap']);
 		if ($conf['offsetWrap.']['stdWrap.']) {
@@ -3289,6 +3289,10 @@ class tslib_cObj {
 		}
 		$temp = explode($char, $content);
 		$last = '' . (count($temp) - 1);
+			// take a random item if requested
+		if ($listNum === 'rand') {
+			$listNum = rand(0, count($temp) - 1);
+		}
 		$index = $this->calc(str_ireplace('last', $last, $listNum));
 		return $temp[$index];
 	}
@@ -4059,9 +4063,9 @@ class tslib_cObj {
 						if ($GLOBALS['TYPO3_CONF_VARS']['GFX']['thumbnails']) {
 							$thumbSize = '';
 							if ($conf['icon_thumbSize'] || $conf['icon_thumbSize.']) {
-								$thumbSize = '&size=' . isset($conf['icon_thumbSize.'])
+								$thumbSize = '&size=' . (isset($conf['icon_thumbSize.'])
 									? $this->stdWrap($conf['icon_thumbSize'], $conf['icon_thumbSize.'])
-									: $conf['icon_thumbSize'];
+									: $conf['icon_thumbSize']);
 							}
 							$check = basename($theFile) . ':' . filemtime($theFile) . ':' . $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'];
 							$md5sum = '&md5sum=' . t3lib_div::shortMD5($check);
@@ -7437,6 +7441,7 @@ class tslib_cObj {
 				foreach ($queryParts as $queryPartKey => &$queryPartValue) {
 					$queryPartValue = str_replace('###' . $marker . '###', $markerValue, $queryPartValue);
 				}
+				unset($queryPartValue);
 			}
 
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
