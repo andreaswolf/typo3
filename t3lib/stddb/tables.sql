@@ -258,6 +258,46 @@ CREATE TABLE sys_filemounts (
   KEY parent (pid)
 );
 
+
+#
+# Table structure for table 'sys_file'
+#
+CREATE TABLE sys_file (
+  uid int(11) unsigned NOT NULL auto_increment,
+  pid int(11) DEFAULT '0' NOT NULL,
+  cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+  crdate int(11) unsigned DEFAULT '0' NOT NULL,
+  tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+
+  name varchar(100) DEFAULT '',
+  sha1 varchar(32) DEFAULT '',
+  mimetype varchar(60) DEFAULT '',
+  size int(11) unsigned DEFAULT '0' NOT NULL,
+
+  PRIMARY KEY (uid),
+  KEY parent (pid)
+) ENGINE=InnoDB;
+
+
+#
+# Table structure for table 'sys_folder'
+#
+CREATE TABLE sys_folder (
+  uid int(11) unsigned NOT NULL auto_increment,
+  pid int(11) DEFAULT '0' NOT NULL,
+  cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+  crdate int(11) unsigned DEFAULT '0' NOT NULL,
+  tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+
+  name varchar(100) DEFAULT '',
+  driver varchar(32) DEFAULT '',
+  config text,
+
+  PRIMARY KEY (uid),
+  KEY parent (pid)
+) ENGINE=InnoDB;
+
+
 #
 # Table structure for table 'sys_history'
 #
