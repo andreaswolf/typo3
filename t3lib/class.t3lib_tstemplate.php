@@ -27,57 +27,9 @@
 /**
  * Class with template object that is responsible for generating the template
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  109: class t3lib_TStemplate
- *  211:	 function init()
- *  249:	 function getCurrentPageData()
- *  266:	 function matching($cc)
- *  290:	 function start($theRootLine)
- *
- *			  SECTION: Fetching TypoScript code text for the Template Hierarchy
- *  406:	 function runThroughTemplates($theRootLine,$start_template_uid=0)
- *  459:	 function processTemplate($row, $idList,$pid,$templateID='',$templateParent='')
- *  580:	 function includeStaticTypoScriptSources($idList,$templateID,$pid,$row)
- *  642:	 function addExtensionStatics($idList,$templateID,$pid,$row)
- *  675:	 function prependStaticExtra($subrow)
- *  688:	 function versionOL(&$row)
- *
- *			  SECTION: Parsing TypoScript code text from Template Records into PHP array
- *  725:	 function generateConfig()
- *  891:	 function procesIncludes()
- *  915:	 function mergeConstantsFromPageTSconfig($constArray)
- *  944:	 function flattenSetup($setupArray, $prefix, $resourceFlag)
- *  968:	 function substituteConstants($all)
- *  991:	 function substituteConstantsCallBack($matches)
- *
- *			  SECTION: Various API functions, used from elsewhere in the frontend classes
- * 1022:	 function splitConfArray($conf,$splitCount)
- * 1099:	 function getFileName($fileFromSetup)
- * 1156:	 function extractFromResources($res,$file)
- * 1184:	 function checkFile($name,$menuArr)
- * 1201:	 function printTitle($title,$no_title=0,$titleFirst=0)
- * 1224:	 function fileContent($fName)
- * 1244:	 function wrap($content,$wrap)
- * 1258:	 function removeQueryString($url)
- * 1275:	 function sortedKeyList($setupArr, $acceptOnlyProperties=FALSE)
- *
- *			  SECTION: Functions for creating links
- * 1322:	 function linkData($page,$oTarget,$no_cache,$script,$overrideArray='',$addParams='',$typeOverride='')
- * 1449:	 function getFromMPmap($pageId=0)
- * 1485:	 function initMPmap_create($id,$MP_array=array(),$level=0)
- *
- * TOTAL FUNCTIONS: 28
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -240,35 +192,20 @@ class t3lib_TStemplate {
 	 * is regenerated - at least the this->start function must be called,
 	 * because this will make a new portion of data in currentPageData string.
 	 *
-	 * @return	array		Returns the unmatched array $currentPageData if found cached in "cache_pagesection". Otherwise false is returned which means that the array must be generated and stored in the cache-table
+	 * @return	array		Returns the unmatched array $currentPageData if found cached in "cache_pagesection". Otherwise FALSE is returned which means that the array must be generated and stored in the cache
 	 * @see start(), tslib_fe::getFromCache()
 	 */
-	function getCurrentPageData() {
-		$currentPageData = FALSE;
-		if (TYPO3_UseCachingFramework) {
-			$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache('cache_pagesection');
-			/* @var $pageSectionCache t3lib_cache_AbstractCache */
-
-			$currentPageData = $pageSectionCache->get(
-				intval($GLOBALS['TSFE']->id) . '_' . t3lib_div::md5int($GLOBALS['TSFE']->MP)
-			);
-		} else {
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-				'content', 'cache_pagesection', 'page_id=' . intval($GLOBALS['TSFE']->id) . ' AND mpvar_hash=' . t3lib_div::md5int($GLOBALS['TSFE']->MP));
-			if ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-				$currentPageData = unserialize($row['content']);
-			}
-			$GLOBALS['TYPO3_DB']->sql_free_result($res);
-		}
-
-		return $currentPageData;
+	public function getCurrentPageData() {
+		return $GLOBALS['typo3CacheManager']
+			->getCache('cache_pagesection')
+			->get(intval($GLOBALS['TSFE']->id) . '_' . t3lib_div::md5int($GLOBALS['TSFE']->MP));
 	}
 
 	/**
 	 * Fetches data about which TypoScript-matches there are at this page. Then it performs a matchingtest.
 	 *
 	 * @param	array		An array with three keys, "all", "rowSum" and "rootLine" - all coming from the "currentPageData" array
-	 * @return	array		The input array but with a new key added, "match" which contains the items from the "all" key which when passed to tslib_matchCondition returned true.
+	 * @return	array		The input array but with a new key added, "match" which contains the items from the "all" key which when passed to tslib_matchCondition returned TRUE.
 	 * @see t3lib_matchCondition, tslib_fe::getFromCache()
 	 */
 	function matching($cc) {
@@ -392,29 +329,16 @@ class t3lib_TStemplate {
 
 			if (!$isCached && !$this->simulationHiddenOrTime && !$GLOBALS['TSFE']->no_cache) { // Only save the data if we're not simulating by hidden/starttime/endtime
 				$mpvarHash = t3lib_div::md5int($GLOBALS['TSFE']->MP);
-				if (TYPO3_UseCachingFramework) {
-					$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache('cache_pagesection');
-					/* @var $pageSectionCache t3lib_cache_AbstractCache */
-					$pageSectionCache->set(
-						intval($GLOBALS['TSFE']->id) . '_' . $mpvarHash,
-						$cc,
-						array(
-							 'pageId_' . intval($GLOBALS['TSFE']->id),
-							 'mpvarHash_' . $mpvarHash
-						)
-					);
-				} else {
-					$dbFields = array(
-						'content' => serialize($cc),
-						'tstamp' => $GLOBALS['EXEC_TIME']
-					);
-					$GLOBALS['TYPO3_DB']->exec_UPDATEquery('cache_pagesection', 'page_id=' . intval($GLOBALS['TSFE']->id) . ' AND mpvar_hash=' . $mpvarHash, $dbFields);
-					if ($GLOBALS['TYPO3_DB']->sql_affected_rows() == 0) {
-						$dbFields['page_id'] = intval($GLOBALS['TSFE']->id);
-						$dbFields['mpvar_hash'] = $mpvarHash;
-						$GLOBALS['TYPO3_DB']->exec_INSERTquery('cache_pagesection', $dbFields);
-					}
-				}
+					/** @var $pageSectionCache t3lib_cache_AbstractCache */
+				$pageSectionCache = $GLOBALS['typo3CacheManager']->getCache('cache_pagesection');
+				$pageSectionCache->set(
+					intval($GLOBALS['TSFE']->id) . '_' . $mpvarHash,
+					$cc,
+					array(
+						'pageId_' . intval($GLOBALS['TSFE']->id),
+						'mpvarHash_' . $mpvarHash
+					)
+				);
 			}
 				// If everything OK.
 			if ($this->rootId && $this->rootLine && $this->setup) {
@@ -647,6 +571,11 @@ class t3lib_TStemplate {
 			}
 		}
 
+			// If "Include before all static templates if root-flag is set" is set:
+		if ($row['static_file_mode'] == 3 && substr($templateID, 0, 4) == 'sys_' && $row['root']) {
+			$this->addExtensionStatics($idList, $templateID, $pid, $row);
+		}
+
 			// Static Template Files (Text files from extensions): include_static_file is a list of static files to include (from extensions)
 		if (trim($row['include_static_file'])) {
 			$include_static_fileArr = t3lib_div::trimExplode(',', $row['include_static_file'], TRUE);
@@ -676,7 +605,11 @@ class t3lib_TStemplate {
 			}
 		}
 
-		$this->addExtensionStatics($idList, $templateID, $pid, $row);
+			// If "Default (include before if root flag is set)" is set OR
+			// "Always include before this template record" AND root-flag are set
+		if ($row['static_file_mode'] == 1 || ($row['static_file_mode'] == 0 && substr($templateID, 0, 4) == 'sys_' && $row['root'])) {
+			$this->addExtensionStatics($idList, $templateID, $pid, $row);
+		}
 
 			// Include Static Template Records after all other TypoScript has been included.
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['includeStaticTypoScriptSourcesAtEnd'])) {
@@ -704,24 +637,20 @@ class t3lib_TStemplate {
 	 * @see includeStaticTypoScriptSources()
 	 */
 	function addExtensionStatics($idList, $templateID, $pid, $row) {
-		global $TYPO3_LOADED_EXT;
 
-		if ($row['static_file_mode'] == 1 || ($row['static_file_mode'] == 0 && substr($templateID, 0, 4) == 'sys_' && $row['root'])) {
-			foreach ($TYPO3_LOADED_EXT as $extKey => $files) {
-				if (is_array($files) && ($files['ext_typoscript_constants.txt'] || $files['ext_typoscript_setup.txt'] || $files['ext_typoscript_editorcfg.txt'])) {
-					$mExtKey = str_replace('_', '', $extKey);
-					$subrow = array(
-						'constants' => $files['ext_typoscript_constants.txt'] ? t3lib_div::getUrl($files['ext_typoscript_constants.txt']) : '',
-						'config' => $files['ext_typoscript_setup.txt'] ? t3lib_div::getUrl($files['ext_typoscript_setup.txt']) : '',
-						'editorcfg' => $files['ext_typoscript_editorcfg.txt'] ? t3lib_div::getUrl($files['ext_typoscript_editorcfg.txt']) : '',
-						'title' => $extKey,
-						'uid' => $mExtKey
-					);
-					$subrow = $this->prependStaticExtra($subrow);
-
-					$this->processTemplate($subrow, $idList . ',ext_' . $mExtKey, $pid, 'ext_' . $mExtKey, $templateID);
-				}
+		foreach ($GLOBALS['TYPO3_LOADED_EXT'] as $extKey => $files) {
+			if (is_array($files) && ($files['ext_typoscript_constants.txt'] || $files['ext_typoscript_setup.txt'] || $files['ext_typoscript_editorcfg.txt'])) {
+				$mExtKey = str_replace('_', '', $extKey);
+				$subrow = array(
+					'constants' => $files['ext_typoscript_constants.txt'] ? t3lib_div::getUrl($files['ext_typoscript_constants.txt']) : '',
+					'config' => $files['ext_typoscript_setup.txt'] ? t3lib_div::getUrl($files['ext_typoscript_setup.txt']) : '',
+					'editorcfg' => $files['ext_typoscript_editorcfg.txt'] ? t3lib_div::getUrl($files['ext_typoscript_editorcfg.txt']) : '',
+					'title' => $extKey,
+					'uid' => $mExtKey
+				);
+				$subrow = $this->prependStaticExtra($subrow);
 			}
+			$this->processTemplate($subrow, $idList . ',ext_' . $mExtKey, $pid, 'ext_' . $mExtKey, $templateID);
 		}
 	}
 
@@ -749,7 +678,7 @@ class t3lib_TStemplate {
 	 * @return	void		Row is passed by reference.
 	 */
 	function versionOL(&$row) {
-		if (is_object($GLOBALS['TSFE'])) { // Frontend:
+		if (TYPO3_MODE === 'FE') { // Frontend:
 			$GLOBALS['TSFE']->sys_page->versionOL('sys_template', $row);
 		} else { // Backend:
 			t3lib_BEfunc::workspaceOL('sys_template', $row);
@@ -822,7 +751,7 @@ class t3lib_TStemplate {
 		$config->regComments = $this->ext_regComments;
 		$config->setup = $this->setup;
 
-			// Transfer information about conditions found in "Constants" and which of them returned true.
+			// Transfer information about conditions found in "Constants" and which of them returned TRUE.
 		$config->sections = $constants->sections;
 		$config->sectionsMatch = $constants->sectionsMatch;
 
@@ -847,7 +776,7 @@ class t3lib_TStemplate {
 			$findConst = explode('{$', $all);
 			array_shift($findConst);
 			foreach ($findConst as $constVal) {
-				$constLen = t3lib_div::intInRange(strcspn($constVal, '}'), 0, 50);
+				$constLen = t3lib_utility_Math::forceIntegerInRange(strcspn($constVal, '}'), 0, 50);
 				$theConstList[] = '{$' . substr($constVal, 0, $constLen + 1);
 			}
 			if ($this->tt_track) {
@@ -949,18 +878,22 @@ class t3lib_TStemplate {
 			$files = array_merge($files, $includeData['files']);
 			$value = $includeData['typoscript'];
 		}
+		unset($value);
 
 		foreach ($this->config as &$value) {
 			$includeData = t3lib_TSparser::checkIncludeLines($value, 1, TRUE);
 			$files = array_merge($files, $includeData['files']);
 			$value = $includeData['typoscript'];
 		}
+		unset($value);
 
 		foreach ($this->editorcfg as &$value) {
 			$includeData = t3lib_TSparser::checkIncludeLines($value, 1, TRUE);
 			$files = array_merge($files, $includeData['files']);
 			$value = $includeData['typoscript'];
 		}
+		unset($value);
+
 		if (count($files)) {
 			$files = array_unique($files);
 			foreach ($files as $file) {
@@ -1332,7 +1265,7 @@ class t3lib_TStemplate {
 		$keyArr = array();
 		$setupArrKeys = array_keys($setupArr);
 		foreach ($setupArrKeys as $key) {
-			if ($acceptOnlyProperties || t3lib_div::testInt($key)) {
+			if ($acceptOnlyProperties || t3lib_utility_Math::canBeInterpretedAsInteger($key)) {
 				$keyArr[] = intval($key);
 			}
 		}
@@ -1384,7 +1317,6 @@ class t3lib_TStemplate {
 	 * @see tslib_frameset::frameParams(), tslib_cObj::typoLink(), tslib_cObj::SEARCHRESULT(), TSpagegen::pagegenInit(), tslib_menu::link()
 	 */
 	function linkData($page, $oTarget, $no_cache, $script, $overrideArray = '', $addParams = '', $typeOverride = '', $targetDomain = '') {
-		global $TYPO3_CONF_VARS;
 
 		$LD = array();
 
@@ -1422,7 +1354,7 @@ class t3lib_TStemplate {
 
 			// typeNum
 		$typeNum = $this->setup[$LD['target'] . '.']['typeNum'];
-		if (!t3lib_div::testInt($typeOverride) && intval($GLOBALS['TSFE']->config['config']['forceTypeValue'])) {
+		if (!t3lib_utility_Math::canBeInterpretedAsInteger($typeOverride) && intval($GLOBALS['TSFE']->config['config']['forceTypeValue'])) {
 			$typeOverride = intval($GLOBALS['TSFE']->config['config']['forceTypeValue']);
 		}
 		if (strcmp($typeOverride, '')) {
@@ -1441,7 +1373,7 @@ class t3lib_TStemplate {
 			// linkVars
 		if ($GLOBALS['TSFE']->config['config']['uniqueLinkVars']) {
 			if ($addParams) {
-				$LD['linkVars'] = t3lib_div::implodeArrayForUrl('', t3lib_div::explodeUrl2Array($GLOBALS['TSFE']->linkVars . $addParams));
+				$LD['linkVars'] = t3lib_div::implodeArrayForUrl('', t3lib_div::explodeUrl2Array($GLOBALS['TSFE']->linkVars . $addParams), '', FALSE, TRUE);
 			} else {
 				$LD['linkVars'] = $GLOBALS['TSFE']->linkVars;
 			}
@@ -1459,13 +1391,13 @@ class t3lib_TStemplate {
 		$LD['totalURL'] = $this->removeQueryString($LD['url'] . $LD['type'] . $LD['no_cache'] . $LD['linkVars'] . $GLOBALS['TSFE']->getMethodUrlIdToken) . $LD['sectionIndex'];
 
 			// Call post processing function for link rendering:
-		if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['linkData-PostProc'])) {
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['linkData-PostProc'])) {
 			$_params = array(
 				'LD' => &$LD,
 				'args' => array('page' => $page, 'oTarget' => $oTarget, 'no_cache' => $no_cache, 'script' => $script, 'overrideArray' => $overrideArray, 'addParams' => $addParams, 'typeOverride' => $typeOverride, 'targetDomain' => $targetDomain),
 				'typeNum' => $typeNum
 			);
-			foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['linkData-PostProc'] as $_funcRef) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tstemplate.php']['linkData-PostProc'] as $_funcRef) {
 				t3lib_div::callUserFunction($_funcRef, $_params, $this);
 			}
 		}

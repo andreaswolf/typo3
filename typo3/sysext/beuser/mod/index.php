@@ -29,76 +29,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  129: class localPageTree extends t3lib_browseTree
- *  140:     function localPageTree($BE_USER,$WEBMOUNTS='')
- *  154:     function ext_permsC()
- *  165:     function wrapTitle($str,$row)
- *  177:     function PM_ATagWrap($icon,$cmd,$bMark='')
- *  188:     function wrapIcon($icon,$row)
- *  201:     function initializePositionSaving()
- *
- *
- *  222: class printAllPageTree extends localPageTree
- *  231:     function ext_permsC()
- *  243:     function PM_ATagWrap($icon,$cmd,$bMark='')
- *  254:     function wrapIcon($icon,$row)
- *
- *
- *  279: class printAllPageTree_perms extends printAllPageTree
- *  288:     function printTree($treeArr='',$printPath=0)
- *  331:     function ext_printPerms($int)
- *  349:     function ext_groupPerms($row,$firstGroup)
- *
- *
- *  377: class localFolderTree extends t3lib_folderTree
- *  388:     function localFolderTree($BE_USER,$FILEMOUNTS='')
- *  403:     function wrapTitle($str,$row)
- *  415:     function PM_ATagWrap($icon,$cmd,$bMark='')
- *  426:     function wrapIcon($icon,$row)
- *  439:     function initializePositionSaving()
- *
- *
- *  463: class printAllFolderTree extends localFolderTree
- *  475:     function PM_ATagWrap($icon,$cmd,$bMark='')
- *
- *
- *  497: class local_beUserAuth extends t3lib_beUserAuth
- *  509:     function returnWebmounts($pClause='')
- *  533:     function ext_non_readAccessPages()
- *  556:     function user_where_clause()
- *  568:     function ext_printOverview($uInfo,$compareFlags,$printTrees=0)
- *  838:     function ext_getReadableButNonmounted()
- *  873:     function ext_printPerms($int)
- *  891:     function ext_groupPerms($row,$firstGroup)
- *  907:     function ext_compileUserInfoForHash($filter=NULL)
- * 1007:     function ext_uniqueAndSortList($list)
- * 1021:     function ext_ksortArrayRecursive(&$arr)
- * 1034:     function ext_workspaceMembership()
- *
- *
- * 1088: class SC_mod_tools_be_user_index
- * 1100:     function init()
- * 1128:     function menuConfig()
- * 1149:     function main()
- * 1185:     function printContent()
- *
- *              SECTION: OTHER FUNCTIONS:
- * 1207:     function compareUsers($compareFlags)
- * 1394:     function linkUser($str,$rec)
- * 1405:     function elementLinks($table,$row)
- * 1436:     function initUsers()
- * 1456:     function localPath($str)
- * 1468:     function switchUser($switchUser)
- *
- * TOTAL FUNCTIONS: 39
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 require_once (PATH_typo3.'class.alt_menu_functions.inc');
 
@@ -136,13 +66,28 @@ $BE_USER->modAccess($MCONF,1);
 	 * @param	array		Webmounts for the backend user.
 	 * @return	void
 	 */
-	function localPageTree($BE_USER,$WEBMOUNTS='')	{
+	function __construct($BE_USER,$WEBMOUNTS='')	{
 		$this->init();
 
 		$this->BE_USER = $BE_USER;
 		$this->MOUNTS = $WEBMOUNTS;
 		$this->clause = $this->ext_permsC();	// Notice, this clause does NOT filter out un-readable pages. This is the POINT since this class is ONLY used for the main overview where ALL is shown! Otherwise "AND '.$this->BE_USER->getPagePermsClause(1).'" should be added.
 		$this->orderByFields = 'sorting';
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @param object Local backend user (not the GLOBALS[] backend user!!)
+	 * @param array Webmounts for the backend user
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function localPageTree($BE_USER, $WEBMOUNTS = '') {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		localPageTree::__construct($BE_USER, $WEBMOUNTS);
 	}
 
 	/**
@@ -291,13 +236,13 @@ class printAllPageTree_perms extends printAllPageTree {
 		$be_group_Array = t3lib_BEfunc::getGroupNames();
 		$lines=array();
 		$lines[]='<tr class="bgColor5">
-			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('pageTitle', true) . '</strong></td>
-			' . ($printPath?'<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('path', true) . '</strong></td>':'') . '
-			<td nowrap="nowrap" colspan="2"><strong>' . $GLOBALS['LANG']->getLL('user', true) . '</strong></td>
-			<td nowrap="nowrap" colspan="2"><strong>' . $GLOBALS['LANG']->getLL('group', true) . ' &nbsp;</strong></td>
-			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('everybody', true) . ' &nbsp;</strong></td>
-			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('thisUser', true) . ' &nbsp;</strong></td>
-			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('mainGroup', true) . '</strong></td>
+			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('pageTitle', TRUE) . '</strong></td>
+			' . ($printPath?'<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('path', TRUE) . '</strong></td>':'') . '
+			<td nowrap="nowrap" colspan="2"><strong>' . $GLOBALS['LANG']->getLL('user', TRUE) . '</strong></td>
+			<td nowrap="nowrap" colspan="2"><strong>' . $GLOBALS['LANG']->getLL('group', TRUE) . ' &nbsp;</strong></td>
+			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('everybody', TRUE) . ' &nbsp;</strong></td>
+			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('thisUser', TRUE) . ' &nbsp;</strong></td>
+			<td nowrap="nowrap"><strong>' . $GLOBALS['LANG']->getLL('mainGroup', TRUE) . '</strong></td>
 		</tr>';
 
 		if (!is_array($treeArr)) {
@@ -315,7 +260,7 @@ class printAllPageTree_perms extends printAllPageTree {
 				<td nowrap="nowrap">'.$be_group_Array[$row['perms_groupid']]['title'].' &nbsp;</td>
 				<td nowrap="nowrap">'.$this->ext_printPerms($row['perms_group']).' &nbsp;</td>
 				<td nowrap="nowrap" align="center" '.$col1.'>'.$this->ext_printPerms($row['perms_everybody']).' &nbsp;</td>
-				<td nowrap="nowrap" align="center">' . ($row['editlock'] ? t3lib_iconWorks::getSpriteIcon('status-warning-in-use', array('title' => $GLOBALS['LANG']->getLL('editLock', true))) : $this->ext_printPerms($this->BE_USER->calcPerms($row))) . ' &nbsp;</td>
+				<td nowrap="nowrap" align="center">' . ($row['editlock'] ? t3lib_iconWorks::getSpriteIcon('status-warning-in-use', array('title' => $GLOBALS['LANG']->getLL('editLock', TRUE))) : $this->ext_printPerms($this->BE_USER->calcPerms($row))) . ' &nbsp;</td>
 				<td nowrap="nowrap" align="center">'.$this->ext_printPerms($this->ext_groupPerms($row,$be_group_Array[$this->BE_USER->firstMainGroup])).' &nbsp;</td>
 			</tr>';
 		}
@@ -392,12 +337,27 @@ class printAllPageTree_perms extends printAllPageTree {
 	 * @param	array		Filemounts for the backend user.
 	 * @return	void
 	 */
-	function localFolderTree($BE_USER,$FILEMOUNTS='')	{
+	function __construct($BE_USER,$FILEMOUNTS='')	{
 		$this->init();
 
 		$this->BE_USER = $BE_USER;
 		$this->MOUNTS = $FILEMOUNTS;
 		$this->clause = '';	// Notice, this clause does NOT filter out un-readable pages. This is the POINT since this class is ONLY used for the main overview where ALL is shown! Otherwise "AND '.$this->BE_USER->getPagePermsClause(1).'" should be added.
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @param object Local backend user (not the GLOBALS[] backend user!!)
+	 * @param array Filemounts for the backend user
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function localFolderTree($BE_USER, $FILEMOUNTS = '') {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		localFolderTree::__construct($BE_USER, $FILEMOUNTS);
 	}
 
 	/**
@@ -548,7 +508,7 @@ class local_beUserAuth extends t3lib_beUserAuth {
 		if (count($lines)) {
 			return '<table bgcolor="red" border="0" cellpadding="0" cellspacing="0">
 				<tr>
-					<td align="center"><font color="white"><strong>' . $GLOBALS['LANG']->getLL('noReadAccess', true) . '</strong></font></td>
+					<td align="center"><font color="white"><strong>' . $GLOBALS['LANG']->getLL('noReadAccess', TRUE) . '</strong></font></td>
 				</tr>
 				<tr>
 					<td>'.implode('</td></tr><tr><td>',$lines).'</td>
@@ -642,6 +602,7 @@ class local_beUserAuth extends t3lib_beUserAuth {
 						foreach ($pageTypes as &$vv) {
 							$vv = $GLOBALS['LANG']->sL(t3lib_BEfunc::getLabelFromItemlist('pages','doktype',$vv));
 						}
+						unset($vv);
 						$out[$k] = implode('<br />',$pageTypes);
 					break;
 					case 'tables_select':
@@ -652,6 +613,7 @@ class local_beUserAuth extends t3lib_beUserAuth {
 								$vv = '<span class="nobr">'.t3lib_iconWorks::getSpriteIconForRecord($vv,array()).$GLOBALS['LANG']->sL($GLOBALS['TCA'][$vv]['ctrl']['title']).'</span>';
 							}
 						}
+						unset($vv);
 						$out[$k] = implode('<br />',$tables);
 					break;
 					case 'non_exclude_fields':
@@ -681,7 +643,10 @@ class local_beUserAuth extends t3lib_beUserAuth {
 						foreach ($uGroups as $vv) {
 							if ($vv) {
 								$uGRow = t3lib_BEfunc::getRecord('be_groups',$vv);
-								$pout[]='<tr><td nowrap="nowrap">'.t3lib_iconWorks::getSpriteIconForRecord('be_groups',$uGRow).'&nbsp;'.htmlspecialchars($uGRow['title']).'&nbsp;&nbsp;</td><td width=1% nowrap="nowrap">'.$GLOBALS['SOBE']->elementLinks('be_groups',$uGRow).'</td></tr>';
+								$title = t3lib_BEfunc::getRecordTitle('be_groups', $uGRow);
+								$pout[] = '<tr><td nowrap="nowrap">' . t3lib_iconWorks::getSpriteIconForRecord('be_groups', $uGRow) .
+									'&nbsp;' . htmlspecialchars($title) . '&nbsp;&nbsp;</td><td width="1%" nowrap="nowrap">' .
+									$GLOBALS['SOBE']->elementLinks('be_groups', $uGRow) . '</td></tr>';
 							}
 						}
 						$out[$k] = '<table border="0" cellpadding="0" cellspacing="0" width="100%">'.implode('',$pout).'</table>';
@@ -1030,6 +995,7 @@ class local_beUserAuth extends t3lib_beUserAuth {
 				$this->ext_ksortArrayRecursive($v);
 			}
 		}
+		unset($v);
 	}
 
 	/**
@@ -1041,10 +1007,7 @@ class local_beUserAuth extends t3lib_beUserAuth {
 			// Create accessible workspace arrays:
 		$options = array();
 		if ($this->checkWorkspace(array('uid' => 0)))	{
-			$options[0] = '0: ' . $GLOBALS['LANG']->getLL('live', true);
-		}
-		if ($this->checkWorkspace(array('uid' => -1)))	{
-			$options[-1] = '-1: ' . $GLOBALS['LANG']->getLL('defaultDraft', true);
+			$options[0] = '0: ' . $GLOBALS['LANG']->getLL('live', TRUE);
 		}
 
 			// Add custom workspaces (selecting all, filtering by BE_USER check):
@@ -1060,7 +1023,7 @@ class local_beUserAuth extends t3lib_beUserAuth {
 							$mountPoints = t3lib_div::intExplode(',',$this->workspaceRec['db_mountpoints'],1);
 							foreach ($mountPoints as $mpId)	{
 								if (!$this->isInWebMount($mpId,'1=1'))	{
-									$options[$rec['uid']].= '<br> \- ' . $GLOBALS['LANG']->getLL('notAccessible', true) . ' ' . $mpId;
+									$options[$rec['uid']].= '<br> \- ' . $GLOBALS['LANG']->getLL('notAccessible', TRUE) . ' ' . $mpId;
 								}
 							}
 						}
@@ -1148,8 +1111,8 @@ class SC_mod_tools_be_user_index {
 			// Values NOT in this array will not be saved in the settings-array for the module.
 		$this->MOD_MENU = array(
 			'function' => array(
-				'compare' => $GLOBALS['LANG']->getLL('compareUserSettings', true),
-				'whoisonline' => $GLOBALS['LANG']->getLL('listUsersOnline', true)
+				'compare' => $GLOBALS['LANG']->getLL('compareUserSettings', TRUE),
+				'whoisonline' => $GLOBALS['LANG']->getLL('listUsersOnline', TRUE)
 			)
 		);
 			// CLEAN SETTINGS
@@ -1164,7 +1127,7 @@ class SC_mod_tools_be_user_index {
 	function main()	{
 		$this->content='';
 
-		$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('backendUserAdministration', true));
+		$this->content.=$this->doc->header($GLOBALS['LANG']->getLL('backendUserAdministration', TRUE));
 		$this->content.=$this->doc->spacer(5);
 
 		switch($this->MOD_SETTINGS['function'])	{
@@ -1247,23 +1210,23 @@ class SC_mod_tools_be_user_index {
 	function compareUsers($compareFlags)	{
 			// Menu:
 		$options = array(
-			'filemounts' => $GLOBALS['LANG']->getLL('filemounts', true),
-			'webmounts' => $GLOBALS['LANG']->getLL('webmounts', true),
-			'tempPath' => $GLOBALS['LANG']->getLL('defaultUploadPath', true),
-			'firstMainGroup' => $GLOBALS['LANG']->getLL('mainUserGroup', true),
-			'groupList' => $GLOBALS['LANG']->getLL('memberOfGroups', true),
-			'pagetypes_select' => $GLOBALS['LANG']->getLL('pageTypesAccess', true),
-			'tables_select' => $GLOBALS['LANG']->getLL('selectTables', true),
-			'tables_modify' => $GLOBALS['LANG']->getLL('modifyTables', true),
-			'non_exclude_fields' => $GLOBALS['LANG']->getLL('nonExcludeFields', true),
-			'explicit_allowdeny' => $GLOBALS['LANG']->getLL('explicitAllowDeny', true),
-			'allowed_languages' => $GLOBALS['LANG']->getLL('limitToLanguages', true),
-			'workspace_perms' => $GLOBALS['LANG']->getLL('workspacePermissions', true),
-			'workspace_membership' => $GLOBALS['LANG']->getLL('workspaceMembership', true),
-			'custom_options' => $GLOBALS['LANG']->getLL('customOptions', true),
-			'modules' => $GLOBALS['LANG']->getLL('modules', true),
-			'userTS' => $GLOBALS['LANG']->getLL('tsconfig', true),
-			'userTS_hl' => $GLOBALS['LANG']->getLL('tsconfigHL', true),
+			'filemounts' => $GLOBALS['LANG']->getLL('filemounts', TRUE),
+			'webmounts' => $GLOBALS['LANG']->getLL('webmounts', TRUE),
+			'tempPath' => $GLOBALS['LANG']->getLL('defaultUploadPath', TRUE),
+			'firstMainGroup' => $GLOBALS['LANG']->getLL('mainUserGroup', TRUE),
+			'groupList' => $GLOBALS['LANG']->getLL('memberOfGroups', TRUE),
+			'pagetypes_select' => $GLOBALS['LANG']->getLL('pageTypesAccess', TRUE),
+			'tables_select' => $GLOBALS['LANG']->getLL('selectTables', TRUE),
+			'tables_modify' => $GLOBALS['LANG']->getLL('modifyTables', TRUE),
+			'non_exclude_fields' => $GLOBALS['LANG']->getLL('nonExcludeFields', TRUE),
+			'explicit_allowdeny' => $GLOBALS['LANG']->getLL('explicitAllowDeny', TRUE),
+			'allowed_languages' => $GLOBALS['LANG']->getLL('limitToLanguages', TRUE),
+			'workspace_perms' => $GLOBALS['LANG']->getLL('workspacePermissions', TRUE),
+			'workspace_membership' => $GLOBALS['LANG']->getLL('workspaceMembership', TRUE),
+			'custom_options' => $GLOBALS['LANG']->getLL('customOptions', TRUE),
+			'modules' => $GLOBALS['LANG']->getLL('modules', TRUE),
+			'userTS' => $GLOBALS['LANG']->getLL('tsconfig', TRUE),
+			'userTS_hl' => $GLOBALS['LANG']->getLL('tsconfigHL', TRUE),
 		);
 
 		$be_user_uid = t3lib_div::_GP('be_user_uid');
@@ -1293,7 +1256,7 @@ class SC_mod_tools_be_user_index {
 
 				if ($kk=='webmounts' && !$tempBE_USER->isAdmin())	{
 					$lines[]='<tr class="bgColor4">
-						<td nowrap="nowrap" valign="top">' . $GLOBALS['LANG']->getLL('nonMountedReadablePages', true) . '&nbsp;&nbsp;</td>
+						<td nowrap="nowrap" valign="top">' . $GLOBALS['LANG']->getLL('nonMountedReadablePages', TRUE) . '&nbsp;&nbsp;</td>
 						<td>'.$tempBE_USER->ext_getReadableButNonmounted().'&nbsp;</td>
 					</tr>';
 				}
@@ -1304,10 +1267,10 @@ class SC_mod_tools_be_user_index {
 			$outTable = '<table border="0" cellpadding="1" cellspacing="1"><tr class="bgColor5"><td>'.t3lib_iconWorks::getSpriteIconForRecord('be_users',$tempBE_USER->user,array('title'=>$tempBE_USER->user['uid'])).htmlspecialchars($tempBE_USER->user['username']).'</td>';
 			$outTable.= '<td>'.($realname?$realname.', ':'').($email ? '<a href="mailto:'.$email.'">'.$email.'</a>' : '').'</td>';
 			$outTable.= '<td>'.$this->elementLinks('be_users',$tempBE_USER->user).'</td></tr></table>';
-			$outTable.= '<strong><a href="'.htmlspecialchars($this->MCONF['_']).'">' . $GLOBALS['LANG']->getLL('backToOverview', true) . '</a></strong><br />';
+			$outTable.= '<strong><a href="'.htmlspecialchars($this->MCONF['_']).'">' . $GLOBALS['LANG']->getLL('backToOverview', TRUE) . '</a></strong><br />';
 
 			$outTable.= '<br /><table border="0" cellpadding="2" cellspacing="1">'.implode('',$lines).'</table>';
-			$content.= $this->doc->section($GLOBALS['LANG']->getLL('userInfo', true),$outTable,0,1);
+			$content.= $this->doc->section($GLOBALS['LANG']->getLL('userInfo', TRUE),$outTable,0,1);
 		} else {
 			$menu = array(0 => array());
 			$rowCounter = 0;
@@ -1322,14 +1285,14 @@ class SC_mod_tools_be_user_index {
 				$rowCounter++;
 				$menu[$columnCounter][]='<input type="checkbox" class="checkbox" value="1" name="compareFlags['.$kk.']" id="checkCompare_'.$kk.'"'.($compareFlags[$kk]?' checked="checked"':'').'> <label for="checkCompare_'.$kk.'">'.htmlspecialchars($vv).'</label>';
 			}
-			$outCode = '<p>' . $GLOBALS['LANG']->getLL('groupBy', true) . '</p>';
+			$outCode = '<p>' . $GLOBALS['LANG']->getLL('groupBy', TRUE) . '</p>';
 			$outCode .= '<table border="0" cellpadding="3" cellspacing="1" class="compare-checklist valign-top"><tr>';
 			foreach ($menu as $column)	{
 				$outCode .= '<td>' . implode('<br />', $column) . '</td>';
 			}
 			$outCode .= '</tr></table>';
-			$outCode.='<br /><input type="submit" name="ads" value="' . $GLOBALS['LANG']->getLL('update', true) . '">';
-			$content = $this->doc->section($GLOBALS['LANG']->getLL('groupAndCompareUsers', true),$outCode,0,1);
+			$outCode.='<br /><input type="submit" name="ads" value="' . $GLOBALS['LANG']->getLL('update', TRUE) . '">';
+			$content = $this->doc->section($GLOBALS['LANG']->getLL('groupAndCompareUsers', TRUE),$outCode,0,1);
 
 
 				// Traverse all users
@@ -1371,7 +1334,7 @@ class SC_mod_tools_be_user_index {
 				}
 				$counter++;
 				if ($counter>=($numberAtTime+$offset)) {
-					$tooManyUsers=$GLOBALS['LANG']->getLL('tooManyUsers', true) . ' ' . count($users) . '. ' . $GLOBALS['LANG']->getLL('canOnlyDisplay', true) . ' ' . $numberAtTime . '.';
+					$tooManyUsers=$GLOBALS['LANG']->getLL('tooManyUsers', TRUE) . ' ' . count($users) . '. ' . $GLOBALS['LANG']->getLL('canOnlyDisplay', TRUE) . ' ' . $numberAtTime . '.';
 					break;
 				}
 			}
@@ -1381,7 +1344,7 @@ class SC_mod_tools_be_user_index {
 				// Header:
 			$allCells = array();
 
-			$link_createNewUser='<a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[be_users][0]=new',$this->doc->backPath,-1)).'" title="' . $GLOBALS['LANG']->getLL('newUser', true) . '">'.
+			$link_createNewUser='<a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::editOnClick('&edit[be_users][0]=new',$this->doc->backPath,-1)).'" title="' . $GLOBALS['LANG']->getLL('newUser', TRUE) . '">'.
 					t3lib_iconWorks::getSpriteIcon('actions-document-new') .
 				'</a>';
 
@@ -1405,10 +1368,10 @@ class SC_mod_tools_be_user_index {
 					if ($curUid != $uDat['uid'] && !$uDat['disable'] && ($uDat['starttime'] == 0 ||
 						$uDat['starttime'] < $GLOBALS['EXEC_TIME']) && ($uDat['endtime'] == 0 ||
 						$uDat['endtime'] > $GLOBALS['EXEC_TIME'])) {
-						$uItem .= '<a href="' . t3lib_div::linkThisScript(array('SwitchUser'=>$uDat['uid'])) . '" target="_top" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('switchUserTo', true) . ' ' . $uDat['username']) . ' ' . $GLOBALS['LANG']->getLL('changeToMode', TRUE) . '">' .
+						$uItem .= '<a href="' . t3lib_div::linkThisScript(array('SwitchUser'=>$uDat['uid'])) . '" target="_top" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('switchUserTo', TRUE) . ' ' . $uDat['username']) . ' ' . $GLOBALS['LANG']->getLL('changeToMode', TRUE) . '">' .
 								t3lib_iconWorks::getSpriteIcon('actions-system-backend-user-switch') .
 							'</a>'.
-							'<a href="' . t3lib_div::linkThisScript(array('SwitchUser'=>$uDat['uid'], 'switchBackUser' => 1)) . '" target="_top" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('switchUserTo', true) . ' ' . $uDat['username']) . ' ' . $GLOBALS['LANG']->getLL('switchBackMode', TRUE) . '">' .
+							'<a href="' . t3lib_div::linkThisScript(array('SwitchUser'=>$uDat['uid'], 'switchBackUser' => 1)) . '" target="_top" title="' . htmlspecialchars($GLOBALS['LANG']->getLL('switchUserTo', TRUE) . ' ' . $uDat['username']) . ' ' . $GLOBALS['LANG']->getLL('switchBackMode', TRUE) . '">' .
 								t3lib_iconWorks::getSpriteIcon('actions-system-backend-user-emulate') .
 							'</a>';
 					}
@@ -1434,10 +1397,24 @@ class SC_mod_tools_be_user_index {
 				$TDparams=' nowrap="nowrap" class="'.($i++ % 2 == 0 ? 'bgColor4' : 'bgColor6').'" valign="top"';
 			}
 			$outTable='<table border="0" cellpadding="2" cellspacing="2">' . $outTable . '</table>';
-			$outTable .= '<br /><br />' . $GLOBALS['LANG']->getLL('cachedGrouplistsUpdated', true);
-			$outTable.=$tooManyUsers?'<br /><br /><strong><span class="typo3-red">' . $tooManyUsers . '</span></strong>':'';
+			$flashMessageCachedGrouplistsUpdated = t3lib_div::makeInstance(
+				't3lib_FlashMessage',
+				'',
+				$GLOBALS['LANG']->getLL('cachedGrouplistsUpdated', TRUE),
+				t3lib_FlashMessage::INFO
+			);
+			t3lib_FlashMessageQueue::addMessage($flashMessageCachedGrouplistsUpdated);
+			if ($tooManyUsers) {
+				$flashMessageTooManyUsers = t3lib_div::makeInstance(
+					't3lib_FlashMessage',
+					'',
+					$tooManyUsers,
+					t3lib_FlashMessage::ERROR
+				);
+				t3lib_FlashMessageQueue::addMessage($flashMessageTooManyUsers);
+			}
 			$content.= $this->doc->spacer(10);
-			$content.= $this->doc->section($GLOBALS['LANG']->getLL('result', true),$outTable,0,1);
+			$content.= $this->doc->section($GLOBALS['LANG']->getLL('result', TRUE),$outTable,0,1);
 		}
 		return $content;
 	}
@@ -1483,7 +1460,7 @@ class SC_mod_tools_be_user_index {
 			'</a>';
 		} else {
 			$params='&data[' . $table . '][' . $row['uid'] . '][' . $hiddenField . ']=1';
-			$cells[]='<a href="' . $this->doc->issueCommand($params) . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:disable', true) . '">' .
+			$cells[]='<a href="' . $this->doc->issueCommand($params) . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_common.xml:disable', TRUE) . '">' .
 				t3lib_iconWorks::getSpriteIcon('actions-edit-hide') .
 			'</a>';
 		}
@@ -1545,7 +1522,7 @@ class SC_mod_tools_be_user_index {
 			if (t3lib_div::_GP('switchBackUser'))	{
 				$updateData['ses_backuserid'] = intval($GLOBALS['BE_USER']->user['uid']);
 			}
-			$GLOBALS['TYPO3_DB']->exec_UPDATEquery('be_sessions', 'ses_id='.$GLOBALS['TYPO3_DB']->fullQuoteStr($GLOBALS['BE_USER']->id, 'be_sessions').' AND ses_name=\'be_typo_user\' AND ses_userid='.intval($GLOBALS['BE_USER']->user['uid']),$updateData);
+			$GLOBALS['TYPO3_DB']->exec_UPDATEquery('be_sessions', 'ses_id=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($GLOBALS['BE_USER']->id, 'be_sessions') . ' AND ses_name=' . $GLOBALS['TYPO3_DB']->fullQuoteStr(t3lib_beUserAuth::getCookieName(), 'be_sessions') . ' AND ses_userid=' . intval($GLOBALS['BE_USER']->user['uid']), $updateData);
 
 			$redirectUrl = $GLOBALS['BACK_PATH'] . 'index.php' . ($GLOBALS['TYPO3_CONF_VARS']['BE']['interfaces'] ? '' : '?commandLI=1');
 			t3lib_utility_Http::redirect($redirectUrl);
@@ -1567,14 +1544,11 @@ class SC_mod_tools_be_user_index {
 		$where_clause = '';
 		$orderBy = 'u.username';
 
-		if (t3lib_div::testInt($GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout']))	{
-			$where_clause .= 'ses_tstamp+' . $GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout'] . ' > ' . $GLOBALS['EXEC_TIME'];
-		} else {
-			$timeout = intval($GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout']);
-			if ($timeout > 0)	{
-				$where_clause .= 'ses_tstamp+' . $timeout . ' > ' . $GLOBALS['EXEC_TIME'];
-			}
+		$timeout = intval($GLOBALS['TYPO3_CONF_VARS']['BE']['sessionTimeout']);
+		if ($timeout > 0) {
+			$where_clause = 'ses_tstamp > ' . ($GLOBALS['EXEC_TIME'] - $timeout);
 		}
+
 			// Fetch active sessions of other users from storage:
 		$sessions = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($select_fields,$from_table,$where_clause,'',$orderBy);
 			// Process and visualized each active session as a table row:
@@ -1611,13 +1585,13 @@ class SC_mod_tools_be_user_index {
 		$outTable = '
 		<table border="0" cellpadding="0" cellspacing="0" class="typo3-dblist">
 			<tr class="t3-row-header">
-				<td>' . $GLOBALS['LANG']->getLL('timestamp', true) . '</td>
-				<td>' . $GLOBALS['LANG']->getLL('host', true) . '</td>
-				<td colspan="5">' . $GLOBALS['LANG']->getLL('username', true) . '</td>
+				<td>' . $GLOBALS['LANG']->getLL('timestamp', TRUE) . '</td>
+				<td>' . $GLOBALS['LANG']->getLL('host', TRUE) . '</td>
+				<td colspan="5">' . $GLOBALS['LANG']->getLL('username', TRUE) . '</td>
 			</tr>' . $outTable . '
 		</table>';
 
-		$content.= $this->doc->section($GLOBALS['LANG']->getLL('whoIsOnline', true),$outTable,0,1);
+		$content.= $this->doc->section($GLOBALS['LANG']->getLL('whoIsOnline', TRUE),$outTable,0,1);
 		return $content;
 	}
 

@@ -31,24 +31,9 @@
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML-frames compatible.
  *
- * $Id$
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage core
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   71: class SC_login_frameset
- *   82:     function main()
- *  108:     function printContent()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 define('TYPO3_PROCEED_IF_NO_USER', 1);
 require ('init.php');
@@ -80,12 +65,10 @@ class SC_login_frameset {
 	 * @return	void
 	 */
 	function main()	{
-		global $TYPO3_CONF_VARS;
-
 			// Set doktype:
 		$GLOBALS['TBE_TEMPLATE']->docType='xhtml_frames';
 
-		$title = 'TYPO3 Re-Login ('.$TYPO3_CONF_VARS['SYS']['sitename'].')';
+		$title = 'TYPO3 Re-Login ('.$GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'].')';
 		$this->content.=$GLOBALS['TBE_TEMPLATE']->startPage($title);
 
 			// Create the frameset for the window:

@@ -22,7 +22,6 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-
 /**
  * A caching backend which forgets everything immediately
  *
@@ -30,20 +29,22 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
+ * @author Robert Lemke <robert@typo3.org>
+ * @author Karsten Dambekalns <karsten@typo3.org>
  * @api
- * @version $Id$
+ * @scope prototype
  */
-class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBackend {
+class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBackend implements t3lib_cache_backend_PhpCapableBackend {
 
 	/**
 	 * Acts as if it would save data
 	 *
-	 * @param string ignored
-	 * @param string ignored
-	 * @param array ignored
-	 * @param integer ignored
+	 * @param string $entryIdentifier ignored
+	 * @param string $data ignored
+	 * @param array $tags ignored
+	 * @param integer $lifetime ignored
 	 * @return void
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function set($entryIdentifier, $data, array $tags = array(), $lifetime = NULL) {
 	}
@@ -51,9 +52,9 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	/**
 	 * Returns False
 	 *
-	 * @param string ignored
+	 * @param string $entryIdentifier ignored
 	 * @return boolean FALSE
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function get($entryIdentifier) {
 		return FALSE;
@@ -62,9 +63,9 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	/**
 	 * Returns False
 	 *
-	 * @param string ignored
+	 * @param string $entryIdentifier ignored
 	 * @return boolean FALSE
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function has($entryIdentifier) {
 		return FALSE;
@@ -73,9 +74,9 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	/**
 	 * Does nothing
 	 *
-	 * @param string ignored
+	 * @param string $entryIdentifier ignored
 	 * @return boolean FALSE
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function remove($entryIdentifier) {
 		return FALSE;
@@ -84,22 +85,11 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	/**
 	 * Returns an empty array
 	 *
-	 * @param string ignored
+	 * @param string $tag ignored
 	 * @return array An empty array
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function findIdentifiersByTag($tag) {
-		return array();
-	}
-
-	/**
-	 * Returns an empty array
-	 *
-	 * @param string ignored
-	 * @return array An empty array
-	 * @author Ingo Renner <ingo@typo3.org>
-	 */
-	public function findIdentifiersByTags(array $tags) {
 		return array();
 	}
 
@@ -107,7 +97,7 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	 * Does nothing
 	 *
 	 * @return void
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function flush() {
 	}
@@ -115,9 +105,9 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	/**
 	 * Does nothing
 	 *
-	 * @param string ignored
+	 * @param string $tag ignored
 	 * @return void
-	 * @author Robert Lemke <robert@typo3.org>
+	 * @api
 	 */
 	public function flushByTag($tag) {
 	}
@@ -125,26 +115,20 @@ class t3lib_cache_backend_NullBackend extends t3lib_cache_backend_AbstractBacken
 	/**
 	 * Does nothing
 	 *
-	 * @param array ignored
 	 * @return void
-	 * @author Ingo Renner <ingo@typo3.org>
+	 * @api
 	 */
-	public function flushByTags(array $tags) {
+	public function collectGarbage() {
 	}
 
 	/**
 	 * Does nothing
 	 *
+	 * @param string $identifier An identifier which describes the cache entry to load
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
+	 * @api
 	 */
-	public function collectGarbage() {
+	public function requireOnce($identifier) {
 	}
 }
-
-
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/cache/backend/class.t3lib_cache_backend_nullbackend.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/cache/backend/class.t3lib_cache_backend_nullbackend.php']);
-}
-
 ?>

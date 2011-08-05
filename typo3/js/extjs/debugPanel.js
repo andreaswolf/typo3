@@ -1,7 +1,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Stefan Galinski <stefan.galinski@gmail.com>
+ *  (c) 2010-2011 Stefan Galinski <stefan.galinski@gmail.com>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -253,7 +253,7 @@ TYPO3.DebugPanel = Ext.extend(Ext.TabPanel, {
 			// add drag&drop and the wheel click functionality
 		tabWidget.on('afterlayout', function(element) {
 			Ext.get(this.id + '__' + element.id).on('mousedown', function(event) {
-				if (!Ext.isIE6 && !Ext.isIE7) {
+				if (!Ext.isIE7) {
 					if ((Ext.isIE && event.button === 1) ||
 						(!Ext.isIE && event.browserEvent.button === 1)
 					) {
@@ -462,9 +462,6 @@ TYPO3.DebugPanel = Ext.extend(Ext.TabPanel, {
 	 * @return void
 	 */
 	openBrowserWindow: function(title, content, group) {
-		if (Ext.isIE6) {
-			group = group.replace(' ', '_');
-		}
 		var newWindow = window.open('', 'TYPO3DebugWindow_' + group,
 			'width=600,height=400,menubar=0,toolbar=1,status=0,scrollbars=1,resizable=1'
 		);

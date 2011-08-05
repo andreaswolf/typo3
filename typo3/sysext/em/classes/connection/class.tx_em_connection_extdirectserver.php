@@ -29,8 +29,6 @@
  *
  * This class handles all Ajax calls coming from ExtJS
  *
- * $Id: class.tx_em_Connection_ExtDirectServer.php 2083 2010-03-22 00:48:31Z steffenk $
- *
  * @author	Steffen Kamper <info@sk-typo3.de>
  */
 
@@ -125,7 +123,7 @@ class tx_em_Connection_ExtDirectServer {
 		foreach ($list['data'] as $entry) {
 			$flatList[$entry['extkey']] = array(
 				'version' => $entry['version'],
-				'intversion' => t3lib_div::int_from_ver($entry['version']),
+				'intversion' => t3lib_utility_VersionNumber::convertVersionNumberToInteger($entry['version']),
 				'installed' => $entry['installed'],
 				'typeShort' => $entry['typeShort'],
 			);
@@ -302,7 +300,7 @@ class tx_em_Connection_ExtDirectServer {
 		}
 
 		return array(
-			'success' => true,
+			'success' => TRUE,
 			'data' => $parameter['data'],
 			'html' => $html,
 		);
@@ -393,7 +391,7 @@ class tx_em_Connection_ExtDirectServer {
 				$fileArray[] = array(
 					'id' => ($node == '' ? '' : $node . '/') . $dir,
 					'text' => htmlspecialchars($dir),
-					'leaf' => false,
+					'leaf' => FALSE,
 					'qtip' => ''
 				);
 			}
@@ -406,7 +404,7 @@ class tx_em_Connection_ExtDirectServer {
 			$fileArray[] = array(
 				'id' => $node . '/' . $file,
 				'text' => $fileInfo[0],
-				'leaf' => true,
+				'leaf' => TRUE,
 				'qtip' => $fileInfo[1],
 				'iconCls' => $fileInfo[4],
 				'fileType' => $fileInfo[3],
@@ -427,7 +425,7 @@ class tx_em_Connection_ExtDirectServer {
 	public function readExtFile($path) {
 		$path = PATH_site . $path;
 		if (@file_exists($path)) {
-			return t3lib_div::getURL($path);
+			return t3lib_div::getUrl($path);
 		}
 		return '';
 	}
@@ -1146,7 +1144,9 @@ class tx_em_Connection_ExtDirectServer {
 		$this->globalSettings = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['em']);
 		$selected = t3lib_div::trimExplode(',', $this->globalSettings['selectedLanguages'], TRUE);
 
-		$theLanguages = t3lib_div::trimExplode('|', TYPO3_languages);
+		/** @var $locales t3lib_l10n_Locales */
+		$locales = t3lib_div::makeInstance('t3lib_l10n_Locales');
+		$theLanguages = $locales->getLocales();
 			//drop default
 		array_shift($theLanguages);
 		$lang = $meta = array();
@@ -1183,6 +1183,17 @@ class tx_em_Connection_ExtDirectServer {
 	 * @return string
 	 */
 	public function saveLanguageSelection($parameter) {
+			// Add possible dependencies for selected languages
+		/** @var $locales t3lib_l10n_Locales */
+		$locales = t3lib_div::makeInstance('t3lib_l10n_Locales');
+		$dependencies = array();
+		foreach ($parameter as $language) {
+			$dependencies = array_merge($dependencies, $locales->getLocaleDependencies($language));
+		}
+		if (count($dependencies) > 0) {
+			$parameter = array_unique(array_merge($parameter, $dependencies));
+		}
+
 		$this->globalSettings = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['em']);
 		$selected = t3lib_div::trimExplode(',', $this->globalSettings['selectedLanguages'], TRUE);
 
@@ -1200,9 +1211,10 @@ class tx_em_Connection_ExtDirectServer {
 		$this->saveExtensionConfiguration($params);
 
 		return array(
-			'success' => TRUE,
+			'success' => count($diff) > 0,
 			'dir' => $dir,
-			'diff' => implode('', $diff)
+			'diff' => array_values($diff),
+			'languages' => $parameter
 		);
 	}
 
@@ -1257,7 +1269,7 @@ class tx_em_Connection_ExtDirectServer {
 						}
 					} else {
 							//translation is up to date
-						$result[$lang] = $okIcon . $GLOBALS['LANG']->sL('LLL:EXT:em/language/locallang.xml:translation_status_uptodate');;
+						$result[$lang] = $okIcon . $GLOBALS['LANG']->sL('LLL:EXT:em/language/locallang.xml:translation_status_uptodate');
 					}
 				}
 

@@ -27,53 +27,9 @@
 /**
  * Contains class with functions for parsing HTML code.
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  106: class t3lib_parsehtml
- *  123:	 function getSubpart($content, $marker)
- *  156:	 function substituteSubpart($content,$marker,$subpartContent,$recursive=1,$keepMarker=0)
- *
- *			  SECTION: Parsing HTML code
- *  247:	 function splitIntoBlock($tag,$content,$eliminateExtraEndTags=0)
- *  308:	 function splitIntoBlockRecursiveProc($tag,$content,&$procObj,$callBackContent,$callBackTags,$level=0)
- *  344:	 function splitTags($tag,$content)
- *  378:	 function getAllParts($parts,$tag_parts=1,$include_tag=1)
- *  396:	 function removeFirstAndLastTag($str)
- *  412:	 function getFirstTag($str)
- *  426:	 function getFirstTagName($str,$preserveCase=FALSE)
- *  445:	 function get_tag_attributes($tag,$deHSC=0)
- *  486:	 function split_tag_attributes($tag)
- *  524:	 function checkTagTypeCounts($content,$blockTags='a,b,blockquote,body,div,em,font,form,h1,h2,h3,h4,h5,h6,i,li,map,ol,option,p,pre,select,span,strong,table,td,textarea,tr,u,ul', $soloTags='br,hr,img,input,area')
- *
- *			  SECTION: Clean HTML code
- *  617:	 function HTMLcleaner($content, $tags=array(),$keepAll=0,$hSC=0,$addConfig=array())
- *  814:	 function bidir_htmlspecialchars($value,$dir)
- *  837:	 function prefixResourcePath($main_prefix,$content,$alternatives=array(),$suffix='')
- *  919:	 function prefixRelPath($prefix,$srcVal,$suffix='')
- *  937:	 function cleanFontTags($value,$keepFace=0,$keepSize=0,$keepColor=0)
- *  967:	 function mapTags($value,$tags=array(),$ltChar='<',$ltChar2='<')
- *  982:	 function unprotectTags($content,$tagList='')
- * 1015:	 function stripTagsExcept($value,$tagList)
- * 1038:	 function caseShift($str,$flag,$cacheKey='')
- * 1065:	 function compileTagAttribs($tagAttrib,$meta=array(), $xhtmlClean=0)
- * 1093:	 function get_tag_attributes_classic($tag,$deHSC=0)
- * 1106:	 function indentLines($content, $number=1, $indentChar=TAB)
- * 1123:	 function HTMLparserConfig($TSconfig,$keepTags=array())
- * 1247:	 function XHTML_clean($content)
- * 1269:	 function processTag($value,$conf,$endTag,$protected=0)
- * 1315:	 function processContent($value,$dir,$conf)
- *
- * TOTAL FUNCTIONS: 28
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -268,7 +224,7 @@ class t3lib_parsehtml {
 	 * use the $wrap and $uppercase values to pre-process the markers. Eg. a
 	 * key name like "myfield" could effectively be represented by the marker
 	 * "###MYFIELD###" if the wrap value was "###|###" and the $uppercase
-	 * boolean true.
+	 * boolean TRUE.
 	 *
 	 * @param	string		The content stream, typically HTML template content.
 	 * @param	array		The array of key/value pairs being marker/content values used in the substitution. For each element in this array the function will substitute a marker in the content stream with the content.
@@ -311,6 +267,91 @@ class t3lib_parsehtml {
 		return $content;
 	}
 
+	/**
+	 * Replaces all markers and subparts in a template with the content provided in the structured array.
+	 *
+	 * The array is built like the template with its markers and subparts. Keys represent the marker name and the values the
+	 * content.
+	 * If the value is not an array the key will be treated as a single marker.
+	 * If the value is an array the key will be treated as a subpart marker.
+	 * Repeated subpart contents are of course elements in the array, so every subpart value must contain an array with its
+	 * markers.
+	 *
+	 * $markersAndSubparts = array (
+	 *   '###SINGLEMARKER1###' => 'value 1',
+	 *   '###SUBPARTMARKER1###' => array(
+	 *	 0 => array(
+	 *	   '###SINGLEMARKER2###' => 'value 2',
+	 *	 ),
+	 *	 1 => array(
+	 *	   '###SINGLEMARKER2###' => 'value 3',
+	 *	 )
+	 *   )
+	 * )
+	 * Subparts can be nested, so below the 'SINGLEMARKER2' it is possible to have another subpart marker with an array as the
+	 * value, which in its turn contains the elements of the sub-subparts.
+	 *
+	 * @static
+	 * @param string $content	The content stream, typically HTML template content.
+	 * @param array $markersAndSubparts	The array of single markers and subpart contents.
+	 * @param string $wrap	A wrap value - [part1] | [part2] - for the markers before substitution.
+	 * @param bool $uppercase	If set, all marker string substitution is done with upper-case markers.
+	 * @param bool $deleteUnused	If set, all unused single markers are deleted.
+	 * @return string	The processed output stream
+	 */
+	public static function substituteMarkerAndSubpartArrayRecursive($content, array $markersAndSubparts, $wrap = '',
+																	$uppercase = FALSE, $deleteUnused = FALSE) {
+		$wraps = t3lib_div::trimExplode('|', $wrap);
+		$singleItems = array();
+		$compoundItems = array();
+			// split markers and subparts into separate arrays
+		foreach ($markersAndSubparts as $markerName => $markerContent) {
+			if (is_array($markerContent)) {
+				$compoundItems[] = $markerName;
+			} else {
+				$singleItems[$markerName] = $markerContent;
+			}
+		}
+		$subTemplates = array();
+		$subpartSubstitutes = array();
+			// build a cache for the sub template
+		foreach ($compoundItems as $subpartMarker) {
+			if ($uppercase) {
+					// use strtr instead of strtoupper to avoid locale problems with Turkish
+				$subpartMarker = strtr($subpartMarker, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+			}
+
+			if (count($wraps) > 0) {
+				$subpartMarker = $wraps[0] . $subpartMarker . $wraps[1];
+			}
+			$subTemplates[$subpartMarker] = self::getSubpart($content, $subpartMarker);
+		}
+			// replace the subpart contents recursively
+		foreach ($compoundItems as $subpartMarker) {
+			foreach ($markersAndSubparts[$subpartMarker] as $partialMarkersAndSubparts) {
+				$completeMarker = $subpartMarker;
+				if ($uppercase) {
+						// use strtr instead of strtoupper to avoid locale problems with Turkish
+					$completeMarker = strtr($completeMarker, 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+				}
+
+				if (count($wraps) > 0) {
+					$completeMarker = $wraps[0] . $completeMarker . $wraps[1];
+				}
+				$subpartSubstitutes[$completeMarker] .= self::substituteMarkerAndSubpartArrayRecursive(
+					$subTemplates[$completeMarker],
+					$partialMarkersAndSubparts,
+					$wrap,
+					$uppercase,
+					$deleteUnused
+				);
+			}
+		}
+			// substitute the single markers and subparts
+		$result = self::substituteSubpartArray($content, $subpartSubstitutes);
+		$result = self::substituteMarkerArray($result, $singleItems, $wrap, $uppercase, $deleteUnused);
+		return $result;
+	}
 
 	/************************************
 	 *
@@ -459,7 +500,7 @@ class t3lib_parsehtml {
 	 * Returns an array with either tag or non-tag content of the result from ->splitIntoBlock()/->splitTags()
 	 *
 	 * @param	array		Parts generated by ->splitIntoBlock() or >splitTags()
-	 * @param	boolean		Whether to return the tag-parts (default,true) or what was outside the tags.
+	 * @param	boolean		Whether to return the tag-parts (default,TRUE) or what was outside the tags.
 	 * @param	boolean		Whether to include the tags in the tag-parts (most useful for input made by ->splitIntoBlock())
 	 * @return	array		Tag-parts/Non-tag-parts depending on input argument settings
 	 * @see splitIntoBlock(), splitTags()
@@ -681,7 +722,7 @@ class t3lib_parsehtml {
 	 *				 'trim,intval,lower,upper' =>	 All booleans. If any of these keys are set, the value is passed through the respective PHP-functions.
 	 *				 'range' => Array ('[low limit]','[high limit, optional]')		Setting integer range.
 	 *				 'list' => Array ('[value1/default]','[value2]','[value3]')		Attribute must be in this list. If not, the value is set to the first element.
-	 *				 'removeIfFalse' =>	 Boolean/'blank'.	If set, then the attribute is removed if it is 'false'. If this value is set to 'blank' then the value must be a blank string (that means a 'zero' value will not be removed)
+	 *				 'removeIfFalse' =>	 Boolean/'blank'.	If set, then the attribute is removed if it is 'FALSE'. If this value is set to 'blank' then the value must be a blank string (that means a 'zero' value will not be removed)
 	 *				 'removeIfEquals' =>	 [value]	If the attribute value matches the value set here, then it is removed.
 	 *				 'casesensitiveComp' => 1	If set, then the removeIfEquals and list comparisons will be case sensitive. Otherwise not.
 	 *			 )
@@ -689,7 +730,7 @@ class t3lib_parsehtml {
 	 *		 'protect' => '',	Boolean. If set, the tag <> is converted to &lt; and &gt;
 	 *		 'remap' => '',		String. If set, the tagname is remapped to this tagname
 	 *		 'rmTagIfNoAttrib' => '',	Boolean. If set, then the tag is removed if no attributes happend to be there.
-	 *		 'nesting' => '',	Boolean/'global'. If set true, then this tag must have starting and ending tags in the correct order. Any tags not in this order will be discarded. Thus '</B><B><I></B></I></B>' will be converted to '<B><I></B></I>'. Is the value 'global' then true nesting in relation to other tags marked for 'global' nesting control is preserved. This means that if <B> and <I> are set for global nesting then this string '</B><B><I></B></I></B>' is converted to '<B></B>'
+	 *		 'nesting' => '',	Boolean/'global'. If set TRUE, then this tag must have starting and ending tags in the correct order. Any tags not in this order will be discarded. Thus '</B><B><I></B></I></B>' will be converted to '<B><I></B></I>'. Is the value 'global' then true nesting in relation to other tags marked for 'global' nesting control is preserved. This means that if <B> and <I> are set for global nesting then this string '</B><B><I></B></I></B>' is converted to '<B></B>'
 	 *	 )
 	 *
 	 * @param	string		$content; is the HTML-content being processed. This is also the result being returned.
@@ -805,9 +846,9 @@ class t3lib_parsehtml {
 											}
 											if ($params['range']) {
 												if (isset($params['range'][1])) {
-													$tagAttrib[0][$attr] = t3lib_div::intInRange($tagAttrib[0][$attr], intval($params['range'][0]), intval($params['range'][1]));
+													$tagAttrib[0][$attr] = t3lib_utility_Math::forceIntegerInRange($tagAttrib[0][$attr], intval($params['range'][0]), intval($params['range'][1]));
 												} else {
-													$tagAttrib[0][$attr] = t3lib_div::intInRange($tagAttrib[0][$attr], intval($params['range'][0]));
+													$tagAttrib[0][$attr] = t3lib_utility_Math::forceIntegerInRange($tagAttrib[0][$attr], intval($params['range'][0]));
 												}
 											}
 											if (is_array($params['list'])) {
@@ -1069,11 +1110,12 @@ class t3lib_parsehtml {
 		$prefix = isset($alternatives['style']) ? $alternatives['style'] : $main_prefix;
 		if (strlen($prefix)) {
 			$parts = $this->splitIntoBlock('style', $content);
-			foreach ($parts as $k => $v) {
+			foreach ($parts as $k => &$part) {
 				if ($k % 2) {
-					$parts[$k] = preg_replace('/(url[[:space:]]*\([[:space:]]*["\']?)([^"\')]*)(["\']?[[:space:]]*\))/i', '\1' . $prefix . '\2' . $suffix . '\3', $parts[$k]);
+					$part = preg_replace('/(url[[:space:]]*\([[:space:]]*["\']?)([^"\')]*)(["\']?[[:space:]]*\))/i', '\1' . $prefix . '\2' . $suffix . '\3', $part);
 				}
 			}
+			unset($part);
 			$content = implode('', $parts);
 		}
 
@@ -1220,7 +1262,7 @@ class t3lib_parsehtml {
 	 * Internal function for case shifting of a string or whole array
 	 *
 	 * @param	mixed		Input string/array
-	 * @param	boolean		If $str is a string AND this boolean(caseSensitive) is false, the string is returned in uppercase
+	 * @param	boolean		If $str is a string AND this boolean(caseSensitive) is FALSE, the string is returned in uppercase
 	 * @param	string		Key string used for internal caching of the results. Could be an MD5 hash of the serialized version of the input $str if that is an array.
 	 * @return	string		Output string, processed
 	 * @access private
@@ -1229,12 +1271,12 @@ class t3lib_parsehtml {
 		$cacheKey .= $flag ? 1 : 0;
 		if (is_array($str)) {
 			if (!$cacheKey || !isset($this->caseShift_cache[$cacheKey])) {
-				reset($str);
-				foreach ($str as $k => $v) {
+				foreach ($str as &$v) {
 					if (!$flag) {
-						$str[$k] = strtoupper($v);
+						$v = strtoupper($v);
 					}
 				}
+				unset($v);
 				if ($cacheKey) {
 					$this->caseShift_cache[$cacheKey] = $str;
 				}
@@ -1267,7 +1309,7 @@ class t3lib_parsehtml {
 			} else {
 				$attr = $meta[$k]['origTag'] ? $meta[$k]['origTag'] : $k;
 				if (strcmp($v, '') || isset($meta[$k]['dashType'])) {
-					$dash = $meta[$k]['dashType'] ? $meta[$k]['dashType'] : (t3lib_div::testInt($v) ? '' : '"');
+					$dash = $meta[$k]['dashType'] ? $meta[$k]['dashType'] : (t3lib_utility_Math::canBeInterpretedAsInteger($v) ? '' : '"');
 					$attr .= '=' . $dash . $v . $dash;
 				}
 			}
@@ -1300,9 +1342,10 @@ class t3lib_parsehtml {
 	function indentLines($content, $number = 1, $indentChar = TAB) {
 		$preTab = str_pad('', $number * strlen($indentChar), $indentChar);
 		$lines = explode(LF, str_replace(CR, '', $content));
-		foreach ($lines as $k => $v) {
-			$lines[$k] = $preTab . $v;
+		foreach ($lines as &$line) {
+			$line = $preTab . $line;
 		}
+		unset($line);
 		return implode(LF, $lines);
 	}
 

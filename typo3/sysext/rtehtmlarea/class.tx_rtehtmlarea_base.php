@@ -31,8 +31,6 @@
  *
  * @author	Philipp Borgmann <philipp.borgmann@gmx.de>
  * @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
- *
- * $Id$  *
  */
 
 class tx_rtehtmlarea_base extends t3lib_rteapi {
@@ -142,10 +140,10 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	protected $pluginEnabledCumulativeArray = array();	// Cumulative array of plugin id's enabled so far in any of the RTE editing areas of the form
 	protected $cumulativeScripts = array();
 	public $registeredPlugins = array();			// Array of registered plugins indexed by their plugin Id's
-	protected $fullScreen = false;
+	protected $fullScreen = FALSE;
 
 	/**
-	 * Returns true if the RTE is available. Here you check if the browser requirements are met.
+	 * Returns TRUE if the RTE is available. Here you check if the browser requirements are met.
 	 * If there are reasons why the RTE cannot be displayed you simply enter them as text in ->errorLog
 	 *
 	 * @return	boolean		TRUE if this RTE object offers an RTE in the current browser environment
@@ -187,7 +185,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 												}
 											}
 										}
-									} else {		
+									} else {
 											// No system config: system is supported
 										$rteIsAvailable = TRUE;
 										break;
@@ -207,7 +205,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			if (!$rteIsAvailable) {
 				$this->errorLog[] = 'RTE: Browser not supported.';
 			}
-			if (t3lib_div::int_from_ver(TYPO3_version) < 4000000) {
+			if (t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version) < 4000000) {
 				$rteIsAvailable = FALSE;
 				$this->errorLog[] = 'rte: This version of htmlArea RTE cannot run under this version of TYPO3.';
 			}
@@ -232,14 +230,14 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 */
 
 	function drawRTE($parentObject, $table, $field, $row, $PA, $specConf, $thisConfig, $RTEtypeVal, $RTErelPath, $thePidValue) {
-		global $BE_USER, $LANG, $TYPO3_DB, $TYPO3_CONF_VARS;
+		global $LANG, $TYPO3_DB, $TYPO3_CONF_VARS;
 
 		$this->TCEform = $parentObject;
 		$inline = $this->TCEform->inline;
 		$LANG->includeLLFile('EXT:' . $this->ID . '/locallang.xml');
 		$this->client = $this->clientInfo();
-		$this->typoVersion = t3lib_div::int_from_ver(TYPO3_version);
-		$this->userUid = 'BE_' . $BE_USER->user['uid'];
+		$this->typoVersion = t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version);
+		$this->userUid = 'BE_' . $GLOBALS['BE_USER']->user['uid'];
 
 			// Draw form element:
 		if ($this->debugMode)	{	// Draws regular text area (debug mode)
@@ -269,7 +267,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 
 				// Find "thisConfig" for record/editor:
 			unset($this->RTEsetup);
-			$this->RTEsetup = $BE_USER->getTSConfig('RTE',t3lib_BEfunc::getPagesTSconfig($this->tscPID));
+			$this->RTEsetup = $GLOBALS['BE_USER']->getTSConfig('RTE', t3lib_BEfunc::getPagesTSconfig($this->tscPID));
 			$this->thisConfig = $thisConfig;
 
 				// Special configuration and default extras:
@@ -295,7 +293,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			if ($this->language=='default' || !$this->language)	{
 				$this->language='en';
 			}
-			$this->contentTypo3Language = $this->language;
+			$this->contentTypo3Language = ($this->language == 'en') ? 'default' : $this->language;
 			$this->contentISOLanguage = 'en';
 			$this->contentLanguageUid = ($row['sys_language_uid'] > 0) ? $row['sys_language_uid'] : 0;
 			if (t3lib_extMgm::isLoaded('static_info_tables')) {
@@ -311,7 +309,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 					$res = $TYPO3_DB->exec_SELECTquery($selectFields, $tableAB, $whereClause);
 					while($languageRow = $TYPO3_DB->sql_fetch_assoc($res)) {
 						$this->contentISOLanguage = strtolower(trim($languageRow['lg_iso_2']).(trim($languageRow['lg_country_iso_2'])?'_'.trim($languageRow['lg_country_iso_2']):''));
-						$this->contentTypo3Language = strtolower(trim($languageRow['lg_typo3']));
+						$this->contentTypo3Language = trim($languageRow['lg_typo3']) ? strtolower(trim($languageRow['lg_typo3'])) : 'default';
 					}
 				} else {
 					$this->contentISOLanguage = trim($this->thisConfig['defaultContentLanguage']) ? trim($this->thisConfig['defaultContentLanguage']) : 'en';
@@ -320,7 +318,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 					$whereClause = 'lg_iso_2 = ' . $TYPO3_DB->fullQuoteStr(strtoupper($this->contentISOLanguage), $tableAB);
 					$res = $TYPO3_DB->exec_SELECTquery($selectFields, $tableAB, $whereClause);
 					while($languageRow = $TYPO3_DB->sql_fetch_assoc($res)) {
-						$this->contentTypo3Language = strtolower(trim($languageRow['lg_typo3']));
+						$this->contentTypo3Language = trim($languageRow['lg_typo3']) ? strtolower(trim($languageRow['lg_typo3'])) : 'default';
 					}
 				}
 			}
@@ -352,9 +350,9 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 				$RTEPaddingRight = '0';
 				$editorWrapWidth = '100%';
 			} else {
-				$RTEWidth = isset($BE_USER->userTS['options.']['RTESmallWidth']) ? $BE_USER->userTS['options.']['RTESmallWidth'] : '530';
-				$RTEHeight = isset($BE_USER->userTS['options.']['RTESmallHeight']) ? $BE_USER->userTS['options.']['RTESmallHeight'] : '380';
-				$RTEWidth  = $RTEWidth + ($this->TCEform->docLarge ? (isset($BE_USER->userTS['options.']['RTELargeWidthIncrement']) ? $BE_USER->userTS['options.']['RTELargeWidthIncrement'] : '150') : 0);
+				$RTEWidth = isset($GLOBALS['BE_USER']->userTS['options.']['RTESmallWidth']) ? $GLOBALS['BE_USER']->userTS['options.']['RTESmallWidth'] : '530';
+				$RTEHeight = isset($GLOBALS['BE_USER']->userTS['options.']['RTESmallHeight']) ? $GLOBALS['BE_USER']->userTS['options.']['RTESmallHeight'] : '380';
+				$RTEWidth  = $RTEWidth + ($this->TCEform->docLarge ? (isset($GLOBALS['BE_USER']->userTS['options.']['RTELargeWidthIncrement']) ? $GLOBALS['BE_USER']->userTS['options.']['RTELargeWidthIncrement'] : '150') : 0);
 				$RTEWidth -= ($inline->getStructureDepth() > 0 ? ($inline->getStructureDepth()+1)*$inline->getLevelMargin() : 0);
 				$RTEWidthOverride = (is_object($GLOBALS['BE_USER']) && isset($GLOBALS['BE_USER']->uc['rteWidth']) && trim($GLOBALS['BE_USER']->uc['rteWidth'])) ? trim($GLOBALS['BE_USER']->uc['rteWidth']) : trim($this->thisConfig['RTEWidthOverride']);
 				if ($RTEWidthOverride) {
@@ -367,7 +365,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 					}
 				}
 				$RTEWidth = strstr($RTEWidth, '%') ? $RTEWidth :  $RTEWidth . 'px';
-				$RTEHeight = $RTEHeight + ($this->TCEform->docLarge ?  (isset($BE_USER->userTS['options.']['RTELargeHeightIncrement']) ? $BE_USER->userTS['options.']['RTELargeHeightIncrement'] : 0) : 0);
+				$RTEHeight = $RTEHeight + ($this->TCEform->docLarge ?  (isset($GLOBALS['BE_USER']->userTS['options.']['RTELargeHeightIncrement']) ? $GLOBALS['BE_USER']->userTS['options.']['RTELargeHeightIncrement'] : 0) : 0);
 				$RTEHeightOverride = (is_object($GLOBALS['BE_USER']) && isset($GLOBALS['BE_USER']->uc['rteHeight']) && intval($GLOBALS['BE_USER']->uc['rteHeight'])) ? intval($GLOBALS['BE_USER']->uc['rteHeight']) : intval($this->thisConfig['RTEHeightOverride']);
 				$RTEHeight = ($RTEHeightOverride > 0) ? $RTEHeightOverride : $RTEHeight;
 				$RTEPaddingRight = '2px';
@@ -532,7 +530,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 					// Traverse registered plugins
 		if (is_array($TYPO3_CONF_VARS['EXTCONF'][$this->ID]['plugins'])) {
 			foreach($TYPO3_CONF_VARS['EXTCONF'][$this->ID]['plugins'] as $pluginId => $pluginObjectConfiguration) {
-				$plugin = false;
+				$plugin = FALSE;
 				if (is_array($pluginObjectConfiguration) && count($pluginObjectConfiguration)) {
 					$plugin = t3lib_div::getUserObj($pluginObjectConfiguration['objectReference']);
 				}
@@ -571,8 +569,6 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 */
 
 	function setToolbar() {
-		global $BE_USER;
-
 		if ($this->client['browser'] == 'msie' || $this->client['browser'] == 'opera') {
 			$this->thisConfig['keepButtonGroupTogether'] = 0;
 		}
@@ -623,8 +619,8 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		}
 
 			// Resticting to RTEkeyList for backend user
-		if(is_object($BE_USER)) {
-			$RTEkeyList = isset($BE_USER->userTS['options.']['RTEkeyList']) ? $BE_USER->userTS['options.']['RTEkeyList'] : '*';
+		if(is_object($GLOBALS['BE_USER'])) {
+			$RTEkeyList = isset($GLOBALS['BE_USER']->userTS['options.']['RTEkeyList']) ? $GLOBALS['BE_USER']->userTS['options.']['RTEkeyList'] : '*';
 			if ($RTEkeyList != '*')	{ 	// If not all
 				$show = array_intersect($show, t3lib_div::trimExplode(',',$RTEkeyList,1));
 			}
@@ -672,11 +668,11 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		$hidePlugins = array();
 		foreach ($this->pluginButton as $pluginId => $buttonList) {
 			if ($this->registeredPlugins[$pluginId]->addsButtons()) {
-				$showPlugin = false;
+				$showPlugin = FALSE;
 				$buttonArray = t3lib_div::trimExplode(',', $buttonList, 1);
 				foreach ($buttonArray as $button) {
 					if (in_array($button, $this->toolbar)) {
-						$showPlugin = true;
+						$showPlugin = TRUE;
 					}
 				}
 				if (!$showPlugin) {
@@ -839,8 +835,18 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			RTEarea[editornumber].disablePCexamples = ' . (trim($this->thisConfig['disablePCexamples'])?'true':'false') . ';
 			RTEarea[editornumber].showTagFreeClasses = ' . (trim($this->thisConfig['showTagFreeClasses'])?'true':'false') . ';
 			RTEarea[editornumber].useHTTPS = ' . ((trim(stristr($this->siteURL, 'https')) || $this->thisConfig['forceHTTPS'])?'true':'false') . ';
-			RTEarea[editornumber].tceformsNested = ' . (is_object($this->TCEform) && method_exists($this->TCEform, 'getDynNestedStack') ? $this->TCEform->getDynNestedStack(true) : '[]') . ';
+			RTEarea[editornumber].tceformsNested = ' . (is_object($this->TCEform) && method_exists($this->TCEform, 'getDynNestedStack') ? $this->TCEform->getDynNestedStack(TRUE) : '[]') . ';
 			RTEarea[editornumber].dialogueWindows = new Object();';
+			// The following property is deprecated as of TYPO3 4.6 and will be removed in TYPO3 4.8
+		if (isset($this->thisConfig['showTagFreeClasses'])) {
+			$this->logDeprecatedProperty('showTagFreeClasses', 'buttons.blockstyle.showTagFreeClasses', '4.8');
+			$this->logDeprecatedProperty('showTagFreeClasses', 'buttons.textstyle.showTagFreeClasses', '4.8');
+		}
+			// The following property is deprecated as of TYPO3 4.6 and will be removed in TYPO3 4.8
+		if (isset($this->thisConfig['disablePCexamples'])) {
+			$this->logDeprecatedProperty('disablePCexamples', 'buttons.blockstyle.disableStyleOnOptionLabel', '4.8');
+			$this->logDeprecatedProperty('disablePCexamples', 'buttons.textstyle.disableStyleOnOptionLabel', '4.8');
+		}
 		if (isset($this->thisConfig['dialogueWindows.']['defaultPositionFromTop'])) {
 			$configureRTEInJavascriptString .= '
 			RTEarea[editornumber].dialogueWindows.positionFromTop = ' . intval($this->thisConfig['dialogueWindows.']['defaultPositionFromTop']) . ';';
@@ -899,6 +905,8 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			RTEarea[editornumber].htmlRemoveTagsAndContents = /^(' . implode('|', t3lib_div::trimExplode(',', $this->thisConfig['removeTagsAndContents'], 1)) . ')$/i;';
 		}
 			// Process default style configuration
+			// This default configuration is deprecated as of TYPO3 4.6 and will be removed in TYPO3 4.8.
+			// Use contentCSS instead.
 		$configureRTEInJavascriptString .= '
 			RTEarea[editornumber].defaultPageStyle = "' . $this->writeTemporaryFile('', 'defaultPageStyle', 'css', $this->buildStyleSheet()) . '";';
 			// Setting the pageStyle
@@ -906,7 +914,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 		$configureRTEInJavascriptString .= '
 			RTEarea[editornumber].pageStyle = "' . t3lib_div::createVersionNumberedFilename($this->getFullFileName($filename)) .'";';
 			// Process classes configuration
-		$classesConfigurationRequired = false;
+		$classesConfigurationRequired = FALSE;
 		foreach ($this->registeredPlugins as $pluginId => $plugin) {
 			if ($this->isPluginEnabled($pluginId)) {
 				$classesConfigurationRequired = $classesConfigurationRequired || $plugin->requiresClassesConfiguration();
@@ -933,11 +941,11 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	}
 
 	/**
-	 * Return true, if the plugin can be loaded
+	 * Return TRUE, if the plugin can be loaded
 	 *
 	 * @param	string		$pluginId: The identification string of the plugin
 	 *
-	 * @return	boolean		true if the plugin can be loaded
+	 * @return	boolean		TRUE if the plugin can be loaded
 	 */
 
 	function isPluginEnabled($pluginId) {
@@ -948,12 +956,26 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 * Build the default content style sheet
 	 *
 	 * @return string		Style sheet
+	 * @deprecated since TYPO3 4.8, will be removed in TYPO3 4.10
 	 */
 	function buildStyleSheet() {
-
+			// This function will be DEPRECATED as of TYPO3 4.8 and will be removed in TYPO3 4.10
+		//t3lib_div::logDeprecatedFunction();
+			// These PageTSConfig properties are DEPRECATED as of TYPO3 4.6 and will be removed in TYPO3 4.8
+		$properties = array('mainStyle_font', 'mainStyle_size', 'mainStyle_color', 'mainStyle_bgcolor', 'mainStyleOverride');
+		foreach ($properties as $property) {
+			if (isset($this->thisConfig[$property])) {
+				$this->logDeprecatedProperty($property, 'contentCSS', '4.8');
+			}
+		}
+		if (is_array($this->thisConfig['mainStyleOverride_add.'])) {
+			$this->logDeprecatedProperty('mainStyleOverride_add', 'contentCSS', '4.8');
+		}
+		if (is_array($this->thisConfig['inlineStyle.']))        {
+			$this->logDeprecatedProperty('inlineStyle', 'contentCSS', '4.8');
+		}
 		if (!trim($this->thisConfig['ignoreMainStyleOverride'])) {
 			$mainStyle_font = $this->thisConfig['mainStyle_font'] ? $this->thisConfig['mainStyle_font']: 'Verdana,sans-serif';
-
 			$mainElements = array();
 			$mainElements['P'] = $this->thisConfig['mainStyleOverride_add.']['P'];
 			$elList = explode(',','H1,H2,H3,H4,H5,H6,PRE');
@@ -1000,15 +1022,20 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	 */
 	function buildJSClassesConfig($RTEcounter) {
 			// Build JS array of lists of classes
+			// These PageTSConfig properties are DEPRECATED as of TYPO3 4.6 and will be removed in TYPO3 4.8
 		$classesTagList = 'classesCharacter, classesParagraph, classesImage, classesTable, classesLinks, classesTD';
-		$classesTagConvert = array( 'classesCharacter' => 'span', 'classesParagraph' => 'div', 'classesImage' => 'img', 'classesTable' => 'table', 'classesLinks' => 'a', 'classesTD' => 'td');
+		$classesTagConvert = array('classesCharacter' => 'span', 'classesParagraph' => 'div', 'classesImage' => 'img', 'classesTable' => 'table', 'classesLinks' => 'a', 'classesTD' => 'td');
+		$classesUseInstead = array('classesCharacter' => 'buttons.textstyle.tags.span.allowedClasses', 'classesParagraph' => 'buttons.blockstyle.tags.div.allowedClasses', 'classesImage' => 'buttons.image.properties.class.allowedClasses', 'classesTable' => 'buttons.blockstyle.tags.table.allowedClasses', 'classesLinks' => 'buttons.link.properties.class.allowedClasses', 'classesTD' => 'buttons.blockstyle.tags.td.allowedClasses');
 		$classesTagArray = t3lib_div::trimExplode(',' , $classesTagList);
 		$configureRTEInJavascriptString = '
 			RTEarea[editornumber].classesTag = new Object();';
 		foreach ($classesTagArray as $classesTagName) {
-			$HTMLAreaJSClasses = ($this->thisConfig[$classesTagName])?('"' . $this->cleanList($this->thisConfig[$classesTagName]) . '";'):'null;';
+			$HTMLAreaJSClasses = $this->thisConfig[$classesTagName] ? ('"' . $this->cleanList($this->thisConfig[$classesTagName]) . '";') : 'null;';
 			$configureRTEInJavascriptString .= '
 			RTEarea[editornumber].classesTag.'. $classesTagConvert[$classesTagName] .' = '. $HTMLAreaJSClasses;
+			if (isset($this->thisConfig[$classesTagName])) {
+				$this->logDeprecatedProperty($classesTagName, $classesUseInstead[$classesTagName], '4.8');
+			}
 		}
 			// Include JS arrays of configured classes
 		$configureRTEInJavascriptString .= '
@@ -1133,7 +1160,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			}
 			$failure = t3lib_div::writeFileToTypo3tempDir($destination, $compressedJavaScript ? $compressedJavaScript : $output);
 			if ($failure)  {
-				die($failure);
+				throw new RuntimeException($failure, 1294585668);
 			}
 		}
 		if ($concatenate && $fileExtension == 'js') {
@@ -1165,12 +1192,12 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 				if (!file_exists($destination)) {
 					$failure = t3lib_div::writeFileToTypo3tempDir($destination, $contents);
 					if ($failure)  {
-						die($failure);
+						throw new RuntimeException($failure, 1294585669);
 					}
 				} else {
 					$success = file_put_contents($destination, $contents, FILE_APPEND);
 					if (!$success)  {
-						die('Could not append script' + $fileName);
+						throw new RuntimeException('Could not append script: ' . $fileName, 1294585670);
 					}
 				}
 			}
@@ -1381,7 +1408,7 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 	}
 
 	/**
-	 * Return true if we are in the FE, but not in the FE editing feature of BE.
+	 * Return TRUE if we are in the FE, but not in the FE editing feature of BE.
 	 *
 	 * @return boolean
 	 */
@@ -1423,6 +1450,25 @@ class tx_rtehtmlarea_base extends t3lib_rteapi {
 			}
 		}
 		return $browserInfo;
+	}
+	/**
+	 * Log usage of deprecated Page TS Config Property
+	 *
+	 * @param string $deprecatedProperty: Name of deprecated property
+	 * @param string $useProperty: Name of property to use instead
+	 * @param string $version: Version of TYPO3 in which the property will be removed
+	 *
+	 * @return void
+	 */
+	public function logDeprecatedProperty ($deprecatedProperty, $useProperty, $version) {
+		if (!$this->thisConfig['logDeprecatedProperties.']['disabled']) {
+			$message = sprintf('RTE Page TSConfig property "%1$s" used on page id #%4$s is DEPRECATED and will be removed in TYPO3 %3$s. Use "%2$s" instead.', $deprecatedProperty, $useProperty, $version, $this->thePid);
+			t3lib_div::deprecationLog($message);
+			if (is_object($GLOBALS['BE_USER']) && $this->thisConfig['logDeprecatedProperties.']['logAlsoToBELog']) {
+				$message = sprintf($GLOBALS['LANG']->getLL('deprecatedPropertyMessage'), $deprecatedProperty, $useProperty, $version, $this->thePid);
+				$GLOBALS['BE_USER']->simplelog($message, $this->ID);
+			}
+		}
 	}
 	/***************************
 	 *

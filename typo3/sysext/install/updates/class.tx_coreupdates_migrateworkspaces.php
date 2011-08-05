@@ -30,7 +30,6 @@
  * Migrates workspaces from TYPO3 versions below 4.5.
  *
  * @author Tolleiv Nietsch <info@tolleiv.de>
- * @version $Id$
  */
 class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 	protected $title = 'Versioning and Workspaces';
@@ -41,7 +40,7 @@ class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 	 * Checks if an update is needed
 	 *
 	 * @param	string		&$description: The description for the update, which will be updated with a description of the script's purpose
-	 * @return	boolean		whether an update is needed (true) or not (false)
+	 * @return	boolean		whether an update is needed (TRUE) or not (FALSE)
 	 */
 	public function checkForUpdate(&$description) {
 		$result = FALSE;
@@ -140,7 +139,7 @@ class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 	 *
 	 * @param	array		&$databaseQueries: queries done in this update
 	 * @param	mixed		&$customMessages: custom messages
-	 * @return	boolean		whether it worked (true) or not (false)
+	 * @return	boolean		whether it worked (TRUE) or not (FALSE)
 	 */
 	public function performUpdate(array &$databaseQueries, &$customMessages) {
 		$result = TRUE;
@@ -203,7 +202,7 @@ class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 
 		$tables = array_keys($GLOBALS['TCA']);
 		foreach ($tables as $table) {
-			$versioningVer = t3lib_div::intInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
+			$versioningVer = t3lib_utility_Math::forceIntegerInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
 			if ($versioningVer > 0) {
 				if ($this->hasElementsOnWorkspace($table, -1)) {
 					$foundDraftRecords = TRUE;
@@ -235,7 +234,7 @@ class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 		if (!$workspacesWithReviewers && !empty($workspaceUids)) {
 			$tables = array_keys($GLOBALS['TCA']);
 			foreach ($tables as $table) {
-				$versioningVer = t3lib_div::intInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
+				$versioningVer = t3lib_utility_Math::forceIntegerInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
 				if ($versioningVer > 0) {
 					$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
 						'uid',
@@ -288,7 +287,7 @@ class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 			't3ver_stage' => intval($newStageId)
 		);
 		foreach($tables as $table) {
-			$versioningVer = t3lib_div::intInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
+			$versioningVer = t3lib_utility_Math::forceIntegerInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
 			if ($versioningVer > 0) {
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, $where, $values);
 				$this->sqlQueries[] =  $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
@@ -337,7 +336,7 @@ class tx_coreupdates_migrateworkspaces extends tx_coreupdates_installsysexts {
 			't3ver_wsid' => intval($wsId)
 		);
 		foreach($tables as $table) {
-			$versioningVer = t3lib_div::intInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
+			$versioningVer = t3lib_utility_Math::forceIntegerInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
 			if ($versioningVer > 0 && $this->hasElementsOnWorkspace($table, -1)) {
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, $where, $values);
 				$this->sqlQueries[] =  $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;

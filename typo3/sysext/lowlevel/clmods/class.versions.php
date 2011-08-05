@@ -30,20 +30,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   56: class tx_lowlevel_versions extends tx_lowlevel_cleaner_core
- *   63:     function tx_lowlevel_versions()
- *   88:     function main()
- *  122:     function main_autoFix($resultArray)
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 /**
@@ -60,8 +46,8 @@ class tx_lowlevel_versions extends tx_lowlevel_cleaner_core {
 	 *
 	 * @return	void
 	 */
-	function tx_lowlevel_versions()	{
-		parent::tx_lowlevel_cleaner_core();
+	function __construct()	{
+		parent::__construct();
 
 			// Setting up help:
 		$this->cli_options[] = array('--echotree level', 'When "level" is set to 1 or higher you will see the page of the page tree outputted as it is traversed. A value of 2 for "level" will show even more information.');
@@ -82,6 +68,19 @@ Automatic Repair:
 ');
 
 		$this->cli_help['examples'] = '';
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tx_lowlevel_versions() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tx_lowlevel_versions::__construct();
 	}
 
 	/**
@@ -110,8 +109,8 @@ Automatic Repair:
 			'versions' => array(),
 		);
 
-		$startingPoint = $this->cli_isArg('--pid') ? t3lib_div::intInRange($this->cli_argValue('--pid'),0) : 0;
-		$depth = $this->cli_isArg('--depth') ? t3lib_div::intInRange($this->cli_argValue('--depth'),0) : 1000;
+		$startingPoint = $this->cli_isArg('--pid') ? t3lib_utility_Math::forceIntegerInRange($this->cli_argValue('--pid'),0) : 0;
+		$depth = $this->cli_isArg('--depth') ? t3lib_utility_Math::forceIntegerInRange($this->cli_argValue('--depth'),0) : 1000;
 		$this->genTree($startingPoint,$depth,(int)$this->cli_argValue('--echotree'));
 
 		$resultArray['versions'] = $this->recStats['versions'];

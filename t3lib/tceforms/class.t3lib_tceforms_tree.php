@@ -28,8 +28,6 @@
 /**
  * TCEforms wizard for rendering an AJAX selector for records
  *
- * $Id: class.t3lib_tceforms_suggest.php 7905 2010-06-13 14:42:33Z ohader $
- *
  * @author Steffen Ritter <info@steffen-ritter.net>
  * @author Steffen Kamper <steffen@typo3.org>
  */
@@ -65,8 +63,14 @@ class t3lib_TCEforms_Tree {
 	 * @return string The HTML code for the TCEform field
 	 */
 	public function renderField($table, $field, $row, &$PA, $config, $possibleSelectboxItems, $noMatchLabel) {
-		$valueArray = explode(',', $PA['itemFormElValue']);
+
+		$valueArray = array();
 		$selectedNodes = array();
+
+		if(!empty($PA['itemFormElValue'])) {
+			$valueArray = explode(',', $PA['itemFormElValue']);
+		}
+
 		if (count($valueArray)) {
 			foreach ($valueArray as $selectedValue) {
 				$temp = explode('|', $selectedValue);
@@ -141,13 +145,28 @@ class t3lib_TCEforms_Tree {
 
 		$onChange = '';
 		if ($PA['fieldChangeFunc']['TBE_EDITOR_fieldChanged']) {
-			$onChange = substr($PA['fieldChangeFunc']['TBE_EDITOR_fieldChanged'], 0, -1);
+			$onChange = $PA['fieldChangeFunc']['TBE_EDITOR_fieldChanged'];
+		}
+
+			// Create a JavaScript code line which will ask the user to save/update the form due to changing the element.
+			// This is used for eg. "type" fields and others configured with "requestUpdate"
+		if (($GLOBALS['TCA'][$table]['ctrl']['type']
+					&& !strcmp($field, $GLOBALS['TCA'][$table]['ctrl']['type']))
+				|| ($GLOBALS['TCA'][$table]['ctrl']['requestUpdate']
+					&& t3lib_div::inList($GLOBALS['TCA'][$table]['ctrl']['requestUpdate'], $field))) {
+			if ($GLOBALS['BE_USER']->jsConfirmation(1)) {
+				$onChange .= 'if (confirm(TBE_EDITOR.labels.onChangeAlert) && ' .
+					'TBE_EDITOR.checkSubmit(-1)){ TBE_EDITOR.submitForm() };';
+			} else {
+				$onChange .= 'if (TBE_EDITOR.checkSubmit(-1)){ TBE_EDITOR.submitForm() };';
+			}
 		}
 
 		/** @var $pageRenderer t3lib_PageRenderer */
 		$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
 		$pageRenderer->loadExtJs();
 		$pageRenderer->addJsFile('../t3lib/js/extjs/tree/tree.js');
+		$pageRenderer->addInlineLanguageLabelFile(t3lib_extMgm::extPath('lang') . 'locallang_csh_corebe.xml', 'tcatree');
 		$pageRenderer->addExtOnReadyCode('
 			TYPO3.Components.Tree.StandardTreeItemData["' . $id . '"] = ' . $treeData . ';
 			var tree' . $id . ' = new TYPO3.Components.Tree.StandardTree({
@@ -181,7 +200,8 @@ class t3lib_TCEforms_Tree {
 		$PA['fieldConf']['config']['exclusiveKeys']
 				? $PA['fieldConf']['config']['exclusiveKeys'] : '') . '",
 				ucId: "' . md5($table . '|' . $field) . '",
-				selModel: TYPO3.Components.Tree.EmptySelectionModel
+				selModel: TYPO3.Components.Tree.EmptySelectionModel,
+				disabled: ' . ($PA['fieldConf']['config']['readOnly'] ? 'true' : 'false') . '
 			});' . LF .
 			($autoSizeMax
 				? 'tree' . $id . '.bodyStyle = "max-height: ' . $autoSizeMax . 'px;min-height: ' . $height . 'px;";'

@@ -26,58 +26,11 @@
  ***************************************************************/
 /**
  * Functions for parsing HTML, specially for TYPO3 processing in relation to TCEmain and Rich Text Editor (RTE)
- *
- * $Id$
  * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compatible.
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @internal
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  103: class t3lib_parsehtml_proc extends t3lib_parsehtml
- *  138:	 function init($elRef='',$recPid=0)
- *  150:	 function setRelPath($path)
- *  174:	 function evalWriteFile($pArr,$currentRecord)
- *
- *			  SECTION: Main function
- *  232:	 function RTE_transform($value,$specConf,$direction='rte',$thisConfig=array())
- *
- *			  SECTION: Specific RTE TRANSFORMATION functions
- *  398:	 function TS_images_db($value)
- *  550:	 function TS_images_rte($value)
- *  589:	 function TS_reglinks($value,$direction)
- *  626:	 function TS_links_db($value)
- *  675:	 function TS_links_rte($value)
- *  760:	 function TS_preserve_db($value)
- *  784:	 function TS_preserve_rte($value)
- *  805:	 function TS_transform_db($value,$css=FALSE)
- *  922:	 function transformStyledATags($value)
- *  948:	 function TS_transform_rte($value,$css=0)
- * 1019:	 function TS_strip_db($value)
- *
- *			  SECTION: Generic RTE transformation, analysis and helper functions
- * 1050:	 function getURL($url)
- * 1064:	 function HTMLcleaner_db($content,$tagList='')
- * 1091:	 function getKeepTags($direction='rte',$tagList='')
- * 1200:	 function divideIntoLines($value,$count=5,$returnArray=FALSE)
- * 1304:	 function setDivTags($value,$dT='p')
- * 1349:	 function internalizeFontTags($value)
- * 1385:	 function siteUrl()
- * 1395:	 function rteImageStorageDir()
- * 1407:	 function removeTables($value,$breakChar='<br />')
- * 1439:	 function defaultTStagMapping($code,$direction='rte')
- * 1462:	 function getWHFromAttribs($attribArray)
- * 1489:	 function urlInfoForLinkTags($url)
- * 1548:	 function TS_AtagToAbs($value,$dontSetRTEKEEP=FALSE)
- *
- * TOTAL FUNCTIONS: 28
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -152,7 +105,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 	 * @return	mixed		On success an array with various information is returned, otherwise a string with an error message
 	 * @see t3lib_TCEmain, t3lib_transferData
 	 */
-	function evalWriteFile($pArr, $currentRecord) {
+	public static function evalWriteFile($pArr, $currentRecord) {
 
 			// Write file configuration:
 		if (is_array($pArr)) {
@@ -666,7 +619,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 		foreach ($blockSplit as $k => $v) {
 			$error = '';
 			if ($k % 2) { // block:
-				$tagCode = t3lib_div::unQuoteFilenames(trim(substr($this->getFirstTag($v), 0, -1)), true);
+				$tagCode = t3lib_div::unQuoteFilenames(trim(substr($this->getFirstTag($v), 0, -1)), TRUE);
 				$link_param = $tagCode[1];
 				$href = '';
 					// Parsing the typolink data. This parsing is roughly done like in tslib_content->typolink()
@@ -705,7 +658,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 							$idPart = $this->recPid;
 						} // If no id or alias is given, set it to class record pid
 							// Checking if the id-parameter is an alias.
-						if (!t3lib_div::testInt($idPart)) {
+						if (!t3lib_utility_Math::canBeInterpretedAsInteger($idPart)) {
 							list($idPartR) = t3lib_BEfunc::getRecordsByField('pages', 'alias', $idPart);
 							$idPart = intval($idPartR['uid']);
 						}
@@ -791,7 +744,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 	 * Cleaning (->db) for standard content elements (ts)
 	 *
 	 * @param	string		Content input
-	 * @param	boolean		If true, the transformation was "css_transform", otherwise "ts_transform"
+	 * @param	boolean		If TRUE, the transformation was "css_transform", otherwise "ts_transform"
 	 * @return	string		Content output
 	 * @see TS_transform_rte()
 	 */
@@ -948,7 +901,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 	 * Set (->rte) for standard content elements (ts)
 	 *
 	 * @param	string		Content input
-	 * @param	boolean		If true, the transformation was "css_transform", otherwise "ts_transform"
+	 * @param	boolean		If TRUE, the transformation was "css_transform", otherwise "ts_transform"
 	 * @return	string		Content output
 	 * @see TS_transform_db()
 	 */
@@ -990,7 +943,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 					case 'typohead': // Transform typohead into Hx tags.
 						if (!isset($this->procOptions['typohead']) || $this->procOptions['typohead']) {
 							$tC = $this->removeFirstAndLastTag($blockSplit[$k]);
-							$typ = t3lib_div::intInRange($attribArray['type'], 0, 6);
+							$typ = t3lib_utility_Math::forceIntegerInRange($attribArray['type'], 0, 6);
 							if (!$typ) {
 								$typ = 6;
 							}
@@ -1044,10 +997,10 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 	 *
 	 * @param	string		Filepath/URL to read
 	 * @return	string		The content from the resource given as input.
-	 * @see t3lib_div::getURL()
+	 * @see t3lib_div::getUrl()
 	 */
-	function getURL($url) {
-		return t3lib_div::getURL($url);
+	function getUrl($url) {
+		return t3lib_div::getUrl($url);
 	}
 
 	/**
@@ -1214,7 +1167,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 	 *
 	 * @param	string		Value to process.
 	 * @param	integer		Recursion brake. Decremented on each recursion down to zero. Default is 5 (which equals the allowed nesting levels of p/div tags).
-	 * @param	boolean		If true, an array with the lines is returned, otherwise a string of the processed input value.
+	 * @param	boolean		If TRUE, an array with the lines is returned, otherwise a string of the processed input value.
 	 * @return	string		Processed input value.
 	 * @see setDivTags()
 	 */
@@ -1291,7 +1244,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 							if (!count($this->allowedClasses) || in_array($attribs[0]['class'], $this->allowedClasses)) {
 								$newAttribs['class'] = $attribs[0]['class'];
 							} else {
-								$classes = t3lib_div::trimExplode(' ', $attribs[0]['class'], true);
+								$classes = t3lib_div::trimExplode(' ', $attribs[0]['class'], TRUE);
 								$newClasses = array();
 								foreach ($classes as $class) {
 									if (in_array($class, $this->allowedClasses)) {
@@ -1603,7 +1556,7 @@ class t3lib_parsehtml_proc extends t3lib_parsehtml {
 	 * Converting <A>-tags to absolute URLs (+ setting rtekeep attribute)
 	 *
 	 * @param	string		Content input
-	 * @param	boolean		If true, then the "rtekeep" attribute will not be set.
+	 * @param	boolean		If TRUE, then the "rtekeep" attribute will not be set.
 	 * @return	string		Content output
 	 */
 	function TS_AtagToAbs($value, $dontSetRTEKEEP = FALSE) {

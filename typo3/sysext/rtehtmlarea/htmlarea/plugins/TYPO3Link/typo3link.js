@@ -26,8 +26,6 @@
 ***************************************************************/
 /*
  * TYPO3Link plugin for htmlArea RTE
- *
- * TYPO3 SVN ID: $Id$
  */
 HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 	/*
@@ -346,11 +344,14 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 					else node.removeAttribute("target");
 				if (cur_class.trim()) {
 					node.className = cur_class.trim();
-				} else { 
-					if (!Ext.isIE) {
+				} else {
+					if (!Ext.isOpera) {
 						node.removeAttribute('class');
+						if (Ext.isIE) {
+							node.removeAttribute('className');
+						}
 					} else {
-						node.removeAttribute('className');
+						node.className = '';
 					}
 				}
 				if (cur_title.trim()) {

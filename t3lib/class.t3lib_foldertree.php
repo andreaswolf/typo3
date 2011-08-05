@@ -27,32 +27,10 @@
 /**
  * Generate a folder tree
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	René Fritz <r.fritz@colorcube.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   82: class t3lib_folderTree extends t3lib_treeView
- *   89:	 function t3lib_folderTree()
- *  107:	 function wrapIcon($icon,$row)
- *  130:	 function wrapTitle($title,$row,$bank=0)
- *  145:	 function getId($v)
- *  155:	 function getJumpToParam($v)
- *  167:	 function getTitleStr($row,$titleLen=30)
- *  177:	 function getBrowsableTree()
- *  240:	 function getFolderTree($files_path, $depth=999, $depthData='')
- *  320:	 function getCount($files_path)
- *  336:	 function initializePositionSaving()
- *
- * TOTAL FUNCTIONS: 10
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -72,7 +50,7 @@ class t3lib_folderTree extends t3lib_treeView {
 	 *
 	 * @return	void
 	 */
-	function t3lib_folderTree() {
+	function __construct() {
 		parent::init();
 
 		$this->MOUNTS = $GLOBALS['FILEMOUNTS'];
@@ -80,6 +58,19 @@ class t3lib_folderTree extends t3lib_treeView {
 		$this->treeName = 'folder';
 		$this->titleAttrib = ''; //don't apply any title
 		$this->domIdPrefix = 'folder';
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function t3lib_folderTree() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		t3lib_folderTree::__construct();
 	}
 
 	/**

@@ -27,131 +27,25 @@
 /**
  * Contains the class for the Install Tool
  *
- * $Id$
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  162: class tx_install extends t3lib_install
- *  234:     function tx_install()
- *  318:     function checkPassword()
- *  362:     function loginForm()
- *  396:     function init()
- *  574:     function stepOutput()
- *  836:     function checkTheConfig()
- *  867:     function typo3conf_edit()
- *  976:     function phpinformation()
- *
- *              SECTION: typo3temp/ manager
- * 1079:     function typo3TempManager()
- * 1199:     function getSelectorOptions($deleteType,$tt='')
- *
- *              SECTION: cleanup manager
- * 1231:     function cleanupManager()
- *
- *              SECTION: CONFIGURATION FORM
- * 1299:     function generateConfigForm($type='')
- * 1367:     function getDefaultConfigArrayComments($string,$mainArray=array(),$commentArray=array())
- *
- *              SECTION: CHECK CONFIGURATION FUNCTIONS
- * 1419:     function checkConfiguration()
- * 1572:     function check_mail($cmd='')
- * 1611:     function checkExtensions()
- * 1673:     function checkDirs()
- * 1762:     function checkImageMagick($paths)
- * 1837:     function _checkImageMagickGifCapability($path)
- * 1880:     function _checkImageMagick_getVersion($file, $path)
- * 1915:     function checkDatabase()
- * 1977:     function setupGeneral($cmd='')
- * 2166:     function writeToLocalconf_control($lines="", $showOutput=1)
- * 2190:     function outputExitBasedOnStep($content)
- * 2206:     function setLabelValueArray($arr,$type)
- * 2246:     function getFormElement($labels,$values,$fieldName,$default,$msg='')
- * 2266:     function getDatabaseList()
- * 2290:     function setupGeneralCalculate()
- * 2387:     function isTTF()
- *
- *              SECTION: ABOUT the isXXX functions.
- * 2436:     function isGD()
- * 2447:     function isGIF()
- * 2459:     function isJPG()
- * 2470:     function isPNG()
- * 2482:     function ImageTypes()
- * 2493:     function getGDSoftwareInfo()
- * 2505:     function generallyAboutConfiguration()
- *
- *              SECTION: IMAGE processing
- * 2565:     function checkTheImageProcessing()
- * 3046:     function isExtensionEnabled($ext, $headCode, $short)
- * 3062:     function displayTwinImage ($imageFile, $IMcommands=array(), $note='')
- * 3130:     function getTwinImageMessage($message, $label_1="", $label_2='')
- * 3146:     function formatImCmds($arr)
- * 3167:     function imagemenu()
- *
- *              SECTION: DATABASE analysing
- * 3209:     function checkTheDatabase()
- * 3849:     function updateWizard()
- * 3873:     function updateWizard_parts($action)
- * 3987:     function getUpgradeObjInstance($className, $identifier)
- * 4000:     function isBackendAdminUser()
- * 4023:     function isBasicComplete($tLabel)
- * 4063:     function generateUpdateDatabaseForm($type, $arr_update, $arr_remove, $action_type)
- * 4094:     function getUpdateDbFormWrap($action_type, $content, $label='Write to database')
- * 4107:     function displayFields($arr, $pre=0, $label='')
- * 4132:     function displayFieldComp($arr, $arr_db)
- * 4174:     function displaySuggestions($arr, $excludeList='')
- * 4204:     function compareDatabaseAndTCA($FDsrc, $TCA, $onlyFields=0)
- * 4262:     function compareTCAandDatabase($TCA, $FDcomp)
- * 4296:     function suggestFieldDefinition($fieldInfo)
- * 4373:     function getItemArrayType($arr)
- * 4401:     function getItemBlobSize($len)
- * 4412:     function suggestTCAFieldDefinition($fieldName,$fieldInfo)
- * 4555:     function includeTCA()
- *
- *              SECTION: GENERAL FUNCTIONS
- * 4597:     function linkIt($url,$link='')
- * 4611:     function message($head, $short_string='', $long_string='', $type=0, $force=0)
- * 4632:     function printSection($head, $short_string, $long_string, $type)
- * 4673:     function fw($str,$size=1)
- * 4696:     function fwheader($str)
- * 4707:     function wrapInCells($label,$content)
- * 4716:     function printAll()
- * 4735:     function outputWrapper($content)
- * 4801:     function menu()
- * 4823:     function stepHeader()
- * 4865:     function note123()
- * 4879:     function endNotes()
- * 4912:     function securityRisk()
- * 4930:     function alterPasswordForm()
- * 4946:     function messageBasicFinished()
- * 4968:     function setScriptName($type)
- * 4981:     function formWidth($size=48,$textarea=0,$styleOverride='')
- * 5002:     function formWidthText($size=48,$styleOverride='',$wrap='')
- * 5018:     function getBackupFilename($filename)
- *
- * TOTAL FUNCTIONS: 82
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
-// include requirements definition:
+	// include requirements definition:
 require_once(t3lib_extMgm::extPath('install') . 'requirements.php');
 
-// include update classes
-require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_charsetdefaults.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_compatversion.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_cscsplit.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_notinmenu.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_mergeadvanced.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_installsysexts.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_imagescols.php');
-require_once(t3lib_extMgm::extPath('install').'updates/class.tx_coreupdates_installnewsysexts.php');
+	// include session handling
 require_once(t3lib_extMgm::extPath('install') . 'mod/class.tx_install_session.php');
+
+	// include update classes
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_charsetdefaults.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_compatversion.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_cscsplit.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_notinmenu.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_mergeadvanced.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_installsysexts.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_imagescols.php');
+require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_installnewsysexts.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_statictemplates.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_t3skin.php');
 require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_compressionlevel.php');
@@ -162,8 +56,6 @@ require_once(t3lib_extMgm::extPath('install') . 'updates/class.tx_coreupdates_im
 
 /**
  * Install Tool module
- *
- * $Id$
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Ingmar Schlecht <ingmar@typo3.org>
@@ -254,6 +146,7 @@ class tx_install extends t3lib_install {
 		'session',
 		'SPL',
 		'standard',
+		'openssl',
 		'xml',
 		'zlib'
 	);
@@ -267,8 +160,8 @@ class tx_install extends t3lib_install {
 	 *
 	 * @return void
 	 */
-	function tx_install() {
-		parent::t3lib_install();
+	function __construct() {
+		parent::__construct();
 
 		if (!$GLOBALS['TYPO3_CONF_VARS']['BE']['installToolPassword']) {
 			$this->outputErrorAndExit('Install Tool deactivated.<br />You must enable it by setting a password in typo3conf/localconf.php. If you insert the line below, the password will be \'joh316\':<br /><br />$TYPO3_CONF_VARS[\'BE\'][\'installToolPassword\'] = \'bacb98acf97e0b6112b1d1b650b84971\';', 'Fatal error');
@@ -308,8 +201,14 @@ class tx_install extends t3lib_install {
 			if (count($missingPhpModules) > 0) {
 				throw new RuntimeException('TYPO3 Installation Error: The following PHP module(s) is/are missing: <em>' .
 						implode(', ', $missingPhpModules) .
-						'</em><br /><br />You need to install and enable these modules first to be able to install TYPO3.'
+						'</em><br /><br />You need to install and enable these modules first to be able to install TYPO3.',
+					1294587482
 				);
+			}
+				// Load saltedpasswords if possible
+			$saltedpasswordsLoaderFile = $this->backPath . 'sysext/saltedpasswords/classes/class.tx_saltedpasswords_autoloader.php';
+			if (@is_file($saltedpasswordsLoaderFile)) {
+				include($saltedpasswordsLoaderFile);
 			}
 		}
 		$this->redirect_url = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('redirect_url'));
@@ -399,12 +298,25 @@ class tx_install extends t3lib_install {
 	}
 
 	/**
-	 * Returns true if submitted password is ok.
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tx_install() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tx_install::__construct();
+	}
+
+	/**
+	 * Returns TRUE if submitted password is ok.
 	 *
 	 * If password is ok, set session as "authorized".
 	 *
-	 * @return boolean true if the submitted password was ok and session was
-	 *                 authorized, false otherwise
+	 * @return boolean TRUE if the submitted password was ok and session was
+	 *                 authorized, FALSE otherwise
 	 */
 	function checkPassword() {
 		$p = t3lib_div::_GP('password');
@@ -423,7 +335,7 @@ class tx_install extends t3lib_install {
 					'From: TYPO3 Install Tool WARNING <>'
 				);
 			}
-			return true;
+			return TRUE;
 		} else {
 				// Bad password, send warning:
 			if ($p) {
@@ -440,7 +352,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					);
 				}
 			}
-			return false;
+			return FALSE;
 		}
 	}
 
@@ -603,6 +515,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						'How to configure TYPO3',
 						$this->generallyAboutConfiguration()
 					);
+					$isPhpCgi = (PHP_SAPI == 'fpm-fcgi' || PHP_SAPI == 'cgi' || PHP_SAPI == 'isapi' || PHP_SAPI == 'cgi-fcgi');
 					$this->message(
 						'System Information',
 						'Your system has the following configuration',
@@ -610,8 +523,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							<dl id="systemInformation">
 								<dt>OS detected:</dt>
 								<dd>' . (TYPO3_OS == 'WIN' ? 'WIN' : 'UNIX') .'</dd>
-								<dt>UNIX/CGI detected:</dt>
-								<dd>' . (PHP_SAPI == 'cgi' ? 'YES' : 'NO') . '</dd>
+								<dt>CGI detected:</dt>
+								<dd>' . ($isPhpCgi ? 'YES' : 'NO') . '</dd>
 								<dt>PATH_thisScript:</dt>
 								<dd>' . PATH_thisScript . '</dd>
 							</dl>
@@ -877,7 +790,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							behind. Therefore the script is invoked from the
 							backend init.php file, which allows access if the
 							constant \'TYPO3_enterInstallScript\' has been
-							defined and is not false. That is and should be the
+							defined and is not FALSE. That is and should be the
 							case <em>only</em> when calling the script
 							\'typo3/install/index.php\' - this script!
 						</p>
@@ -928,8 +841,6 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				break;
 			}
 		}
-
-		$this->formProtection->persistTokens();
 	}
 
 	/**
@@ -979,7 +890,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 			// only get the number of tables if it is not the first two steps in the 123-installer
 			// (= no DB connection yet)
-		$whichTables = ($this->step != 1 && $this->step != 2 ? $this->getListOfTables() : array());
+		$whichTables = ($this->step != 1 && $this->step != 2 ? $this->sqlHandler->getListOfTables() : array());
 
 		$error_emptyDB = '
 			<p class="typo3-message message-error">
@@ -1307,7 +1218,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$paths = array_merge($paths, explode(';', $_SERVER['PATH']));
 			}
 		} else {
-			$paths=array($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path_lzw'], $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path'], '/usr/local/bin/','/usr/bin/','/usr/X11R6/bin/');
+			$paths=array($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path_lzw'], $GLOBALS['TYPO3_CONF_VARS']['GFX']['im_path'], '/usr/local/bin/','/usr/bin/','/usr/X11R6/bin/', '/opt/local/bin/');
 			$paths = array_merge($paths, explode(':', $_SERVER['PATH']));
 		}
 		$paths = array_unique($paths);
@@ -1677,7 +1588,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			</p>
 		');
 
-		$tables = $this->getListOfTables();
+		$tables = $this->sqlHandler->getListOfTables();
 		$action = $this->INSTALL['cleanup_type'];
 
 		if (($action == 'cache_imagesizes' || $action == 'all') && isset ($tables['cache_imagesizes'])) {
@@ -1803,7 +1714,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					$ok = 0;
 					$fileCounter++;
 					if ($tt) {
-						if (t3lib_div::testInt($tt)) {
+						if (t3lib_utility_Math::canBeInterpretedAsInteger($tt)) {
 							if (filesize($theFile) > $tt*1024)	$ok=1;
 						} else {
 							if (fileatime($theFile) < $GLOBALS['EXEC_TIME'] - (intval($tmap[$tt]) * 60 * 60 * 24)) {
@@ -2160,13 +2071,13 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 										$value = str_replace(LF, "' . LF . '", $value);
 									}
 									if (preg_match('/^boolean/i', $description)) {
-											// When submitting settings in the Install Tool, values that default to "false" or "true"
+											// When submitting settings in the Install Tool, values that default to "FALSE" or "true"
 											// in config_default.php will be sent as "0" resp. "1". Therefore, reset the values
 											// to their boolean equivalent.
-										if ($GLOBALS['TYPO3_CONF_VARS'][$k][$vk] === false && $value === '0') {
-											$value = false;
-										} elseif ($GLOBALS['TYPO3_CONF_VARS'][$k][$vk] === true && $value === '1') {
-											$value = true;
+										if ($GLOBALS['TYPO3_CONF_VARS'][$k][$vk] === FALSE && $value === '0') {
+											$value = FALSE;
+										} elseif ($GLOBALS['TYPO3_CONF_VARS'][$k][$vk] === TRUE && $value === '1') {
+											$value = TRUE;
 										}
 									}
 
@@ -2385,7 +2296,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		// Mail tests
 		if (TYPO3_OS == 'WIN') {
 			$smtp = ini_get('SMTP');
-			$bad_smtp = false;
+			$bad_smtp = FALSE;
 			if (!t3lib_div::validIP($smtp)) {
 				$smtp_addr = @gethostbyname($smtp);
 				$bad_smtp = ($smtp_addr == $smtp);
@@ -2393,7 +2304,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			else {
 				$smtp_addr = $smtp;
 			}
-			if (!$smtp || $bad_smtp || !t3lib_div::testInt(ini_get('smtp_port'))) {
+			if (!$smtp || $bad_smtp || !t3lib_utility_Math::canBeInterpretedAsInteger(ini_get('smtp_port'))) {
 				$this->message($ext, 'Mail configuration is not set correctly', '
 					<p>
 						Mail configuration is not set
@@ -2573,21 +2484,21 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 			// Check availability of PHP session support
 		if (extension_loaded('session')) {
-			$this->message($ext, 'PHP sessions availiable', '
+			$this->message($ext, 'PHP sessions available', '
 				<p>
-					<em>PHP Sessions availiabe</em>
+					<em>PHP Sessions available</em>
 					<br />
 					PHP is compiled with session support and session support is
 					available.
 				</p>
 			', -1);
 		} else {
-			$this->message($ext, 'PHP Sessions not availiabe', '
+			$this->message($ext, 'PHP Sessions not available', '
 				<p>
 					PHP is not compiled with session support, or session support
 					is disabled in php.ini.
 					<br />
-					TYPO3 needs session support
+					TYPO3 needs session support.
 				</p>
 			', 3);
 		}
@@ -3137,7 +3048,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		}
 
 		$cmd = t3lib_div::imageMagickCommand($file, $parameters, $path);
-		$retVal = false;
+		$retVal = FALSE;
 		t3lib_utility_Command::exec($cmd, $retVal);
 		$string = $retVal[0];
 		list(,$ver) = explode('Magick', $string);
@@ -3742,7 +3653,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$newdbname=trim($this->INSTALL['localconf.php']['NEW_DATABASE_NAME']);
 						if (!preg_match('/[^[:alnum:]_-]/',$newdbname)) {
 							if ($result = $GLOBALS['TYPO3_DB']->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password)) {
-								if ($GLOBALS['TYPO3_DB']->admin_query('CREATE DATABASE '.$newdbname)) {
+								if ($GLOBALS['TYPO3_DB']->admin_query('CREATE DATABASE ' . $newdbname . ' CHARACTER SET utf8')) {
 									$this->INSTALL['localconf.php']['typo_db'] = $newdbname;
 									$this->messages[]= "Database '".$newdbname."' created";
 								} else {
@@ -3838,15 +3749,9 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								if (doubleval($version) > 0 && doubleval($version) < 4) {
 										// Assume GraphicsMagick
 									$value_ext = 'gm';
-								} elseif (doubleval($version) < 5) {
-										// Assume ImageMagick 4.x
-									$value_ext = '';
-								} elseif (doubleval($version) >= 6) {
+								} else {
 										// Assume ImageMagick 6.x
 									$value_ext = 'im6';
-								} else	{
-										// Assume ImageMagick 5.x
-									$value_ext = 'im5';
 								}
 								if (strcmp(strtolower($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']), $value_ext)) {
 									$this->setValueInLocalconfFile($lines, '$TYPO3_CONF_VARS[\'GFX\'][\'im_version_5\']', $value_ext);
@@ -4091,10 +3996,6 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							$formArray['im_path'] = array($path);
 							$found = 1;
 						}
-					} elseif (!$found) {
-						$formArray['im_version_5']=array('im5');
-						$formArray['im_path']=array($path);
-						$found=1;
 					}
 				} elseif ($dat['gm']) {
 					$formArray['im_version_5']=array('gm');
@@ -4127,7 +4028,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 
 	/**
-	 * Returns true if TTF lib is installed.
+	 * Returns TRUE if TTF lib is installed.
 	 *
 	 * @return boolean TRUE if TrueType support
 	 */
@@ -4536,16 +4437,15 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		';
 
 			// Various checks to detect IM/GM version mismatches
-		$mismatch=false;
+		$mismatch=FALSE;
 		switch (strtolower($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5'])) {
 			case 'gm':
-				if (doubleval($im_path_version)>=2)	$mismatch=true;
-			break;
-			case 'im4':
-				if (doubleval($im_path_version)>=5)	$mismatch=true;
+				if (doubleval($im_path_version)>=2)	$mismatch=TRUE;
 			break;
 			default:
-				if (($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5']?true:false) != (doubleval($im_path_version)>=5))	$mismatch=true;
+				if (($GLOBALS['TYPO3_CONF_VARS']['GFX']['im_version_5'] ? TRUE : FALSE) != (doubleval($im_path_version) >= 6)) {
+					$mismatch = TRUE;
+				}
 			break;
 		}
 
@@ -4573,7 +4473,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			$this->message('Image Processing', 'Image Processing disabled!', '
 				<p>
 					Image Processing is disabled by the config flag
-					[GFX][image_processing] set to false (zero)
+					[GFX][image_processing] set to FALSE (zero)
 				</p>
 			', 2);
 			$this->output($this->outputWrapper($this->printAll()));
@@ -4827,7 +4727,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						if (!@is_file($mask))	die('Error: '.$mask.' was not a file');
 
 					$output = $imageProc->tempPath.$imageProc->filenamePrefix.t3lib_div::shortMD5($imageProc->alternativeOutputKey.'combine1').'.jpg';
-					$imageProc->combineExec($input,$overlay,$mask,$output, true);
+					$imageProc->combineExec($input,$overlay,$mask,$output, TRUE);
 					$fileInfo = $imageProc->getImageDimensions($output);
 					$result = $this->displayTwinImage($fileInfo[3],$imageProc->IM_commands);
 					$this->message($headCode,'Combine using a GIF mask with only black and white',$result[0],$result[1]);
@@ -4842,7 +4742,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						if (!@is_file($mask))	die('Error: '.$mask.' was not a file');
 
 					$output = $imageProc->tempPath.$imageProc->filenamePrefix.t3lib_div::shortMD5($imageProc->alternativeOutputKey.'combine2').'.jpg';
-					$imageProc->combineExec($input,$overlay,$mask,$output, true);
+					$imageProc->combineExec($input,$overlay,$mask,$output, TRUE);
 					$fileInfo = $imageProc->getImageDimensions($output);
 					$result = $this->displayTwinImage($fileInfo[3],$imageProc->IM_commands);
 					$this->message($headCode,'Combine using a JPG mask with graylevels',$result[0],$result[1]);
@@ -5179,34 +5079,6 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				'referenceInformation' => t3lib_div::formatSize($verifyImg['filesize']) . ', ' . $verifyImg[0] . 'x' . $verifyImg[1] . ' pixels'
 			);
 
-				// Display a warning if the generated image is more than 2KB larger than its reference...
-			if (($destImg['filesize']!=$verifyImg['filesize']) && (intval($destImg['filesize']) && ($destImg['filesize']-$verifyImg['filesize']) > 2048)) {
-					// Get the subpart for the different filesize message
-				$differentFileSizeSubpart = t3lib_parsehtml::getSubpart($imageSubpart, '###DIFFERENTFILESIZE###');
-					// Define the markers content
-				$differentFileSizeMarkers = array(
-					'message' => 'File size is very different from reference',
-					'yourServerFileSize' => $destImg['filesize'],
-					'referenceFileSize' => $verifyImg['filesize']
-				);
-					// Fill the markers in the subpart
-				$differentFileSizeSubpart = t3lib_parsehtml::substituteMarkerArray(
-					$differentFileSizeSubpart,
-					$differentFileSizeMarkers,
-					'###|###',
-					TRUE,
-					FALSE
-				);
-
-				$errorLevels[]=2;
-			}
-				// Substitute the subpart for different filesize message
-			$imageSubpart = t3lib_parsehtml::substituteSubpart(
-				$imageSubpart,
-				'###DIFFERENTFILESIZE###',
-				$differentFileSizeSubpart
-			);
-
 			if ($destImg[0]!=$verifyImg[0] || $destImg[1]!=$verifyImg[1]) {
 					// Get the subpart for the different pixel dimensions message
 				$differentPixelDimensionsSubpart = t3lib_parsehtml::getSubpart($imageSubpart, '###DIFFERENTPIXELDIMENSIONS###');
@@ -5263,7 +5135,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					// Define the markers content
 				$imCommandsMarkers = array(
 					'message' => 'ImageMagick commands executed:',
-					'rows' => t3lib_div::intInRange(count($commands), 2, 10),
+					'rows' => t3lib_utility_Math::forceIntegerInRange(count($commands), 2, 10),
 					'commands' => htmlspecialchars(implode(LF, $commands))
 				);
 					// Fill the markers in the subpart
@@ -5300,7 +5172,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				$commandsSubpart = t3lib_parsehtml::getSubpart($noImageSubpart, '###COMMANDSAVAILABLE###');
 					// Define the markers content
 				$commandsMarkers = array(
-					'rows' => t3lib_div::intInRange(count($commands), 2, 10),
+					'rows' => t3lib_utility_Math::forceIntegerInRange(count($commands), 2, 10),
 					'commands' => htmlspecialchars(implode(LF, $commands))
 				);
 					// Fill the markers in the subpart
@@ -5464,7 +5336,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		}
 
 			// Getting current tables
-		$whichTables=$this->getListOfTables();
+		$whichTables=$this->sqlHandler->getListOfTables();
 
 
 			// Getting number of static_template records
@@ -5552,7 +5424,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			if ($this->mode=="123" && !count($whichTables) && strstr($file,'_testsite')) {
 				$directJump = $this->action.'&TYPO3_INSTALL[database_type]=import|'.rawurlencode($file);
 			}
-			$lf=t3lib_div::testInt($k);
+			$lf=t3lib_utility_Math::canBeInterpretedAsInteger($k);
 			$fShortName = substr($file,strlen(PATH_site));
 
 			$spec1 = $spec2 = '';
@@ -5661,30 +5533,30 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 							LF,
 							$this->getStatementArray($tblFileContent,1,'^CREATE TABLE ')
 						);
-						$FDfile = $this->getFieldDefinitions_fileContent($fileContent);
+						$FDfile = $this->sqlHandler->getFieldDefinitions_fileContent($fileContent);
 						if (!count($FDfile)) {
 							die ("Error: There were no 'CREATE TABLE' definitions in the provided file");
 						}
 
 							// Updating database...
 						if (is_array($this->INSTALL['database_update'])) {
-							$FDdb = $this->getFieldDefinitions_database();
-							$diff = $this->getDatabaseExtra($FDfile, $FDdb);
-							$update_statements = $this->getUpdateSuggestions($diff);
-							$diff = $this->getDatabaseExtra($FDdb, $FDfile);
-							$remove_statements = $this->getUpdateSuggestions($diff,'remove');
+							$FDdb = $this->sqlHandler->getFieldDefinitions_database();
+							$diff = $this->sqlHandler->getDatabaseExtra($FDfile, $FDdb);
+							$update_statements = $this->sqlHandler->getUpdateSuggestions($diff);
+							$diff = $this->sqlHandler->getDatabaseExtra($FDdb, $FDfile);
+							$remove_statements = $this->sqlHandler->getUpdateSuggestions($diff,'remove');
 
 							$results = array();
-							$results[] = $this->performUpdateQueries($update_statements['clear_table'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($update_statements['clear_table'], $this->INSTALL['database_update']);
 
-							$results[] = $this->performUpdateQueries($update_statements['add'], $this->INSTALL['database_update']);
-							$results[] = $this->performUpdateQueries($update_statements['change'], $this->INSTALL['database_update']);
-							$results[] = $this->performUpdateQueries($remove_statements['change'], $this->INSTALL['database_update']);
-							$results[] = $this->performUpdateQueries($remove_statements['drop'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($update_statements['add'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($update_statements['change'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($remove_statements['change'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($remove_statements['drop'], $this->INSTALL['database_update']);
 
-							$results[] = $this->performUpdateQueries($update_statements['create_table'], $this->INSTALL['database_update']);
-							$results[] = $this->performUpdateQueries($remove_statements['change_table'], $this->INSTALL['database_update']);
-							$results[] = $this->performUpdateQueries($remove_statements['drop_table'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($update_statements['create_table'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($remove_statements['change_table'], $this->INSTALL['database_update']);
+							$results[] = $this->sqlHandler->performUpdateQueries($remove_statements['drop_table'], $this->INSTALL['database_update']);
 
 							$this->databaseUpdateErrorMessages = array();
 							foreach ($results as $resultSet) {
@@ -5697,13 +5569,13 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						}
 
 							// Init again / first time depending...
-						$FDdb = $this->getFieldDefinitions_database();
+						$FDdb = $this->sqlHandler->getFieldDefinitions_database();
 
-						$diff = $this->getDatabaseExtra($FDfile, $FDdb);
-						$update_statements = $this->getUpdateSuggestions($diff);
+						$diff = $this->sqlHandler->getDatabaseExtra($FDfile, $FDdb);
+						$update_statements = $this->sqlHandler->getUpdateSuggestions($diff);
 
-						$diff = $this->getDatabaseExtra($FDdb, $FDfile);
-						$remove_statements = $this->getUpdateSuggestions($diff,'remove');
+						$diff = $this->sqlHandler->getDatabaseExtra($FDdb, $FDfile);
+						$remove_statements = $this->sqlHandler->getUpdateSuggestions($diff,'remove');
 
 						$tLabel = 'Update database tables and fields';
 
@@ -5733,7 +5605,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				break;
 				case 'cmpTCA':
 					$this->includeTCA();
-					$FDdb = $this->getFieldDefinitions_database();
+					$FDdb = $this->sqlHandler->getFieldDefinitions_database();
 
 						// Displaying configured fields which are not in the database
 					$tLabel='Tables and fields in $TCA, but not in database';
@@ -5893,8 +5765,8 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					if ($tblFileContent) {
 						$tLabel='Import SQL dump';
 							// Getting statement array from
-						$statements = $this->getStatementArray($tblFileContent,1);
-						list($statements_table, $insertCount) = $this->getCreateTables($statements,1);
+						$statements = $this->sqlHandler->getStatementArray($tblFileContent,1);
+						list($statements_table, $insertCount) = $this->sqlHandler->getCreateTables($statements,1);
 
 							// Updating database...
 						if ($this->INSTALL['database_import_all']) {
@@ -5909,12 +5781,12 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 								// fields defined in sysext/cms/ext_tables.sql for example.
 							$fileContent = implode(
 								LF,
-								$this->getStatementArray($tblFileContent,1,'^CREATE TABLE ')
+								$this->sqlHandler->getStatementArray($tblFileContent,1,'^CREATE TABLE ')
 							);
-							$FDfile = $this->getFieldDefinitions_fileContent($fileContent);
-							$FDdb = $this->getFieldDefinitions_database();
-							$diff = $this->getDatabaseExtra($FDfile, $FDdb);
-							$update_statements = $this->getUpdateSuggestions($diff);
+							$FDfile = $this->sqlHandler->getFieldDefinitions_fileContent($fileContent);
+							$FDdb = $this->sqlHandler->getFieldDefinitions_database();
+							$diff = $this->sqlHandler->getDatabaseExtra($FDfile, $FDdb);
+							$update_statements = $this->sqlHandler->getUpdateSuggestions($diff);
 							if (is_array($update_statements['add'])) {
 								foreach ($update_statements['add'] as $statement) {
 									$res = $GLOBALS['TYPO3_DB']->admin_query($statement);
@@ -5963,7 +5835,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 									$res = $GLOBALS['TYPO3_DB']->admin_query($statements_table[$table]);
 
 									if ($insertCount[$table]) {
-										$statements_insert = $this->getTableInsertStatements($statements, $table);
+										$statements_insert = $this->sqlHandler->getTableInsertStatements($statements, $table);
 										foreach ($statements_insert as $k => $v) {
 											$res = $GLOBALS['TYPO3_DB']->admin_query($v);
 										}
@@ -5982,7 +5854,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 
 						if (!$mode123Imported) {
 								// Re-Getting current tables - may have been changed during import
-							$whichTables=$this->getListOfTables();
+							$whichTables=$this->sqlHandler->getListOfTables();
 
 							if (count($statements_table)) {
 								reset($statements_table);
@@ -6106,10 +5978,10 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						$tLabel = 'Import SQL dump';
 							// Getting statement array from
 						$fileContent = t3lib_div::getUrl($actionParts[1]);
-						$statements = $this->getStatementArray($fileContent, 1);
+						$statements = $this->sqlHandler->getStatementArray($fileContent, 1);
 						$maxL = 1000;
 						$strLen = strlen($fileContent);
-						$maxlen = 200+($maxL-t3lib_div::intInRange(($strLen-20000)/100,0,$maxL));
+						$maxlen = 200+($maxL-t3lib_utility_Math::forceIntegerInRange(($strLen-20000)/100,0,$maxL));
 						if (count($statements)) {
 							$out = '';
 							foreach ($statements as $statement) {
@@ -6771,7 +6643,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					implode(LF, $updateItems)
 				);
 				$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
-				
+
 				// also render the link to the next update wizard, if available
 				$nextUpdateWizard = $this->getNextUpdadeWizardInstance($tmpObj);
 				if ($nextUpdateWizard) {
@@ -6790,7 +6662,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 						''
 					);
 				}
-				
+
 			break;
 		}
 		$this->message('Upgrade Wizard', $title, $content);
@@ -6806,7 +6678,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 	function getUpgradeObjInstance($className, $identifier) {
 		$tmpObj = t3lib_div::getUserObj($className);
 		$tmpObj->setIdentifier($identifier);
-		$tmpObj->versionNumber = t3lib_div::int_from_ver(TYPO3_version);
+		$tmpObj->versionNumber = t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version);
 		$tmpObj->pObj = $this;
 		$tmpObj->userInput = $this->INSTALL['update'][$identifier];
 		return $tmpObj;
@@ -6856,7 +6728,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 	 */
 	function isBasicComplete($tLabel) {
 		if ($this->mode=='123') {
-			$tables = $this->getListOfTables();
+			$tables = $this->sqlHandler->getListOfTables();
 
 			if (count($tables)) {
 				$beuser = $this->isBackendAdminUser();
@@ -6896,7 +6768,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		$content = '';
 		switch($type) {
 			case 'get_form':
-				$content.= $this->generateUpdateDatabaseForm_checkboxes($arr_update['clear_table'],'Clear tables (use with care!)',false,true);
+				$content.= $this->generateUpdateDatabaseForm_checkboxes($arr_update['clear_table'],'Clear tables (use with care!)',FALSE,TRUE);
 
 				$content.= $this->generateUpdateDatabaseForm_checkboxes($arr_update['add'],'Add fields');
 				$content.= $this->generateUpdateDatabaseForm_checkboxes($arr_update['change'],'Changing fields',(t3lib_extMgm::isLoaded('dbal')?0:1),0,$arr_update['change_currentValue']);
@@ -7100,7 +6972,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 				// Get the subpart for rows
 			$rowsSubpart = t3lib_parsehtml::getSubpart($template, '###ROWS###');
 			foreach ($arr as $fieldname => $fieldContent) {
-				if (!t3lib_div::inList($excludeList,$fieldname) && substr($fieldname,0,strlen($this->deletedPrefixKey))!=$this->deletedPrefixKey && substr($fieldname,-1)!='.') {
+				if (!t3lib_div::inList($excludeList,$fieldname) && substr($fieldname,0,strlen($this->sqlHandler->getDeletedPrefixKey()))!=$this->sqlHandler->getDeletedPrefixKey() && substr($fieldname,-1)!='.') {
 					if ($arr[$fieldname.'.']) {
 							// Get the subpart for pre
 						$preSubpart = t3lib_parsehtml::getSubpart($rowsSubpart, '###PRE###');
@@ -7292,7 +7164,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 			break;
 			case 'group':
 				if ($fieldInfo['config']['internal_type']=='db') {
-					$max = t3lib_div::intInRange($fieldInfo['config']['maxitems'],1,10000);
+					$max = t3lib_utility_Math::forceIntegerInRange($fieldInfo['config']['maxitems'],1,10000);
 					if (count(explode(',',$fieldInfo['config']['allowed']))>1) {
 							// Tablenames are 10, "_" 1, uid's 5, comma 1
 						$len = $max*(10+1+5+1);
@@ -7306,14 +7178,14 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 					}
 				}
 				if ($fieldInfo['config']['internal_type']=='file') {
-					$max = t3lib_div::intInRange($fieldInfo['config']['maxitems'],1,10000);
+					$max = t3lib_utility_Math::forceIntegerInRange($fieldInfo['config']['maxitems'],1,10000);
 						// Filenames is 30+ chars....
 					$len = $max*(30+1);
 					$out=$this->getItemBlobSize($len);
 				}
 			break;
 			case 'select':
-				$max = t3lib_div::intInRange($fieldInfo['config']['maxitems'],1,10000);
+				$max = t3lib_utility_Math::forceIntegerInRange($fieldInfo['config']['maxitems'],1,10000);
 				if ($max<=1) {
 					if ($fieldInfo['config']['foreign_table']) {
 						$out = "int(11) NOT NULL default '0'";
@@ -7343,7 +7215,7 @@ REMOTE_ADDR was '".t3lib_div::getIndpEnv('REMOTE_ADDR')."' (".t3lib_div::getIndp
 		if (is_array($arr)) {
 			$type[] = $intSize[] = 0;
 			foreach ($arr as $item) {
-				if (!t3lib_div::testInt($item[1]) && $item[1]!='--div--') {
+				if (!t3lib_utility_Math::canBeInterpretedAsInteger($item[1]) && $item[1]!='--div--') {
 					$type[]=strlen($item[1]);
 				} else {
 					$intSize[]=$item[1];
@@ -7521,6 +7393,7 @@ $out="
 	 * @return void
 	 */
 	function includeTCA() {
+			// this line hast to stay, as included files use $TCA in global scope
 		global $TCA;
 
 		include (TYPO3_tables_script ? PATH_typo3conf.TYPO3_tables_script : PATH_t3lib.'stddb/tables.php');
@@ -7536,7 +7409,7 @@ $out="
 			include (PATH_typo3conf.TYPO3_extTableDef_script);
 		}
 
-		foreach ($TCA as $table => $conf) {
+		foreach ($GLOBALS['TCA'] as $table => $conf) {
 			t3lib_div::loadTCA($table);
 		}
 	}
@@ -7728,12 +7601,6 @@ $out="
 				$this->stylesheets[] = '<link rel="stylesheet" type="text/css" href="' .
 					t3lib_div::createVersionNumberedFilename($this->backPath .
 						'sysext/install/Resources/Public/Stylesheets/ie7.css'
-				) . '" />';
-				// IE6
-			} elseif (intval($browserInfo['version']) < 7) {
-				$this->stylesheets[] = '<link rel="stylesheet" type="text/css" href="' .
-					t3lib_div::createVersionNumberedFilename($this->backPath .
-						'sysext/install/Resources/Public/Stylesheets/ie6.css'
 				) . '" />';
 			}
 		}
@@ -8121,7 +7988,7 @@ $out="
 					This will let you analyze and verify that everything in your
 					installation is in order. In addition, you can configure advanced
 					TYPO3 options in this step.
-		 		</li>
+				</li>
 				<li>
 					<a href="../../index.php">
 						Visit the frontend
@@ -8132,9 +7999,9 @@ $out="
 						Login to the backend
 					</a>
 					<br />
-			 		(Default username: <em>admin</em>, default password: <em>password</em>.)
+					(Default username: <em>admin</em>, default password: <em>password</em>.)
 				</li>
-			 </ul>
+			</ul>
 		';
 	}
 
@@ -8379,7 +8246,7 @@ $out="
 
 	/**
 	 * Returns HTML-code, which is a visual representation of a multidimensional array
-	 * Returns false if $array_in is not an array
+	 * Returns FALSE if $array_in is not an array
 	 *
 	 * @param mixed $incomingValue Array to view
 	 * @return string HTML output
@@ -8452,7 +8319,7 @@ $out="
 	 */
 	public function addErrorMessage($messageText) {
 		if ($messageText == '') {
-			throw new InvalidArgumentException('$messageText must not be empty.');
+			throw new InvalidArgumentException('$messageText must not be empty.', 1294587483);
 		}
 
 		$this->errorMessages[] = $messageText;

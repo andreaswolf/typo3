@@ -28,55 +28,15 @@
  * Document for viewing the online help texts, also known as TCA_DESCR.
  * See Inside TYPO3 for details.
  *
- * $Id$
  * Revised for TYPO3 3.7 5/2004 by Kasper Skårhøj
  * XHTML-trans compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   91: class local_t3lib_parsehtml extends t3lib_parsehtml
- *  102:     function processContent($value,$dir,$conf)
- *
- *
- *  122: class SC_view_help
- *  146:     function init()
- *  167:     function main()
- *  198:     function printContent()
- *
- *              SECTION: Rendering main modes
- *  221:     function render_TOC()
- *  338:     function render_TOC_el($table, $tocCat, &$outputSections, &$tocArray, &$CSHkeys)
- *  370:     function render_TOC_makeTocList($tocArray)
- *  409:     function render_Table($table)
- *  469:     function render_Single($table,$field)
- *
- *              SECTION: Rendering CSH items
- *  515:     function make_seeAlso($value,$anchorTable='')
- *  564:     function printImage($images,$descr)
- *  599:     function headerLine($str,$type=0)
- *  620:     function prepareContent($str)
- *  635:     function printItem($table,$field,$anchors=0)
- *  668:     function getTableFieldNames($table,$field)
- *  691:     function getTableFieldLabel($table,$field='',$mergeToken=': ')
- *
- *              SECTION: Glossary related
- *  726:     function createGlossaryIndex()
- *  785:     function substituteGlossaryWords($code)
- *  801:     function substituteGlossaryWords_htmlcleaner_callback($code)
- *
- * TOTAL FUNCTIONS: 19
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 require('init.php');
 require('template.php');
-$LANG->includeLLFile('EXT:lang/locallang_view_help.xml');
+$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_view_help.xml');
 
 
 /**
@@ -121,7 +81,7 @@ class SC_view_help {
 	var $allowedHTML = '<strong><em><b><i>';
 
 		// For these vars, see init()
-	var $limitAccess;	// If set access to fields and tables is checked. Should be done for true database tables.
+	var $limitAccess;	// If set access to fields and tables is checked. Should be done for TRUE database tables.
 	var $table;			// The "table" key
 	var $field;			// The "field" key
 		/**
@@ -150,7 +110,6 @@ class SC_view_help {
 	 * @return	void
 	 */
 	function init()	{
-		global $LANG, $TCA;
 
 			// Setting GPvars:
 		$this->tfID = t3lib_div::_GP('tfID');
@@ -182,7 +141,7 @@ class SC_view_help {
 			t3lib_div::loadTCA($this->table);
 				// If the ds_pointerField contains a comma, it means the choice of FlexForm DS
 				// is determined by 2 parameters. In this case we have an extra identifier part
-			if (strpos($TCA[$this->table]['columns'][$this->field]['config']['ds_pointerField'], ',') !== FALSE) {
+			if (strpos($GLOBALS['TCA'][$this->table]['columns'][$this->field]['config']['ds_pointerField'], ',') !== FALSE) {
 				$extraIdentifierInformation[] = array_shift($identifierParts);
 			}
 				// The remaining parts make up the FlexForm field name itself
@@ -198,7 +157,7 @@ class SC_view_help {
 
 			// limitAccess is checked if the $this->table really IS a table (and if the user is NOT a translator who should see all!)
 		$showAllToUser = t3lib_BEfunc::isModuleSetInTBE_MODULES('txllxmltranslateM1') && $GLOBALS['BE_USER']->check('modules','txllxmltranslateM1');
-		$this->limitAccess = isset($TCA[$this->table]) ? !$showAllToUser : FALSE;
+		$this->limitAccess = isset($GLOBALS['TCA'][$this->table]) ? !$showAllToUser : FALSE;
 	}
 
 	/**
@@ -207,11 +166,10 @@ class SC_view_help {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$TCA_DESCR,$TCA,$TBE_TEMPLATE;
 
 			// Start HTML output accumulation:
-		$TBE_TEMPLATE->divClass = 'typo3-view-help';
-		$this->content .= $TBE_TEMPLATE->startPage($LANG->getLL('title'));
+		$GLOBALS['TBE_TEMPLATE']->divClass = 'typo3-view-help';
+		$this->content .= $GLOBALS['TBE_TEMPLATE']->startPage($GLOBALS['LANG']->getLL('title'));
 
 		if ($this->field == '*') {
 				 // If ALL fields is supposed to be shown:
@@ -232,11 +190,11 @@ class SC_view_help {
 		}
 
 			// Print close-button:
-#		$this->content.='<br /><form action=""><input type="submit" value="'.htmlspecialchars($LANG->getLL('close')).'" onclick="self.close(); return false;" /></form><br/>';
+#		$this->content.='<br /><form action=""><input type="submit" value="'.htmlspecialchars($GLOBALS['LANG']->getLL('close')).'" onclick="self.close(); return false;" /></form><br/>';
 
 			// End page:
 		$this->content.= '<br/>';
-		$this->content.= $TBE_TEMPLATE->endPage();
+		$this->content .= $GLOBALS['TBE_TEMPLATE']->endPage();
 	}
 
 	/**
@@ -268,27 +226,25 @@ class SC_view_help {
 	 * @return	string		HTML content
 	 */
 	function render_TOC()	{
-		global $TCA_DESCR,$TCA,$LANG,$BE_USER,$TBE_MODULES;
-
 			// Initialize:
-		$CSHkeys = array_flip(array_keys($TCA_DESCR));
-		$TCAkeys = array_keys($TCA);
+		$CSHkeys = array_flip(array_keys($GLOBALS['TCA_DESCR']));
+		$TCAkeys = array_keys($GLOBALS['TCA']);
 
 		$outputSections = array();
 		$tocArray = array();
 
 
 			// TYPO3 Core Features:
-		$LANG->loadSingleTableDescription('xMOD_csh_corebe');
+		$GLOBALS['LANG']->loadSingleTableDescription('xMOD_csh_corebe');
 		$this->render_TOC_el('xMOD_csh_corebe', 'core', $outputSections, $tocArray, $CSHkeys);
 
 			// Backend Modules:
 		$loadModules = t3lib_div::makeInstance('t3lib_loadModules');
-		$loadModules->load($TBE_MODULES);
+		$loadModules->load($GLOBALS['TBE_MODULES']);
 		foreach($loadModules->modules as $mainMod => $info)	{
 			$cshKey = '_MOD_'.$mainMod;
 			if ($CSHkeys[$cshKey])	{
-				$LANG->loadSingleTableDescription($cshKey);
+				$GLOBALS['LANG']->loadSingleTableDescription($cshKey);
 				$this->render_TOC_el($cshKey, 'modules', $outputSections, $tocArray, $CSHkeys);
 			}
 
@@ -296,7 +252,7 @@ class SC_view_help {
 				foreach($info['sub'] as $subMod => $subInfo)	{
 					$cshKey = '_MOD_'.$mainMod.'_'.$subMod;
 					if ($CSHkeys[$cshKey])	{
-						$LANG->loadSingleTableDescription($cshKey);
+						$GLOBALS['LANG']->loadSingleTableDescription($cshKey);
 						$this->render_TOC_el($cshKey, 'modules', $outputSections, $tocArray, $CSHkeys);
 					}
 				}
@@ -306,32 +262,32 @@ class SC_view_help {
 			// Database Tables:
 		foreach($TCAkeys as $table)	{
 				// Load descriptions for table $table
-			$LANG->loadSingleTableDescription($table);
-			if (is_array($TCA_DESCR[$table]['columns']) && $BE_USER->check('tables_select',$table))	{
+			$GLOBALS['LANG']->loadSingleTableDescription($table);
+			if (is_array($GLOBALS['TCA_DESCR'][$table]['columns']) && $GLOBALS['BE_USER']->check('tables_select',$table)) {
 				$this->render_TOC_el($table, 'tables', $outputSections, $tocArray, $CSHkeys);
 			}
 		}
 
 			// Extensions
 		foreach($CSHkeys as $cshKey => $value)	{
-			if (t3lib_div::isFirstPartOfStr($cshKey, 'xEXT_') && !isset($TCA[$cshKey]))	{
-				$LANG->loadSingleTableDescription($cshKey);
+			if (t3lib_div::isFirstPartOfStr($cshKey, 'xEXT_') && !isset($GLOBALS['TCA'][$cshKey])) {
+				$GLOBALS['LANG']->loadSingleTableDescription($cshKey);
 				$this->render_TOC_el($cshKey, 'extensions', $outputSections, $tocArray, $CSHkeys);
 			}
 		}
 
 			// Glossary
 		foreach($CSHkeys as $cshKey => $value)	{
-			if (t3lib_div::isFirstPartOfStr($cshKey, 'xGLOSSARY_') && !isset($TCA[$cshKey]))	{
-				$LANG->loadSingleTableDescription($cshKey);
+			if (t3lib_div::isFirstPartOfStr($cshKey, 'xGLOSSARY_') && !isset($GLOBALS['TCA'][$cshKey])) {
+				$GLOBALS['LANG']->loadSingleTableDescription($cshKey);
 				$this->render_TOC_el($cshKey, 'glossary', $outputSections, $tocArray, $CSHkeys);
 			}
 		}
 
 			// Other:
 		foreach($CSHkeys as $cshKey => $value)	{
-			if (!t3lib_div::isFirstPartOfStr($cshKey, '_MOD_') && !isset($TCA[$cshKey]))	{
-				$LANG->loadSingleTableDescription($cshKey);
+			if (!t3lib_div::isFirstPartOfStr($cshKey, '_MOD_') && !isset($GLOBALS['TCA'][$cshKey])) {
+				$GLOBALS['LANG']->loadSingleTableDescription($cshKey);
 				$this->render_TOC_el($cshKey, 'other', $outputSections, $tocArray, $CSHkeys);
 			}
 		}
@@ -341,28 +297,28 @@ class SC_view_help {
 		$output = '';
 		$output.= '
 
-			<h1>'.$LANG->getLL('manual_title',1).'</h1>';
+			<h1>'.$GLOBALS['LANG']->getLL('manual_title',1).'</h1>';
 
 		$output.= '
 
-			<h2>'.$LANG->getLL('introduction',1).'</h2>
-			<p>'.$LANG->getLL('description',1).'</p>';
+			<h2>'.$GLOBALS['LANG']->getLL('introduction',1).'</h2>
+			<p>'.$GLOBALS['LANG']->getLL('description',1).'</p>';
 
 		$output.= '
 
-			<h2>'.$LANG->getLL('TOC',1).'</h2>'.
+			<h2>'.$GLOBALS['LANG']->getLL('TOC',1).'</h2>'.
 			$this->render_TOC_makeTocList($tocArray);
 
 		if (!$this->renderALL)	{
 			$output.= '
 				<br/>
-				<p class="c-nav"><a href="view_help.php?renderALL=1">'.$LANG->getLL('full_manual',1).'</a></p>';
+				<p class="c-nav"><a href="view_help.php?renderALL=1">'.$GLOBALS['LANG']->getLL('full_manual',1).'</a></p>';
 		}
 
 		if ($this->renderALL)	{
 			$output.= '
 
-				<h2>'.$LANG->getLL('full_manual_chapters',1).'</h2>'.
+				<h2>'.$GLOBALS['LANG']->getLL('full_manual_chapters',1).'</h2>'.
 				implode('
 
 
@@ -386,8 +342,6 @@ class SC_view_help {
 	 * @return	void
 	 */
 	function render_TOC_el($table, $tocCat, &$outputSections, &$tocArray, &$CSHkeys)	{
-		global $LANG;
-
 		if ($this->renderALL)	{	// Render full manual right here!
 			$outputSections[$table] = $this->render_Table($table);
 
@@ -395,7 +349,7 @@ class SC_view_help {
 				$outputSections[$table] = '
 
 		<!-- New CSHkey/Table: '.$table.' -->
-		<p class="c-nav"><a name="ANCHOR_'.$table.'" href="#">'.$LANG->getLL('to_top',1).'</a></p>
+		<p class="c-nav"><a name="ANCHOR_'.$table.'" href="#">'.$GLOBALS['LANG']->getLL('to_top',1).'</a></p>
 		<h2>'.$this->getTableFieldLabel($table).'</h2>
 
 		'.$outputSections[$table];
@@ -418,8 +372,6 @@ class SC_view_help {
 	 * @return	string		HTML bullet list for index.
 	 */
 	function render_TOC_makeTocList($tocArray)	{
-		global $LANG;
-
 			// The Various manual sections:
 		$keys = explode(',', 'core,modules,tables,extensions,glossary,other');
 
@@ -428,7 +380,7 @@ class SC_view_help {
 		foreach($keys as $tocKey)	{
 			if (is_array($tocArray[$tocKey]))	{
 				$output.='
-					<li>'.$LANG->getLL('TOC_'.$tocKey,1).'
+					<li>'.$GLOBALS['LANG']->getLL('TOC_'.$tocKey,1).'
 						<ul>
 							<li>'.implode('</li>
 							<li>',$tocArray[$tocKey]).'</li>
@@ -457,28 +409,31 @@ class SC_view_help {
 	 * @param string $table CSH key / table name
 	 * @return string HTML output
 	 */
-	function render_Table($key, $table) {
-		global $BE_USER,$TCA_DESCR,$TCA,$LANG;
-
+	function render_Table($key, $table = NULL) {
 		$output = '';
+
+			// take default key if not explicitly specified
+		if ($table === NULL) {
+			$table = $key;
+		}
 
 			// Load table TCA
 		t3lib_div::loadTCA($key);
 
 			// Load descriptions for table $table
-		$LANG->loadSingleTableDescription($key);
+		$GLOBALS['LANG']->loadSingleTableDescription($key);
 
-		if (is_array($TCA_DESCR[$key]['columns']) && (!$this->limitAccess || $BE_USER->check('tables_select', $table))) {
+		if (is_array($GLOBALS['TCA_DESCR'][$key]['columns']) && (!$this->limitAccess || $GLOBALS['BE_USER']->check('tables_select', $table))) {
 				// Initialize variables:
 			$parts = array();
 			$parts[0] = '';	// Reserved for header of table
 
 				// Traverse table columns as listed in TCA_DESCR
-			foreach ($TCA_DESCR[$key]['columns'] as $field => $_) {
+			foreach ($GLOBALS['TCA_DESCR'][$key]['columns'] as $field => $_) {
 
-				$fieldValue = isset($TCA[$key]) && strcmp($field, '') ? $TCA[$key]['columns'][$field] : array();
+				$fieldValue = isset($GLOBALS['TCA'][$key]) && strcmp($field, '') ? $GLOBALS['TCA'][$key]['columns'][$field] : array();
 
-				if (is_array($fieldValue) && (!$this->limitAccess || !$fieldValue['exclude'] || $BE_USER->check('non_exclude_fields', $table . ':' . $field))) {
+				if (is_array($fieldValue) && (!$this->limitAccess || !$fieldValue['exclude'] || $GLOBALS['BE_USER']->check('non_exclude_fields', $table . ':' . $field))) {
 					if (!$field)	{
 						$parts[0] = $this->printItem($key, '', 1);	// Header
 					} else {
@@ -498,7 +453,7 @@ class SC_view_help {
 
 			// TOC link:
 		if (!$this->renderALL) {
-			$tocLink = '<p class="c-nav"><a href="view_help.php">' . $LANG->getLL('goToToc', 1) . '</a></p>';
+			$tocLink = '<p class="c-nav"><a href="view_help.php">' . $GLOBALS['LANG']->getLL('goToToc', 1) . '</a></p>';
 
 			$output =
 				$tocLink.'
@@ -519,12 +474,10 @@ class SC_view_help {
 	 * @return string HTML output
 	 */
 	function render_Single($key, $field) {
-		global $LANG, $TCA;
-
 		$output = '';
 
 			// Load the description field
-		$LANG->loadSingleTableDescription($key);
+		$GLOBALS['LANG']->loadSingleTableDescription($key);
 
 			// Render single item
 		$output.= $this->printItem($key, $field);
@@ -535,8 +488,8 @@ class SC_view_help {
 			// Link to Full table description and TOC:
 		$getLLKey = $this->limitAccess ? 'fullDescription' : 'fullDescription_module';
 		$output.= '<br />
-			<p class="c-nav"><a href="view_help.php?tfID=' . rawurlencode($key . '.*') . '">' . $LANG->getLL($getLLKey, 1) . '</a></p>
-			<p class="c-nav"><a href="view_help.php">' . $LANG->getLL('goToToc', 1) . '</a></p>';
+			<p class="c-nav"><a href="view_help.php?tfID=' . rawurlencode($key . '.*') . '">' . $GLOBALS['LANG']->getLL($getLLKey, 1) . '</a></p>
+			<p class="c-nav"><a href="view_help.php">' . $GLOBALS['LANG']->getLL('goToToc', 1) . '</a></p>';
 
 		return $output;
 	}
@@ -576,8 +529,6 @@ class SC_view_help {
 	 * @return	string		See-also links HTML
 	 */
 	function make_seeAlso($value,$anchorTable='')	{
-		global $TCA,$BE_USER,$TCA_DESCR;
-
 			// Split references by comma or linebreak
 		$items = preg_split('/[,' . LF . ']/', $value);
 		$lines = array();
@@ -600,11 +551,11 @@ class SC_view_help {
 					// "table" reference
 					t3lib_div::loadTCA($iP[0]);
 
-					if (!isset($TCA[$iP[0]]) || ((!$iP[1] || is_array($TCA[$iP[0]]['columns'][$iP[1]])) && (!$this->limitAccess || ($BE_USER->check('tables_select',$iP[0]) && (!$iP[1] || !$TCA[$iP[0]]['columns'][$iP[1]]['exclude'] || $BE_USER->check('non_exclude_fields',$iP[0].':'.$iP[1]))))))	{	// Checking read access:
+					if (!isset($GLOBALS['TCA'][$iP[0]]) || ((!$iP[1] || is_array($GLOBALS['TCA'][$iP[0]]['columns'][$iP[1]])) && (!$this->limitAccess || ($GLOBALS['BE_USER']->check('tables_select',$iP[0]) && (!$iP[1] || !$GLOBALS['TCA'][$iP[0]]['columns'][$iP[1]]['exclude'] || $GLOBALS['BE_USER']->check('non_exclude_fields',$iP[0].':'.$iP[1]))))))	{	// Checking read access:
 
 							// Load table descriptions:
-						#$LANG->loadSingleTableDescription($iP[0]);
-						if (isset($TCA_DESCR[$iP[0]]))	{
+						#$GLOBALS['LANG']->loadSingleTableDescription($iP[0]);
+						if (isset($GLOBALS['TCA_DESCR'][$iP[0]]))	{
 								// Make see-also link:
 							$href = ($this->renderALL || ($anchorTable && $iP[0]==$anchorTable) ? '#'.implode('.',$iP) : 'view_help.php?tfID='.rawurlencode(implode('.',$iP)).'&back='.$this->tfID);
 							$label = $this->getTableFieldLabel($iP[0],$iP[1],' / ');
@@ -642,7 +593,7 @@ class SC_view_help {
 						$imgFile = '../'.$imgFile;
 						$code.= '<br /><img src="'.$imgFile.'" '.$imgInfo[3].' class="c-inlineimg" alt="" /><br />
 						';
-						$code.= '<p><em>'.$GLOBALS['LANG']->hscAndCharConv($descr,1).'</em></p>
+						$code.= '<p><em>' . htmlspecialchars($descr) . '</em></p>
 						';
 					} else $code.= '<div style="background-color: red; border: 1px solid black; color: white;">NOT AN IMAGE: '.$imgFile.'</div>';
 				} else $code.= '<div style="background-color: red; border: 1px solid black; color: white;">IMAGE FILE NOT FOUND: '.$image.'</div>';
@@ -681,7 +632,6 @@ class SC_view_help {
 	 * @return	string		Formatted content.
 	 */
 	function prepareContent($str)	{
-		$str = $GLOBALS['LANG']->hscAndCharConv($str,0);
 		return '<p>'.nl2br(trim(strip_tags($str,$this->allowedHTML))).'</p>
 		';
 	}
@@ -696,25 +646,24 @@ class SC_view_help {
 	 * @return string HTML content
 	 */
 	function printItem($key, $field, $anchors = FALSE) {
-		global $TCA_DESCR, $LANG, $TCA, $BE_USER;
 		$out = '';
 
-			// Load full table definition in $TCA
+			// Load full table definition in $GLOBALS['TCA']
 		t3lib_div::loadTCA($key);
 
-		if ($key && (!$field || is_array($TCA_DESCR[$key]['columns'][$field])))	{
+		if ($key && (!$field || is_array($GLOBALS['TCA_DESCR'][$key]['columns'][$field])))	{
 				// Make seeAlso references.
-			$seeAlsoRes = $this->make_seeAlso($TCA_DESCR[$key]['columns'][$field]['seeAlso'], $anchors ? $key : '');
+			$seeAlsoRes = $this->make_seeAlso($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['seeAlso'], $anchors ? $key : '');
 
 				// Making item:
 			$out = '<a name="' . $key . '.' . $field . '"></a>' .
 					$this->headerLine($this->getTableFieldLabel($key, $field), 1) .
-					$this->prepareContent($TCA_DESCR[$key]['columns'][$field]['description']) .
-					($TCA_DESCR[$key]['columns'][$field]['details'] ? $this->headerLine($LANG->getLL('details').':').$this->prepareContent($TCA_DESCR[$key]['columns'][$field]['details']) : '') .
-					($TCA_DESCR[$key]['columns'][$field]['syntax'] ? $this->headerLine($LANG->getLL('syntax').':').$this->prepareContent($TCA_DESCR[$key]['columns'][$field]['syntax']) : '') .
-					($TCA_DESCR[$key]['columns'][$field]['image'] ? $this->printImage($TCA_DESCR[$key]['columns'][$field]['image'],$TCA_DESCR[$key]['columns'][$field]['image_descr']) : '') .
-					($TCA_DESCR[$key]['columns'][$field]['seeAlso'] && $seeAlsoRes ? $this->headerLine($LANG->getLL('seeAlso').':').'<p>'.$seeAlsoRes.'</p>' : '') .
-					($this->back ? '<br /><p><a href="' . htmlspecialchars('view_help.php?tfID=' . rawurlencode($this->back)) . '" class="typo3-goBack">' . htmlspecialchars($LANG->getLL('goBack')) . '</a></p>' : '') .
+					$this->prepareContent($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['description']) .
+					($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['details'] ? $this->headerLine($GLOBALS['LANG']->getLL('details').':').$this->prepareContent($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['details']) : '') .
+					($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['syntax'] ? $this->headerLine($GLOBALS['LANG']->getLL('syntax').':').$this->prepareContent($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['syntax']) : '') .
+					($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['image'] ? $this->printImage($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['image'],$GLOBALS['TCA_DESCR'][$key]['columns'][$field]['image_descr']) : '') .
+					($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['seeAlso'] && $seeAlsoRes ? $this->headerLine($GLOBALS['LANG']->getLL('seeAlso').':').'<p>'.$seeAlsoRes.'</p>' : '') .
+					($this->back ? '<br /><p><a href="' . htmlspecialchars('view_help.php?tfID=' . rawurlencode($this->back)) . '" class="typo3-goBack">' . htmlspecialchars($GLOBALS['LANG']->getLL('goBack')) . '</a></p>' : '') .
 					'<br />';
 		}
 		return $out;
@@ -759,30 +708,28 @@ class SC_view_help {
 	 * @return array Table and field labels in a numeric array
 	 */
 	function getTableFieldNames($key, $field) {
-		global $TCA, $TCA_DESCR, $LANG;
-
-		$LANG->loadSingleTableDescription($key);
+		$GLOBALS['LANG']->loadSingleTableDescription($key);
 
 			// Define the label for the key
 		$keyName = $key;
-		if (is_array($TCA_DESCR[$key]['columns']['']) && isset($TCA_DESCR[$key]['columns']['']['alttitle'])) {
+		if (is_array($GLOBALS['TCA_DESCR'][$key]['columns']['']) && isset($GLOBALS['TCA_DESCR'][$key]['columns']['']['alttitle'])) {
 				// If there's an alternative title, use it
-			$keyName = $TCA_DESCR[$key]['columns']['']['alttitle'];
-		} elseif (isset($TCA[$key])) {
+			$keyName = $GLOBALS['TCA_DESCR'][$key]['columns']['']['alttitle'];
+		} elseif (isset($GLOBALS['TCA'][$key])) {
 				// Otherwise, if it's a table, use its title
-			$keyName = $TCA[$key]['ctrl']['title'];
+			$keyName = $GLOBALS['TCA'][$key]['ctrl']['title'];
 		} else {
 				// If no title was found, make sure to remove any "_MOD_"
 			$keyName = preg_replace('/^_MOD_/', '', $key);
 		}
 			// Define the label for the field
 		$fieldName = $field;
-		if (is_array($TCA_DESCR[$key]['columns'][$field]) && isset($TCA_DESCR[$key]['columns'][$field]['alttitle'])) {
+		if (is_array($GLOBALS['TCA_DESCR'][$key]['columns'][$field]) && isset($GLOBALS['TCA_DESCR'][$key]['columns'][$field]['alttitle'])) {
 				// If there's an alternative title, use it
-			$fieldName = $TCA_DESCR[$key]['columns'][$field]['alttitle'];
-		} elseif (isset($TCA[$key])&&isset($TCA[$key]['columns'][$field])) {
+			$fieldName = $GLOBALS['TCA_DESCR'][$key]['columns'][$field]['alttitle'];
+		} elseif (isset($GLOBALS['TCA'][$key]) && isset($GLOBALS['TCA'][$key]['columns'][$field])) {
 				// Otherwise, if it's a table, use its title
-			$fieldName = $TCA[$key]['columns'][$field]['label'];
+			$fieldName = $GLOBALS['TCA'][$key]['columns'][$field]['label'];
 		}
 		return array($keyName, $fieldName);
 	}
@@ -797,7 +744,6 @@ class SC_view_help {
 	 * @see getTableFieldNames()
 	 */
 	function getTableFieldLabel($key, $field = '', $mergeToken = ': ') {
-		global $LANG;
 		$tableName = '';
 		$fieldName = '';
 
@@ -805,8 +751,8 @@ class SC_view_help {
 		list($tableName, $fieldName) = $this->getTableFieldNames($key, $field);
 
 			// Create label:
-		$labelString = $LANG->sL($tableName) .
-					($field ? $mergeToken . rtrim(trim($LANG->sL($fieldName)), ':') : '');
+		$labelString = $GLOBALS['LANG']->sL($tableName) .
+					($field ? $mergeToken . rtrim(trim($GLOBALS['LANG']->sL($fieldName)), ':') : '');
 
 		return $labelString;
 	}
@@ -834,8 +780,6 @@ class SC_view_help {
 	 * @return	void
 	 */
 	function createGlossaryIndex()	{
-		global $TCA_DESCR,$TCA,$LANG;
-
 			// Create hash string and try to retrieve glossary array:
 		$hash = md5('typo3/view_help.php:glossary');
  		list($this->glossaryWords,$this->substWords) = unserialize(t3lib_BEfunc::getHash($hash));
@@ -846,17 +790,17 @@ class SC_view_help {
 				// Initialize:
 			$this->glossaryWords = array();
 			$this->substWords = array();
-			$CSHkeys = array_flip(array_keys($TCA_DESCR));
+			$CSHkeys = array_flip(array_keys($GLOBALS['TCA_DESCR']));
 
 				// Glossary
 			foreach($CSHkeys as $cshKey => $value)	{
-				if (t3lib_div::isFirstPartOfStr($cshKey, 'xGLOSSARY_') && !isset($TCA[$cshKey]))	{
-					$LANG->loadSingleTableDescription($cshKey);
+				if (t3lib_div::isFirstPartOfStr($cshKey, 'xGLOSSARY_') && !isset($GLOBALS['TCA'][$cshKey])) {
+					$GLOBALS['LANG']->loadSingleTableDescription($cshKey);
 
-					if (is_array($TCA_DESCR[$cshKey]['columns']))	{
+					if (is_array($GLOBALS['TCA_DESCR'][$cshKey]['columns']))	{
 
 							// Traverse table columns as listed in TCA_DESCR
-						foreach ($TCA_DESCR[$cshKey]['columns'] as $field => $data) {
+						foreach ($GLOBALS['TCA_DESCR'][$cshKey]['columns'] as $field => $data) {
 							if ($field)	{
 								$this->glossaryWords[$cshKey.'.'.$field] = array(
 									'title' => trim($data['alttitle'] ? $data['alttitle'] : $cshKey),

@@ -29,41 +29,10 @@
  *
  * This module lets you view a page in a more Content Management like style than the ordinary record-list
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  106: class ext_posMap extends t3lib_positionMap
- *  117:     function wrapRecordTitle($str,$row)
- *  130:     function wrapColumnHeader($str,$vv)
- *  144:     function onClickInsertRecord($row,$vv,$moveUid,$pid)
- *  160:     function wrapRecordHeader($str,$row)
- *
- *
- *  181: class SC_db_layout
- *  230:     function init()
- *  283:     function menuConfig()
- *  372:     function clearCache()
- *  387:     function main()
- *  489:     function renderQuickEdit()
- *  886:     function renderListContent()
- * 1165:     function printContent()
- *
- *              SECTION: Other functions
- * 1192:     function getNumberOfHiddenElements()
- * 1205:     function local_linkThisScript($params)
- * 1217:     function exec_languageQuery($id)
- *
- * TOTAL FUNCTIONS: 14
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -231,11 +200,10 @@ class SC_db_layout {
 	 * @return	void
 	 */
 	function init()	{
-		global $BE_USER;
 
 			// Setting module configuration / page select clause
 		$this->MCONF = $GLOBALS['MCONF'];
-		$this->perms_clause = $BE_USER->getPagePermsClause(1);
+		$this->perms_clause = $GLOBALS['BE_USER']->getPagePermsClause(1);
 		$this->backPath = $GLOBALS['BACK_PATH'];
 
 			// GPvars:
@@ -285,56 +253,29 @@ class SC_db_layout {
 	 * @return	void
 	 */
 	function menuConfig()	{
-		global $BE_USER,$LANG,$TYPO3_CONF_VARS;
-
 			// MENU-ITEMS:
 		$this->MOD_MENU = array(
-			'tt_board' => array(
-				0 => $LANG->getLL('m_tt_board_0'),
-				'expand' => $LANG->getLL('m_tt_board_expand')
-			),
-			'tt_address' => array(
-				0 => $LANG->getLL('m_tt_address_0'),
-				1 => $LANG->getLL('m_tt_address_1'),
-				2 => $LANG->getLL('m_tt_address_2')
-			),
-			'tt_links' => array(
-				0 => $LANG->getLL('m_default'),
-				1 => $LANG->getLL('m_tt_links_1'),
-				2 => $LANG->getLL('m_tt_links_2')
-			),
-			'tt_calender' => array (
-				0 => $LANG->getLL('m_default'),
-				'date' => $LANG->getLL('m_tt_calender_date'),
-				'date_ext' => $LANG->getLL('m_tt_calender_date_ext'),
-				'todo' => $LANG->getLL('m_tt_calender_todo'),
-				'todo_ext' => $LANG->getLL('m_tt_calender_todo_ext')
-			),
-			'tt_products' => array (
-				0 => $LANG->getLL('m_default'),
-				'ext' => $LANG->getLL('m_tt_products_ext')
-			),
 			'tt_content_showHidden' => '',
 			'showPalettes' => '',
 			'showDescriptions' => '',
 			'disableRTE' => '',
 			'function' => array(
-				0 => $LANG->getLL('m_function_0'),
-				1 => $LANG->getLL('m_function_1'),
-				2 => $LANG->getLL('m_function_2'),
-				3 => $LANG->getLL('pageInformation'),
+				0 => $GLOBALS['LANG']->getLL('m_function_0'),
+				1 => $GLOBALS['LANG']->getLL('m_function_1'),
+				2 => $GLOBALS['LANG']->getLL('m_function_2'),
+				3 => $GLOBALS['LANG']->getLL('pageInformation'),
 			),
 			'language' => array(
-				0 => $LANG->getLL('m_default')
+				0 => $GLOBALS['LANG']->getLL('m_default')
 			)
 		);
 
 		// example settings:
-		// 	$TYPO3_CONF_VARS['EXTCONF']['cms']['db_layout']['addTables']['tx_myext'] =
+		// 	$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['cms']['db_layout']['addTables']['tx_myext'] =
 		//		array ('default' => array(
 		//				'MENU' => 'LLL:EXT:tx_myext/locallang_db.xml:menuDefault',
 		//				'fList' =>  'title,description,image',
-		//				'icon' => TRUE),
+		//				'icon' => TRUE));
 		if (is_array($this->externalTables)) {
 			foreach ($this->externalTables as $table => $tableSettings) {
 				// delete the default settings from above
@@ -343,7 +284,7 @@ class SC_db_layout {
 				}
 				if (is_array($tableSettings) && count($tableSettings) > 1) {
 					foreach ($tableSettings as $key => $settings) {
-						$this->MOD_MENU[$table][$key] = $LANG->sL($settings['MENU']);
+						$this->MOD_MENU[$table][$key] = $GLOBALS['LANG']->sL($settings['MENU']);
 					}
 				}
 			}
@@ -358,7 +299,11 @@ class SC_db_layout {
 		}
 
 			// Find if there are ANY languages at all (and if not, remove the language option from function menu).
-		$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'sys_language', ($BE_USER->isAdmin() ? '' : 'hidden=0'));
+		$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
+			'uid',
+			'sys_language',
+			($GLOBALS['BE_USER']->isAdmin() ? '' : 'hidden=0')
+		);
 		if (!$count) {
 			unset($this->MOD_MENU['function']['2']);
 		}
@@ -370,7 +315,7 @@ class SC_db_layout {
 		$this->MOD_MENU['function'] = t3lib_BEfunc::unsetMenuItems($this->modTSconfig['properties'],$this->MOD_MENU['function'],'menu.function');
 
 			// Remove QuickEdit as option if page type is not...
-		if (!t3lib_div::inList($TYPO3_CONF_VARS['FE']['content_doktypes'].',6',$this->pageinfo['doktype']))	{
+		if (!t3lib_div::inList($GLOBALS['TYPO3_CONF_VARS']['FE']['content_doktypes'] . ',6', $this->pageinfo['doktype'])) {
 			unset($this->MOD_MENU['function'][0]);
 		}
 
@@ -409,25 +354,23 @@ class SC_db_layout {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$BACK_PATH;
-
 		// Access check...
 		// The page will show only if there is a valid page and if this page may be viewed by the user
 		$access = is_array($this->pageinfo) ? 1 : 0;
 		if ($this->id && $access)	{
 
 				// Initialize permission settings:
-			$this->CALC_PERMS = $BE_USER->calcPerms($this->pageinfo);
+			$this->CALC_PERMS = $GLOBALS['BE_USER']->calcPerms($this->pageinfo);
 			$this->EDIT_CONTENT = ($this->CALC_PERMS&16) ? 1 : 0;
 
 				// Start document template object:
 			$this->doc = t3lib_div::makeInstance('template');
-			$this->doc->backPath = $BACK_PATH;
+			$this->doc->backPath = $GLOBALS['BACK_PATH'];
 			$this->doc->setModuleTemplate('templates/db_layout.html');
 
 				// JavaScript:
 			$this->doc->JScode = '<script type="text/javascript" ' .
-				'src="' . t3lib_div::createVersionNumberedFilename($BACK_PATH . '../t3lib/jsfunc.updateform.js') . '">' .
+				'src="' . t3lib_div::createVersionNumberedFilename($GLOBALS['BACK_PATH'] . '../t3lib/jsfunc.updateform.js') . '">' .
 				'</script>';
 			$this->doc->JScode.= $this->doc->wrapScriptTags('
 				if (top.fsMod) top.fsMod.recentIds["web"] = '.intval($this->id).';
@@ -441,11 +384,13 @@ class SC_db_layout {
 						}
 					} else window.location.href = URL;
 				}
-			'.($this->popView ? t3lib_BEfunc::viewOnClick($this->id,$BACK_PATH,t3lib_BEfunc::BEgetRootLine($this->id)) : '').'
+			' . ($this->popView ? t3lib_BEfunc::viewOnClick($this->id, $GLOBALS['BACK_PATH'], t3lib_BEfunc::BEgetRootLine($this->id)) : '') . '
 
 				function deleteRecord(table,id,url)	{	//
-					if (confirm('.$LANG->JScharCode($LANG->getLL('deleteWarning')).'))	{
-						window.location.href = "'.$BACK_PATH.'tce_db.php?cmd["+table+"]["+id+"][delete]=1&redirect="+escape(url)+"&vC=' . $BE_USER->veriCode() . t3lib_BEfunc::getUrlToken('tceAction') . '&prErr=1&uPT=1";
+					if (confirm(' . $GLOBALS['LANG']->JScharCode($GLOBALS['LANG']->getLL('deleteWarning')) . ')) {
+						window.location.href = "' . $GLOBALS['BACK_PATH'] .
+						'tce_db.php?cmd["+table+"]["+id+"][delete]=1&redirect="+escape(url)+"&vC=' . $GLOBALS['BE_USER']->veriCode() .
+						t3lib_BEfunc::getUrlToken('tceAction') . '&prErr=1&uPT=1";
 					}
 					return false;
 				}
@@ -608,7 +553,7 @@ class SC_db_layout {
 			$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
 				// Renders the module page
 			$this->content = $this->doc->render(
-				$LANG->getLL('title'),
+				$GLOBALS['LANG']->getLL('title'),
 				$this->content
 			);
 
@@ -616,7 +561,7 @@ class SC_db_layout {
 
 				// If no access or id value, create empty document:
 			$this->doc = t3lib_div::makeInstance('template');
-			$this->doc->backPath = $BACK_PATH;
+			$this->doc->backPath = $GLOBALS['BACK_PATH'];
 			$this->doc->setModuleTemplate('templates/db_layout.html');
 
 			$this->doc->JScode = $this->doc->wrapScriptTags('
@@ -625,8 +570,8 @@ class SC_db_layout {
 
 			$flashMessage = t3lib_div::makeInstance(
 				't3lib_FlashMessage',
-				$LANG->getLL('clickAPage_content'),
-				$LANG->getLL('clickAPage_header'),
+				$GLOBALS['LANG']->getLL('clickAPage_content'),
+				$GLOBALS['LANG']->getLL('clickAPage_header'),
 				t3lib_FlashMessage::INFO
 			);
 			$body = $flashMessage->render();
@@ -653,7 +598,7 @@ class SC_db_layout {
 			);
 
 			$markers = array(
-				'CSH' => t3lib_BEfunc::cshItem($this->descrTable, '', $BACK_PATH, '', TRUE),
+				'CSH' => t3lib_BEfunc::cshItem($this->descrTable, '', $GLOBALS['BACK_PATH'], '', TRUE),
 				'TOP_FUNCTION_MENU' => '',
 				'LANGSELECTOR' => '',
 				'CONTENT' => $body
@@ -662,7 +607,7 @@ class SC_db_layout {
 			$this->content.= $this->doc->moduleBody($this->pageinfo, $docHeaderButtons, $markers);
 				// Renders the module page
 			$this->content = $this->doc->render(
-				$LANG->getLL('title'),
+				$GLOBALS['LANG']->getLL('title'),
 				$this->content
 			);
 		}
@@ -674,12 +619,13 @@ class SC_db_layout {
 	 * @return	void
 	 */
 	function renderQuickEdit()	{
-		global $LANG,$BE_USER,$BACK_PATH;
 			// Alternative template
 		$this->doc->setModuleTemplate('templates/db_layout_quickedit.html');
 
 			// Alternative form tag; Quick Edit submits its content to tce_db.php.
-		$this->doc->form='<form action="'.htmlspecialchars($BACK_PATH.'tce_db.php?&prErr=1&uPT=1').'" method="post" enctype="'.$GLOBALS['TYPO3_CONF_VARS']['SYS']['form_enctype'].'" name="editform" onsubmit="return TBE_EDITOR.checkSubmit(1);">';
+		$this->doc->form = '<form action="' .
+			htmlspecialchars($GLOBALS['BACK_PATH'] . 'tce_db.php?&prErr=1&uPT=1') . '" method="post" enctype="' .
+			$GLOBALS['TYPO3_CONF_VARS']['SYS']['form_enctype'] . '" name="editform" onsubmit="return TBE_EDITOR.checkSubmit(1);">';
 
 			// Setting up the context sensitive menu:
 		$this->doc->getContextMenuCode();
@@ -704,13 +650,18 @@ class SC_db_layout {
 				$idListA[] = $cRow['uid'];
 			}
 
-			$url = $BACK_PATH.'alt_doc.php?edit[tt_content]['.implode(',',$idListA).']=edit&returnUrl='.rawurlencode($this->local_linkThisScript(array('edit_record'=>'')));
+			$url = $GLOBALS['BACK_PATH'] . 'alt_doc.php?edit[tt_content][' . implode(',', $idListA) .
+				']=edit&returnUrl=' . rawurlencode($this->local_linkThisScript(array('edit_record'=>'')));
 			t3lib_utility_Http::redirect($url);
 		}
 
 			// If the former record edited was the creation of a NEW record, this will look up the created records uid:
 		if ($this->new_unique_uid)	{
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'sys_log', 'userid='.intval($BE_USER->user['uid']).' AND NEWid='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->new_unique_uid, 'sys_log'));
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+				'*',
+				'sys_log',
+				'userid=' . intval($GLOBALS['BE_USER']->user['uid']) . ' AND NEWid=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->new_unique_uid, 'sys_log')
+			);
 			$sys_log_row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 			if (is_array($sys_log_row))	{
 				$edit_record=$sys_log_row['tablename'].':'.$sys_log_row['recuid'];
@@ -728,11 +679,11 @@ class SC_db_layout {
 		if (is_array($languageOverlayRecord))	{
 			$inValue = 'pages_language_overlay:'.$languageOverlayRecord['uid'];
 			$is_selected+=intval($edit_record==$inValue);
-			$opt[]='<option value="'.$inValue.'"'.($edit_record==$inValue?' selected="selected"':'').'>[ '.$LANG->getLL('editLanguageHeader',1).' ]</option>';
+			$opt[] = '<option value="' . $inValue . '"' . ($edit_record == $inValue ? ' selected="selected"' : '') . '>[ ' . $GLOBALS['LANG']->getLL('editLanguageHeader', 1) . ' ]</option>';
 		} else {
 			$inValue = 'pages:'.$this->id;
 			$is_selected+=intval($edit_record==$inValue);
-			$opt[]='<option value="'.$inValue.'"'.($edit_record==$inValue?' selected="selected"':'').'>[ '.$LANG->getLL('editPageProperties',1).' ]</option>';
+			$opt[] = '<option value="' . $inValue . '"' . ($edit_record == $inValue ? ' selected="selected"' : '') . '>[ ' . $GLOBALS['LANG']->getLL('editPageProperties', 1) . ' ]</option>';
 		}
 
 			// Selecting all content elements from this language and allowed colPos:
@@ -762,11 +713,18 @@ class SC_db_layout {
 				if (strcmp($cRow['colPos'],$colPos))	{
 					$colPos=$cRow['colPos'];
 					$opt[]='<option value=""></option>';
-					$opt[]='<option value="_EDIT_COL:'.$colPos.'">__'.$LANG->sL(t3lib_BEfunc::getLabelFromItemlist('tt_content','colPos',$colPos),1).':__</option>';
+					$opt[] = '<option value="_EDIT_COL:' . $colPos . '">__' . $GLOBALS['LANG']->sL(t3lib_BEfunc::getLabelFromItemlist('tt_content', 'colPos', $colPos), 1) . ':__</option>';
 				}
 				$inValue = 'tt_content:'.$cRow['uid'];
 				$is_selected+=intval($edit_record==$inValue);
-				$opt[]='<option value="'.$inValue.'"'.($edit_record==$inValue?' selected="selected"':'').'>'.htmlspecialchars(t3lib_div::fixed_lgd_cs($cRow['header']?$cRow['header']:'['.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.no_title').'] '.strip_tags($cRow['bodytext']),$BE_USER->uc['titleLen'])).'</option>';
+				$opt[] = '<option value="' . $inValue . '"' .
+					($edit_record == $inValue ?' selected="selected"' : '') .
+					'>' . htmlspecialchars(t3lib_div::fixed_lgd_cs(
+						($cRow['header']
+						? $cRow['header']
+						: '[' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.no_title') . '] ' . strip_tags($cRow['bodytext'])),
+						$GLOBALS['BE_USER']->uc['titleLen'])
+					) . '</option>';
 				$prev=-$cRow['uid'];
 			}
 		}
@@ -777,13 +735,13 @@ class SC_db_layout {
 
 			$inValue = 'tt_content:new/'.$prev.'/'.$colPos;
 			$is_selected+=intval($edit_record==$inValue);
-			$opt[]='<option value="'.$inValue.'"'.($edit_record==$inValue?' selected="selected"':'').'>[ '.$LANG->getLL('newLabel',1).' ]</option>';
+			$opt[] = '<option value="' . $inValue . '"' . ($edit_record == $inValue ? ' selected="selected"' : '') . '>[ ' . $GLOBALS['LANG']->getLL('newLabel', 1) . ' ]</option>';
 		}
 
 			// If none is yet selected...
 		if (!$is_selected)	{
 			$opt[]='<option value=""></option>';
-			$opt[]='<option value="'.$edit_record.'"  selected="selected">[ '.$LANG->getLL('newLabel',1).' ]</option>';
+			$opt[] = '<option value="' . $edit_record . '"  selected="selected">[ ' . $GLOBALS['LANG']->getLL('newLabel', 1) . ' ]</option>';
 		}
 
 
@@ -793,7 +751,7 @@ class SC_db_layout {
 
 
 			// Delete-button flag?
-		$this->deleteButton = (t3lib_div::testInt($this->eRParts[1]) && $edit_record && (($this->eRParts[0]!='pages'&&$this->EDIT_CONTENT) || ($this->eRParts[0]=='pages'&&($this->CALC_PERMS&4))));
+		$this->deleteButton = (t3lib_utility_Math::canBeInterpretedAsInteger($this->eRParts[1]) && $edit_record && (($this->eRParts[0]!='pages'&&$this->EDIT_CONTENT) || ($this->eRParts[0]=='pages'&&($this->CALC_PERMS&4))));
 
 			// If undo-button should be rendered (depends on available items in sys_history)
 		$this->undoButton=0;
@@ -814,8 +772,8 @@ class SC_db_layout {
 			// Setting close url/return url for exiting this script:
 		$this->closeUrl = $this->local_linkThisScript(array('SET'=>array('function'=>1)));	// Goes to 'Columns' view if close is pressed (default)
 
-		if ($BE_USER->uc['condensedMode'])	{
-			$this->closeUrl = $BACK_PATH.'alt_db_navframe.php';
+		if ($GLOBALS['BE_USER']->uc['condensedMode']) {
+			$this->closeUrl = $GLOBALS['BACK_PATH'] . 'alt_db_navframe.php';
 		}
 		if ($this->returnUrl)	{
 			$this->closeUrl = $this->returnUrl;
@@ -827,7 +785,8 @@ class SC_db_layout {
 		$this->editSelect = '<select name="edit_record" onchange="' . htmlspecialchars('jumpToUrl(\'db_layout.php?id=' . $this->id . '&edit_record=\'+escape(this.options[this.selectedIndex].value)' . $retUrlStr . ',this);') . '">' . implode('', $opt) . '</select>';
 
 			// Creating editing form:
-		if ($BE_USER->check('tables_modify',$this->eRParts[0]) && $edit_record && (($this->eRParts[0]!='pages'&&$this->EDIT_CONTENT) || ($this->eRParts[0]=='pages'&&($this->CALC_PERMS&1))))	{
+		if ($GLOBALS['BE_USER']->check('tables_modify',$this->eRParts[0]) && $edit_record
+			&& (($this->eRParts[0] !== 'pages'&& $this->EDIT_CONTENT) || ($this->eRParts[0] === 'pages' && ($this->CALC_PERMS&1)))) {
 
 				// Splitting uid parts for special features, if new:
 			list($uidVal,$ex_pid,$ex_colPos) = explode('/',$this->eRParts[1]);
@@ -862,18 +821,18 @@ class SC_db_layout {
 				$rec['uid'] = $uidVal;
 
 					// Checking internals access:
-				$recordAccess = $BE_USER->recordEditAccessInternals($this->eRParts[0],$uidVal);
+				$recordAccess = $GLOBALS['BE_USER']->recordEditAccessInternals($this->eRParts[0], $uidVal);
 			}
 
 			if (!$recordAccess)	{
 					// If no edit access, print error message:
-				$content.=$this->doc->section($LANG->getLL('noAccess'),$LANG->getLL('noAccess_msg').'<br /><br />'.
-							($BE_USER->errorMsg ? 'Reason: ' . $BE_USER->errorMsg . '<br /><br />' : ''), 0, 1);
+				$content .= $this->doc->section($GLOBALS['LANG']->getLL('noAccess'), $GLOBALS['LANG']->getLL('noAccess_msg') . '<br /><br />' .
+							($GLOBALS['BE_USER']->errorMsg ? 'Reason: ' . $GLOBALS['BE_USER']->errorMsg . '<br /><br />' : ''), 0, 1);
 			} elseif (is_array($rec))	{	// If the record is an array (which it will always be... :-)
 
 					// Create instance of TCEforms, setting defaults:
 				$tceforms = t3lib_div::makeInstance('t3lib_TCEforms');
-				$tceforms->backPath = $BACK_PATH;
+				$tceforms->backPath = $GLOBALS['BACK_PATH'];
 				$tceforms->initDefaultBEMode();
 				$tceforms->fieldOrder = $this->modTSconfig['properties']['tt_content.']['fieldOrder'];
 				$tceforms->palettesCollapsed = !$this->MOD_SETTINGS['showPalettes'];
@@ -885,7 +844,9 @@ class SC_db_layout {
 				$tceforms->clipObj->initializeClipboard();	// Initialize - reads the clipboard content from the user session
 
 
-				if ($BE_USER->uc['edit_showFieldHelp']!='text' && $this->MOD_SETTINGS['showDescriptions'])	$tceforms->edit_showFieldHelp='text';
+				if ($GLOBALS['BE_USER']->uc['edit_showFieldHelp'] !== 'text' && $this->MOD_SETTINGS['showDescriptions']) {
+					$tceforms->edit_showFieldHelp = 'text';
+				}
 
 					// Render form, wrap it:
 				$panel='';
@@ -923,29 +884,31 @@ class SC_db_layout {
 			}
 		} else {
 				// If no edit access, print error message:
-			$content.=$this->doc->section($LANG->getLL('noAccess'),$LANG->getLL('noAccess_msg').'<br /><br />',0,1);
+			$content .= $this->doc->section($GLOBALS['LANG']->getLL('noAccess'), $GLOBALS['LANG']->getLL('noAccess_msg') . '<br /><br />', 0, 1);
 		}
 
 
 			// Bottom controls (function menus):
 		$q_count = $this->getNumberOfHiddenElements();
 		$h_func_b= t3lib_BEfunc::getFuncCheck($this->id,'SET[tt_content_showHidden]',$this->MOD_SETTINGS['tt_content_showHidden'],'db_layout.php','','id="checkTt_content_showHidden"').
-					'<label for="checkTt_content_showHidden">'.(!$q_count?$GLOBALS['TBE_TEMPLATE']->dfw($LANG->getLL('hiddenCE',1)):$LANG->getLL('hiddenCE',1).' ('.$q_count.')').'</label>';
+					'<label for="checkTt_content_showHidden">' .
+				   (!$q_count ? $GLOBALS['TBE_TEMPLATE']->dfw($GLOBALS['LANG']->getLL('hiddenCE', 1)) : $GLOBALS['LANG']->getLL('hiddenCE', 1) .
+					' (' . $q_count . ')') . '</label>';
 
 		$h_func_b.= '<br />'.
 					t3lib_BEfunc::getFuncCheck($this->id,'SET[showPalettes]',$this->MOD_SETTINGS['showPalettes'],'db_layout.php','','id="checkShowPalettes"').
-					'<label for="checkShowPalettes">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showPalettes',1).'</label>';
+					'<label for="checkShowPalettes">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showPalettes', 1) . '</label>';
 
-		if (t3lib_extMgm::isLoaded('context_help') && $BE_USER->uc['edit_showFieldHelp']!='text') {
+		if (t3lib_extMgm::isLoaded('context_help') && $GLOBALS['BE_USER']->uc['edit_showFieldHelp'] !== 'text') {
 			$h_func_b.= '<br />'.
 						t3lib_BEfunc::getFuncCheck($this->id,'SET[showDescriptions]',$this->MOD_SETTINGS['showDescriptions'],'db_layout.php','','id="checkShowDescriptions"').
-						'<label for="checkShowDescriptions">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showDescriptions',1).'</label>';
+						'<label for="checkShowDescriptions">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showDescriptions', 1) . '</label>';
 		}
 
-		if ($BE_USER->isRTE())	{
+		if ($GLOBALS['BE_USER']->isRTE()) {
 			$h_func_b.= '<br />'.
 						t3lib_BEfunc::getFuncCheck($this->id,'SET[disableRTE]',$this->MOD_SETTINGS['disableRTE'],'db_layout.php','','id="checkDisableRTE"').
-						'<label for="checkDisableRTE">'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.disableRTE',1).'</label>';
+						'<label for="checkDisableRTE">' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.disableRTE', 1) . '</label>';
 		}
 
 			// Add the function menus to bottom:
@@ -954,20 +917,20 @@ class SC_db_layout {
 
 
 			// Select element matrix:
-		if ($this->eRParts[0]=='tt_content' && t3lib_div::testInt($this->eRParts[1]))	{
+		if ($this->eRParts[0]=='tt_content' && t3lib_utility_Math::canBeInterpretedAsInteger($this->eRParts[1]))	{
 			$posMap = t3lib_div::makeInstance('ext_posMap');
-			$posMap->backPath = $BACK_PATH;
+			$posMap->backPath = $GLOBALS['BACK_PATH'];
 			$posMap->cur_sys_language=$this->current_sys_language;
 
 			$HTMLcode = '';
 
 				// CSH:
-			$HTMLcode.= t3lib_BEfunc::cshItem($this->descrTable, 'quickEdit_selElement', $BACK_PATH, '|<br />');
+			$HTMLcode.= t3lib_BEfunc::cshItem($this->descrTable, 'quickEdit_selElement', $GLOBALS['BACK_PATH'], '|<br />');
 
 			$HTMLcode.=$posMap->printContentElementColumns($this->id,$this->eRParts[1],$this->colPosList,$this->MOD_SETTINGS['tt_content_showHidden'],$this->R_URI);
 
 			$content.=$this->doc->spacer(20);
-			$content.=$this->doc->section($LANG->getLL('CEonThisPage'),$HTMLcode,0,1);
+			$content.=$this->doc->section($GLOBALS['LANG']->getLL('CEonThisPage'), $HTMLcode, 0, 1);
 			$content.=$this->doc->spacer(20);
 		}
 
@@ -987,26 +950,25 @@ class SC_db_layout {
 	 *
 	 * @return	void
 	 */
-	function renderListContent()	{
-		global $LANG,$BACK_PATH,$TCA;
-
+	function renderListContent() {
 			// Initialize list object (see "class.db_layout.inc"):
+		/** @var $dblist tx_cms_layout */
 		$dblist = t3lib_div::makeInstance('tx_cms_layout');
-		$dblist->backPath = $BACK_PATH;
+		$dblist->backPath = $GLOBALS['BACK_PATH'];
 		$dblist->thumbs = $this->imagemode;
 		$dblist->no_noWrap = 1;
 		$dblist->descrTable = $this->descrTable;
 
-		$this->pointer = t3lib_div::intInRange($this->pointer,0,100000);
+		$this->pointer = t3lib_utility_Math::forceIntegerInRange($this->pointer,0,100000);
 		$dblist->script = 'db_layout.php';
 		$dblist->showIcon = 0;
 		$dblist->setLMargin=0;
 		$dblist->doEdit = $this->EDIT_CONTENT;
 		$dblist->ext_CALC_PERMS = $this->CALC_PERMS;
 
-		$dblist->agePrefixes = $LANG->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears');
+		$dblist->agePrefixes = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears');
 		$dblist->id = $this->id;
-		$dblist->nextThree = t3lib_div::intInRange($this->modTSconfig['properties']['editFieldsAtATime'],0,10);
+		$dblist->nextThree = t3lib_utility_Math::forceIntegerInRange($this->modTSconfig['properties']['editFieldsAtATime'],0,10);
 		$dblist->option_showBigButtons = ($this->modTSconfig['properties']['disableBigButtons'] === '0');
 		$dblist->option_newWizard = $this->modTSconfig['properties']['disableNewContentElementWizard'] ? 0 : 1;
 		$dblist->defLangBinding = $this->modTSconfig['properties']['defLangBinding'] ? 1 : 0;
@@ -1030,72 +992,55 @@ class SC_db_layout {
 			t3lib_div::loadTCA($table);
 
 			if (!isset($dblist->externalTables[$table]))	{
-					// Creating special conditions for each table:
-				switch($table)	{
-					case 'tt_board':
-						$h_func = t3lib_BEfunc::getFuncMenu($this->id,'SET[tt_board]',$this->MOD_SETTINGS['tt_board'],$this->MOD_MENU['tt_board'],'db_layout.php','');
-					break;
-					case 'tt_address':
-						$h_func = t3lib_BEfunc::getFuncMenu($this->id,'SET[tt_address]',$this->MOD_SETTINGS['tt_address'],$this->MOD_MENU['tt_address'],'db_layout.php','');
-					break;
-					case 'tt_links':
-						$h_func = t3lib_BEfunc::getFuncMenu($this->id,'SET[tt_links]',$this->MOD_SETTINGS['tt_links'],$this->MOD_MENU['tt_links'],'db_layout.php','');
-					break;
-					case 'tt_calender':
-						$h_func = t3lib_BEfunc::getFuncMenu($this->id,'SET[tt_calender]',$this->MOD_SETTINGS['tt_calender'],$this->MOD_MENU['tt_calender'],'db_layout.php','');
-					break;
-					case 'tt_products':
-						$h_func = t3lib_BEfunc::getFuncMenu($this->id,'SET[tt_products]',$this->MOD_SETTINGS['tt_products'],$this->MOD_MENU['tt_products'],'db_layout.php','');
-					break;
-					case 'tt_guest':
-					case 'tt_news':
-					case 'fe_users':
-						// Nothing
-					break;
-					case 'tt_content':
-						$q_count = $this->getNumberOfHiddenElements();
-						$h_func_b= t3lib_BEfunc::getFuncCheck($this->id,'SET[tt_content_showHidden]',$this->MOD_SETTINGS['tt_content_showHidden'],'db_layout.php','','id="checkTt_content_showHidden"').'<label for="checkTt_content_showHidden">'.(!$q_count?$GLOBALS['TBE_TEMPLATE']->dfw($LANG->getLL('hiddenCE')):$LANG->getLL('hiddenCE').' ('.$q_count.')').'</label>';
+				$q_count = $this->getNumberOfHiddenElements();
+				$h_func_b = t3lib_BEfunc::getFuncCheck(
+					$this->id,
+					'SET[tt_content_showHidden]',
+					$this->MOD_SETTINGS['tt_content_showHidden'],
+					'db_layout.php',
+					'',
+					'id="checkTt_content_showHidden"'
+				) . '<label for="checkTt_content_showHidden">' .
+				(!$q_count ? $GLOBALS['TBE_TEMPLATE']->dfw($GLOBALS['LANG']->getLL('hiddenCE')) : $GLOBALS['LANG']->getLL('hiddenCE') . ' (' . $q_count . ')') . '</label>';
 
-						$dblist->tt_contentConfig['showCommands'] = 1;	// Boolean: Display up/down arrows and edit icons for tt_content records
-						$dblist->tt_contentConfig['showInfo'] = 1;		// Boolean: Display info-marks or not
-						$dblist->tt_contentConfig['single'] = 0; 		// Boolean: If set, the content of column(s) $this->tt_contentConfig['showSingleCol'] is shown in the total width of the page
+				$dblist->tt_contentConfig['showCommands'] = 1;	// Boolean: Display up/down arrows and edit icons for tt_content records
+				$dblist->tt_contentConfig['showInfo'] = 1;		// Boolean: Display info-marks or not
+				$dblist->tt_contentConfig['single'] = 0; 		// Boolean: If set, the content of column(s) $this->tt_contentConfig['showSingleCol'] is shown in the total width of the page
 
-						if ($this->MOD_SETTINGS['function'] == 4) {
-								// grid view
-							$dblist->tt_contentConfig['showAsGrid'] = 1;
-						}
+				if ($this->MOD_SETTINGS['function'] == 4) {
+						// grid view
+					$dblist->tt_contentConfig['showAsGrid'] = 1;
+				}
 
-							// Setting up the tt_content columns to show:
-						if (is_array($TCA['tt_content']['columns']['colPos']['config']['items']))	{
-							$colList = array();
-							$tcaItems = t3lib_div::callUserFunction( 'EXT:cms/classes/class.tx_cms_backendlayout.php:tx_cms_BackendLayout->getColPosListItemsParsed' , $this->id, $this );
-							foreach($tcaItems as $temp)	{
-								$colList[] = $temp[1];
-							}
-						} else {	// ... should be impossible that colPos has no array. But this is the fallback should it make any sense:
-							$colList = array('1','0','2','3');
-						}
-						if (strcmp($this->colPosList,''))	{
-							$colList = array_intersect(t3lib_div::intExplode(',',$this->colPosList),$colList);
-						}
+					// Setting up the tt_content columns to show:
+				if (is_array($GLOBALS['TCA']['tt_content']['columns']['colPos']['config']['items'])) {
+					$colList = array();
+					$tcaItems = t3lib_div::callUserFunction( 'EXT:cms/classes/class.tx_cms_backendlayout.php:tx_cms_BackendLayout->getColPosListItemsParsed' , $this->id, $this );
+					foreach($tcaItems as $temp)	{
+						$colList[] = $temp[1];
+					}
+				} else {	// ... should be impossible that colPos has no array. But this is the fallback should it make any sense:
+					$colList = array('1','0','2','3');
+				}
+				if (strcmp($this->colPosList,''))	{
+					$colList = array_intersect(t3lib_div::intExplode(',',$this->colPosList),$colList);
+				}
 
-							// If only one column found, display the single-column view.
-						if (count($colList) === 1 && !$this->MOD_SETTINGS['function'] === 4) {
-							$dblist->tt_contentConfig['single'] = 1;	// Boolean: If set, the content of column(s) $this->tt_contentConfig['showSingleCol'] is shown in the total width of the page
-							$dblist->tt_contentConfig['showSingleCol'] = current($colList);	// The column(s) to show if single mode (under each other)
-						}
-						$dblist->tt_contentConfig['cols'] = implode(',',$colList);		// The order of the rows: Default is left(1), Normal(0), right(2), margin(3)
-						$dblist->tt_contentConfig['showHidden'] = $this->MOD_SETTINGS['tt_content_showHidden'];
-						$dblist->tt_contentConfig['sys_language_uid'] = intval($this->current_sys_language);
+					// If only one column found, display the single-column view.
+				if (count($colList) === 1 && !$this->MOD_SETTINGS['function'] === 4) {
+					$dblist->tt_contentConfig['single'] = 1;	// Boolean: If set, the content of column(s) $this->tt_contentConfig['showSingleCol'] is shown in the total width of the page
+					$dblist->tt_contentConfig['showSingleCol'] = current($colList);	// The column(s) to show if single mode (under each other)
+				}
+				$dblist->tt_contentConfig['cols'] = implode(',',$colList);		// The order of the rows: Default is left(1), Normal(0), right(2), margin(3)
+				$dblist->tt_contentConfig['showHidden'] = $this->MOD_SETTINGS['tt_content_showHidden'];
+				$dblist->tt_contentConfig['sys_language_uid'] = intval($this->current_sys_language);
 
-							// If the function menu is set to "Language":
-						if ($this->MOD_SETTINGS['function']==2)	{
-							$dblist->tt_contentConfig['single'] = 0;
-							$dblist->tt_contentConfig['languageMode'] = 1;
-							$dblist->tt_contentConfig['languageCols'] = $this->MOD_MENU['language'];
-							$dblist->tt_contentConfig['languageColsPointer'] = $this->current_sys_language;
-						}
-					break;
+					// If the function menu is set to "Language":
+				if ($this->MOD_SETTINGS['function']==2)	{
+					$dblist->tt_contentConfig['single'] = 0;
+					$dblist->tt_contentConfig['languageMode'] = 1;
+					$dblist->tt_contentConfig['languageCols'] = $this->MOD_MENU['language'];
+					$dblist->tt_contentConfig['languageColsPointer'] = $this->current_sys_language;
 				}
 			} else {
 				if (isset($this->MOD_SETTINGS) && isset($this->MOD_MENU)) {
@@ -1146,7 +1091,7 @@ class SC_db_layout {
 
 				// Making page info:
 			$content.=$this->doc->spacer(10);
-			$content.=$this->doc->section($LANG->getLL('pageInformation'),$dblist->getPageInfoBox($this->pageinfo,$this->CALC_PERMS&2),0,1);
+			$content.=$this->doc->section($GLOBALS['LANG']->getLL('pageInformation'), $dblist->getPageInfoBox($this->pageinfo, $this->CALC_PERMS&2), 0, 1);
 		} else {
 
 				// Add the content for each table we have rendered (traversing $tableOutput variable)
@@ -1158,7 +1103,7 @@ class SC_db_layout {
 
 				// Making search form:
 			if (!$this->modTSconfig['properties']['disableSearchBox'] && count($tableOutput))	{
-				$sectionTitle = t3lib_BEfunc::wrapInHelp('xMOD_csh_corebe', 'list_searchbox', $LANG->sL('LLL:EXT:lang/locallang_core.php:labels.search', TRUE));
+				$sectionTitle = t3lib_BEfunc::wrapInHelp('xMOD_csh_corebe', 'list_searchbox', $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.search', TRUE));
 				$content .= $this->doc->section(
 					$sectionTitle,
 					$dblist->getSearchBox(0),
@@ -1171,7 +1116,7 @@ class SC_db_layout {
 			$sysNotes = $dblist->showSysNotesForPage();
 			if ($sysNotes)	{
 				$content.=$this->doc->spacer(10);
-				$content.=$this->doc->section($LANG->getLL('internalNotes'),$sysNotes,0,1);
+				$content.=$this->doc->section($GLOBALS['LANG']->getLL('internalNotes'), $sysNotes, 0, 1);
 			}
 
 				// Add spacer in bottom of page:
@@ -1205,9 +1150,7 @@ class SC_db_layout {
 	 * @param	string	Identifier for function of module
 	 * @return	array	all available buttons as an assoc. array
 	 */
-	protected function getButtons($function = '')	{
-		global $TCA, $LANG, $BACK_PATH, $BE_USER;
-
+	protected function getButtons($function = '') {
 		$buttons = array(
 			'view' => '',
 			'history_page' => '',
@@ -1229,12 +1172,12 @@ class SC_db_layout {
 		);
 
 			// View page
-		$buttons['view'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::viewOnClick($this->pageinfo['uid'], $BACK_PATH, t3lib_BEfunc::BEgetRootLine($this->pageinfo['uid']))) . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showPage', TRUE) . '">' .
+		$buttons['view'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::viewOnClick($this->pageinfo['uid'], $GLOBALS['BACK_PATH'], t3lib_BEfunc::BEgetRootLine($this->pageinfo['uid']))) . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showPage', TRUE) . '">' .
 					t3lib_iconWorks::getSpriteIcon('actions-document-view') .
 				'</a>';
 
 			// Shortcut
-		if ($BE_USER->mayMakeShortcut())	{
+		if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
 			$buttons['shortcut'] = $this->doc->makeShortcutIcon('id, edit_record, pointer, new_unique_uid, search_field, search_levels, showLimit', implode(',', array_keys($this->MOD_MENU)), $this->MCONF['name']);
 		}
 
@@ -1257,59 +1200,59 @@ class SC_db_layout {
 		if (!$this->modTSconfig['properties']['disableIconToolbar'])	{
 
 				// Page history
-			$buttons['history_page'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(\'' . $BACK_PATH . 'show_rechis.php?element=' . rawurlencode('pages:' . $this->id) . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')) . '#latest\');return false;') . '" title="' . $LANG->getLL('recordHistory', TRUE) . '">' .
+			$buttons['history_page'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(\'' . $GLOBALS['BACK_PATH'] . 'show_rechis.php?element=' . rawurlencode('pages:' . $this->id) . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')) . '#latest\');return false;') . '" title="' . $GLOBALS['LANG']->getLL('recordHistory', TRUE) . '">' .
 						t3lib_iconWorks::getSpriteIcon('actions-document-history-open') .
 					'</a>';
 				// New content element
-			$buttons['new_content'] = '<a href="' . htmlspecialchars('db_new_content_el.php?id=' . $this->id . '&sys_language_uid=' . $this->current_sys_language . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '" title="' . $LANG->getLL('newContentElement', TRUE) . '">' .
+			$buttons['new_content'] = '<a href="' . htmlspecialchars('db_new_content_el.php?id=' . $this->id . '&sys_language_uid=' . $this->current_sys_language . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '" title="' . $GLOBALS['LANG']->getLL('newContentElement', TRUE) . '">' .
 						t3lib_iconWorks::getSpriteIcon('actions-document-new') .
 					'</a>';
 				// Move page
-			$buttons['move_page'] = '<a href="' . htmlspecialchars($BACK_PATH . 'move_el.php?table=pages&uid=' . $this->id . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '" title="' . $LANG->getLL('move_page', TRUE) . '">' .
+			$buttons['move_page'] = '<a href="' . htmlspecialchars($GLOBALS['BACK_PATH'] . 'move_el.php?table=pages&uid=' . $this->id . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '" title="' . $GLOBALS['LANG']->getLL('move_page', TRUE) . '">' .
 						t3lib_iconWorks::getSpriteIcon('actions-page-move') .
 					'</a>';
 				// Move record
-			if (t3lib_div::testInt($this->eRParts[1])) {
-				$buttons['move_record'] = '<a href="' . htmlspecialchars($BACK_PATH . 'move_el.php?table=' . $this->eRParts[0] . '&uid=' . $this->eRParts[1] . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '">' .
-						t3lib_iconWorks::getSpriteIcon('actions-' . ($this->eRParts[0] == 'tt_content' ? 'document' : 'page') . '-move',array('class'=>'c-inputButton','title' => $LANG->getLL('move_' . ($this->eRParts[0] == 'tt_content' ? 'record' : 'page'), 1))) .
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($this->eRParts[1])) {
+				$buttons['move_record'] = '<a href="' . htmlspecialchars($GLOBALS['BACK_PATH'] . 'move_el.php?table=' . $this->eRParts[0] . '&uid=' . $this->eRParts[1] . '&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI'))) . '">' .
+						t3lib_iconWorks::getSpriteIcon('actions-' . ($this->eRParts[0] == 'tt_content' ? 'document' : 'page') . '-move',array('class'=>'c-inputButton','title' => $GLOBALS['LANG']->getLL('move_' . ($this->eRParts[0] == 'tt_content' ? 'record' : 'page'), 1))) .
 						'</a>';
 			}
 				// Create new page (wizard)
-			$buttons['new_page'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(\'' . $BACK_PATH . 'db_new.php?id=' . $this->id . '&pagesOnly=1&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')) . '\');return false;') . '" title="' . $LANG->getLL('newPage', TRUE) . '">' .
+			$buttons['new_page'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(\'' . $GLOBALS['BACK_PATH'] . 'db_new.php?id=' . $this->id . '&pagesOnly=1&returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')) . '\');return false;') . '" title="' . $GLOBALS['LANG']->getLL('newPage', TRUE) . '">' .
 						t3lib_iconWorks::getSpriteIcon('actions-page-new') .
 					'</a>';
 				// Edit page properties
 			if ($this->CALC_PERMS&2)	{
 				$params='&edit[pages][' . $this->id . ']=edit';
-				$buttons['edit_page'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick($params, $BACK_PATH)) . '" title="' . $LANG->getLL('editPageProperties', TRUE) . '">' .
+				$buttons['edit_page'] = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick($params, $GLOBALS['BACK_PATH'])) . '" title="' . $GLOBALS['LANG']->getLL('editPageProperties', TRUE) . '">' .
 							t3lib_iconWorks::getSpriteIcon('actions-page-open') .
 						'</a>';
 			}
 
 				// Add CSH (Context Sensitive Help) icon to tool bar
 			if($function == 'quickEdit') {
-				$buttons['csh'] = t3lib_BEfunc::cshItem($this->descrTable, 'quickEdit', $BACK_PATH, '', TRUE, 'margin-top: 0px; margin-bottom: 0px;');
+				$buttons['csh'] = t3lib_BEfunc::cshItem($this->descrTable, 'quickEdit', $GLOBALS['BACK_PATH'], '', TRUE, 'margin-top: 0px; margin-bottom: 0px;');
 			} else {
-				$buttons['csh'] = t3lib_BEfunc::cshItem($this->descrTable, 'columns_' . $this->MOD_SETTINGS['function'], $BACK_PATH, '', TRUE, 'margin-top: 0px; margin-bottom: 0px;');
+				$buttons['csh'] = t3lib_BEfunc::cshItem($this->descrTable, 'columns_' . $this->MOD_SETTINGS['function'], $GLOBALS['BACK_PATH'], '', TRUE, 'margin-top: 0px; margin-bottom: 0px;');
 			}
 
 			if($function == 'quickEdit') {
 					// Save record
-				$buttons['savedok'] = '<input class="c-inputButton" type="image" name="savedok"' . t3lib_iconWorks::skinImg($BACK_PATH, 'gfx/savedok.gif','') . ' title="' . $LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDoc', 1) . '" alt="" />';
+				$buttons['savedok'] = '<input class="c-inputButton" type="image" name="savedok"' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/savedok.gif','') . ' title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:rm.saveDoc', 1) . '" alt="" />';
 
 					// Save record and show page
-				$buttons['savedokshow'] = '<a href="#" onclick="' . htmlspecialchars('document.editform.redirect.value+=\'&popView=1\'; TBE_EDITOR.checkAndDoSubmit(1); return false;') . '" title="' . $LANG->sL('LLL:EXT:lang/locallang_core.php:rm.saveDocShow', TRUE) . '">' .
+				$buttons['savedokshow'] = '<a href="#" onclick="' . htmlspecialchars('document.editform.redirect.value+=\'&popView=1\'; TBE_EDITOR.checkAndDoSubmit(1); return false;') . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:rm.saveDocShow', TRUE) . '">' .
 						t3lib_iconWorks::getSpriteIcon('actions-document-save-view') .
 					'</a>';
 
 					// Close record
-				$buttons['closedok'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(unescape(\'' . rawurlencode($this->closeUrl) . '\')); return false;') . '" title="' . $LANG->sL('LLL:EXT:lang/locallang_core.php:rm.closeDoc', TRUE) . '">' .
+				$buttons['closedok'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(unescape(\'' . rawurlencode($this->closeUrl) . '\')); return false;') . '" title="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:rm.closeDoc', TRUE) . '">' .
 						t3lib_iconWorks::getSpriteIcon('actions-document-close') .
 					'</a>';
 
 					// Delete record
 				if($this->deleteButton) {
-					$buttons['deletedok'] = '<a href="#" onclick="' . htmlspecialchars('return deleteRecord(\'' . $this->eRParts[0] . '\',\'' . $this->eRParts[1] . '\',\'' . t3lib_div::getIndpEnv('SCRIPT_NAME') . '?id=' . $this->id . '\');') . '" title="' . $LANG->getLL('deleteItem', TRUE) . '">' .
+					$buttons['deletedok'] = '<a href="#" onclick="' . htmlspecialchars('return deleteRecord(\'' . $this->eRParts[0] . '\',\'' . $this->eRParts[1] . '\',\'' . t3lib_div::getIndpEnv('SCRIPT_NAME') . '?id=' . $this->id . '\');') . '" title="' . $GLOBALS['LANG']->getLL('deleteItem', TRUE) . '">' .
 							t3lib_iconWorks::getSpriteIcon('actions-edit-delete') .
 						'</a>';
 				}
@@ -1317,13 +1260,13 @@ class SC_db_layout {
 				if($this->undoButton) {
 						// Undo button
 					$buttons['undo'] = '<a href="#"
-						onclick="' . htmlspecialchars('window.location.href=\'' . $BACK_PATH . 'show_rechis.php?element=' . rawurlencode($this->eRParts[0] . ':' . $this->eRParts[1]) . '&revert=ALL_FIELDS&sumUp=-1&returnUrl=' . rawurlencode($this->R_URI) . '\'; return false;') . '"
-						title="' . htmlspecialchars(sprintf($LANG->getLL('undoLastChange'), t3lib_BEfunc::calcAge($GLOBALS['EXEC_TIME'] - $this->undoButtonR['tstamp'], $LANG->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears')))) . '">' .
+						onclick="' . htmlspecialchars('window.location.href=\'' . $GLOBALS['BACK_PATH'] . 'show_rechis.php?element=' . rawurlencode($this->eRParts[0] . ':' . $this->eRParts[1]) . '&revert=ALL_FIELDS&sumUp=-1&returnUrl=' . rawurlencode($this->R_URI) . '\'; return false;') . '"
+						title="' . htmlspecialchars(sprintf($GLOBALS['LANG']->getLL('undoLastChange'), t3lib_BEfunc::calcAge($GLOBALS['EXEC_TIME'] - $this->undoButtonR['tstamp'], $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.minutesHoursDaysYears')))) . '">' .
 							t3lib_iconWorks::getSpriteIcon('actions-edit-undo') .
 						'</a>';
 
 						// History button
-					$buttons['history_record'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(\'' . $BACK_PATH . 'show_rechis.php?element=' . rawurlencode($this->eRParts[0] . ':' . $this->eRParts[1]) . '&returnUrl=' . rawurlencode($this->R_URI) . '#latest\');return false;') . '" title="' . $LANG->getLL('recordHistory', TRUE) . '">' .
+					$buttons['history_record'] = '<a href="#" onclick="' . htmlspecialchars('jumpToUrl(\'' . $GLOBALS['BACK_PATH'] . 'show_rechis.php?element=' . rawurlencode($this->eRParts[0] . ':' . $this->eRParts[1]) . '&returnUrl=' . rawurlencode($this->R_URI) . '#latest\');return false;') . '" title="' . $GLOBALS['LANG']->getLL('recordHistory', TRUE) . '">' .
 							t3lib_iconWorks::getSpriteIcon('actions-document-history-open') .
 						'</a>';
 				}

@@ -27,28 +27,7 @@
 /**
  * Contains base class for TYPO3 cli scripts
  *
- * $Id$
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   60: class t3lib_cli
- *   83:	 function t3lib_cli()
- *   96:	 function cli_getArg($option,$argv)
- *  112:	 function cli_getArgIndex()
- *  131:	 function cli_keyboardInput()
- *  142:	 function cli_keyboardInput_yes()
- *  154:	 function cli_echo($string='',$force=FALSE)
- *  169:	 function cli_help()
- *  207:	 function cli_indent($str,$indent)
- *
- * TOTAL FUNCTIONS: 8
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -85,9 +64,22 @@ class t3lib_cli {
 	 *
 	 * @return	void
 	 */
-	function t3lib_cli() {
+	function __construct() {
 			// Loads the cli_args array with command line arguments
 		$this->cli_args = $this->cli_getArgIndex();
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function t3lib_cli() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		t3lib_cli::__construct();
 	}
 
 	/**
@@ -110,7 +102,7 @@ class t3lib_cli {
 	}
 
 	/**
-	 * Return true if option is found
+	 * Return TRUE if option is found
 	 *
 	 * @param	string		Option string, eg. "-s"
 	 * @return	boolean		TRUE if option found
@@ -141,7 +133,7 @@ class t3lib_cli {
 		$cli_options = array();
 		$index = '_DEFAULT';
 		foreach ($_SERVER['argv'] as $token) {
-			if ($token{0} === '-' && !t3lib_div::testInt($token{1})) { // Options starting with a number is invalid - they could be negative values... !
+			if ($token{0} === '-' && !t3lib_utility_Math::canBeInterpretedAsInteger($token{1})) { // Options starting with a number is invalid - they could be negative values... !
 				list($index, $opt) = explode('=', $token, 2);
 				if (isset($cli_options[$index])) {
 					echo 'ERROR: Option ' . $index . ' was used twice!' . LF;
@@ -217,7 +209,7 @@ class t3lib_cli {
 	}
 
 	/**
-	 * Asks for Yes/No from shell and returns true if "y" or "yes" is found as input.
+	 * Asks for Yes/No from shell and returns TRUE if "y" or "yes" is found as input.
 	 *
 	 * @param	string		String to ask before...
 	 * @return	boolean		TRUE if "y" or "yes" is the input (case insensitive)

@@ -29,42 +29,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   87: class tx_indexedsearch_crawler
- *  106:     function crawler_init(&$pObj)
- *  219:     function crawler_execute($params,&$pObj)
- *  285:     function crawler_execute_type1($cfgRec,&$session_data,$params,&$pObj)
- *  345:     function crawler_execute_type2($cfgRec,&$session_data,$params,&$pObj)
- *  414:     function crawler_execute_type3($cfgRec,&$session_data,$params,&$pObj)
- *  458:     function crawler_execute_type4($cfgRec,&$session_data,$params,&$pObj)
- *  513:     function cleanUpOldRunningConfigurations()
- *
- *              SECTION: Helper functions
- *  579:     function checkUrl($url,$urlLog,$baseUrl)
- *  602:     function indexExtUrl($url, $pageId, $rl, $cfgUid, $setId)
- *  645:     function indexSingleRecord($r,$cfgRec,$rl=NULL)
- *  694:     function loadIndexerClass()
- *  706:     function getUidRootLineForClosestTemplate($id)
- *  739:     function generateNextIndexingTime($cfgRec)
- *  778:     function checkDeniedSuburls($url, $url_deny)
- *  798:     function addQueueEntryForHook($cfgRec, $title)
- *
- *              SECTION: Hook functions for TCEmain (indexing of records)
- *  830:     function processDatamap_afterDatabaseOperations($status, $table, $id, $fieldArray, &$pObj)
- *
- *
- *  879: class tx_indexedsearch_files
- *  888:     function crawler_execute($params,&$pObj)
- *  913:     function loadIndexerClass()
- *
- * TOTAL FUNCTIONS: 18
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 
@@ -293,7 +257,7 @@ class tx_indexedsearch_crawler {
 
 				// Init:
 			$pid = intval($cfgRec['alternative_source_pid']) ? intval($cfgRec['alternative_source_pid']) : $cfgRec['pid'];
-			$numberOfRecords = $cfgRec['recordsbatch'] ? t3lib_div::intInRange($cfgRec['recordsbatch'],1) : 100;
+			$numberOfRecords = $cfgRec['recordsbatch'] ? t3lib_utility_Math::forceIntegerInRange($cfgRec['recordsbatch'],1) : 100;
 
 				// Get root line:
 			$rl = $this->getUidRootLineForClosestTemplate($cfgRec['pid']);
@@ -602,7 +566,7 @@ class tx_indexedsearch_crawler {
 	 * @param	string		URL string to check
 	 * @param	array		Array of already indexed URLs (input url is looked up here and must not exist already)
 	 * @param	string		Base URL of the indexing process (input URL must be "inside" the base URL!)
-	 * @return	string		Returls the URL if OK, otherwise false
+	 * @return	string		Returls the URL if OK, otherwise FALSE
 	 */
 	function checkUrl($url,$urlLog,$baseUrl)	{
 		$url = preg_replace('/\/\/$/','/',$url);
@@ -781,8 +745,8 @@ class tx_indexedsearch_crawler {
 		}
 
 			// Find last offset time plus frequency in seconds:
-		$lastSureOffset = $aMidNight+t3lib_div::intInRange($cfgRec['timer_offset'],0,86400);
-		$frequencySeconds = t3lib_div::intInRange($cfgRec['timer_frequency'],1);
+		$lastSureOffset = $aMidNight+t3lib_utility_Math::forceIntegerInRange($cfgRec['timer_offset'],0,86400);
+		$frequencySeconds = t3lib_utility_Math::forceIntegerInRange($cfgRec['timer_frequency'],1);
 
 			// Now, find out how many blocks of the length of frequency there is until the next time:
 		$frequencyBlocksUntilNextTime = ceil(($currentTime-$lastSureOffset)/$frequencySeconds);
@@ -794,7 +758,7 @@ class tx_indexedsearch_crawler {
 	}
 
 	/**
-	 * Checks if $url has any of the URls in the $url_deny "list" in it and if so, returns true.
+	 * Checks if $url has any of the URls in the $url_deny "list" in it and if so, returns TRUE.
 	 *
 	 * @param	string		URL to test
 	 * @param	string		String where URLs are separated by line-breaks; If any of these strings is the first part of $url, the function returns TRUE (to indicate denial of decend)

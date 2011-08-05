@@ -27,31 +27,10 @@
 /**
  * Folder tree in the File main module.
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   72: class localFolderTree extends t3lib_folderTree
- *   81:     function localFolderTree()
- *   92:     function wrapIcon($icon,&$row)
- *  121:     function wrapTitle($title,$row,$bank=0)
- *
- *
- *  146: class SC_alt_file_navframe
- *  163:     function init()
- *  253:     function main()
- *  284:     function printContent()
- *
- * TOTAL FUNCTIONS: 6
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 $BACK_PATH = '';
@@ -92,18 +71,18 @@ class SC_alt_file_navframe {
 	 * @return	void
 	 */
 	function init()	{
-		global $BE_USER, $BACK_PATH;
 
 			// Setting backPath
-		$this->backPath = $BACK_PATH;
+		$this->backPath = $GLOBALS['BACK_PATH'];
 
 			// Setting GPvars:
 		$this->currentSubScript = t3lib_div::_GP('currentSubScript');
 		$this->cMR = t3lib_div::_GP('cMR');
 
 			// Create folder tree object:
+		/** @var $foldertree filelistFolderTree */
 		$this->foldertree = t3lib_div::makeInstance('filelistFolderTree');
-		$this->foldertree->ext_IconMode = $BE_USER->getTSConfigVal('options.folderTree.disableIconLinkToContextmenu');
+		$this->foldertree->ext_IconMode = $GLOBALS['BE_USER']->getTSConfigVal('options.folderTree.disableIconLinkToContextmenu');
 		$this->foldertree->thisScript = 'alt_file_navframe.php';
 	}
 
@@ -115,14 +94,13 @@ class SC_alt_file_navframe {
 	 * @return	void
 	 */
 	public function initPage() {
-		global $BE_USER, $BACK_PATH, $CLIENT;
 
 			// Setting highlight mode:
-		$this->doHighlight = !$BE_USER->getTSConfigVal('options.pageTree.disableTitleHighlight');
+		$this->doHighlight = !$GLOBALS['BE_USER']->getTSConfigVal('options.pageTree.disableTitleHighlight');
 
 			// Create template object:
 		$this->doc = t3lib_div::makeInstance('template');
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->setModuleTemplate('templates/alt_file_navframe.html');
 		$this->doc->showFlashMessages = FALSE;
 
@@ -198,7 +176,7 @@ class SC_alt_file_navframe {
 			top.TYPO3.Backend.ContentContainer.setUrl(theUrl);
 
 			'.($this->doHighlight ? 'Tree.highlightActiveItem("file", highlightID + "_" + bank);' : '').'
-			'.(!$CLIENT['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'
+			'.(!$GLOBALS['CLIENT']['FORMSTYLE'] ? '' : 'if (linkObj) linkObj.blur(); ').'
 			return false;
 		}
 		'.($this->cMR ? " jumpTo(top.fsMod.recentIds['file'],'');" : '')
@@ -212,7 +190,6 @@ class SC_alt_file_navframe {
 	 * @return	void
 	 */
 	function main()	{
-		global $LANG,$CLIENT;
 
 			// Produce browse-tree:
 		$tree = $this->foldertree->getBrowsableTree();
@@ -293,8 +270,6 @@ class SC_alt_file_navframe {
 	 * @return	void
 	 */
 	public function ajaxExpandCollapse($params, $ajaxObj) {
-		global $LANG;
-
 		$this->init();
 		$tree = $this->foldertree->getBrowsableTree();
 		if (!$this->foldertree->ajaxStatus)	{

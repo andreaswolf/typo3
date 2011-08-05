@@ -36,14 +36,14 @@ class tx_felogin_pi1 extends tslib_pibase {
 	var $prefixId      = 'tx_felogin_pi1';		// Same as class name
 	var $scriptRelPath = 'pi1/class.tx_felogin_pi1.php';	// Path to this script relative to the extension dir.
 	var $extKey        = 'felogin';	// The extension key.
-	public $pi_checkCHash = false;
-	public $pi_USER_INT_obj = true;
+	public $pi_checkCHash = FALSE;
+	public $pi_USER_INT_obj = TRUE;
 
 	protected $userIsLoggedIn;	// Is user logged in?
 	protected $template;	// holds the template for FE rendering
 	protected $uploadDir;	// upload dir, used for flexform template files
 	protected $redirectUrl;	// URL for the redirect
-	protected $noRedirect = false;	// flag for disable the redirect
+	protected $noRedirect = FALSE;	// flag for disable the redirect
 	protected $logintype;	// logintype (given as GPvar), possible: login, logout
 
 	/**
@@ -133,6 +133,18 @@ class tx_felogin_pi1 extends tslib_pibase {
 			if (!$GLOBALS['TSFE']->fe_user->cookieId) {
 				$content .= $this->cObj->stdWrap($this->pi_getLL('cookie_warning', '', 1), $this->conf['cookieWarning_stdWrap.']);
 			} else {
+					// Add hook for extra processing before redirect
+				if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['felogin']['beforeRedirect']) && is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['felogin']['beforeRedirect'])) {
+					$_params = array(
+						'loginType'   => $this->logintype,
+						'redirectUrl' => &$this->redirectUrl,
+					);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['felogin']['beforeRedirect'] as $_funcRef) {
+						if ($_funcRef) {
+							t3lib_div::callUserFunction($_funcRef, $_params, $this);
+						}
+					}
+				}
 				t3lib_utility_Http::redirect($this->redirectUrl);
 			}
 		}
@@ -210,7 +222,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 		$markerArray['###STATUS_HEADER###'] = $this->getDisplayText('forgot_header', $this->conf['forgotHeader_stdWrap.']);
 
 		$markerArray['###LEGEND###'] = $this->pi_getLL('reset_password', '', 1);
-		$markerArray['###ACTION_URI###'] = $this->getPageLink('', array($this->prefixId . '[forgot]'=>1), true);
+		$markerArray['###ACTION_URI###'] = $this->getPageLink('', array($this->prefixId . '[forgot]'=>1), TRUE);
 		$markerArray['###EMAIL_LABEL###'] = $this->pi_getLL('your_email', '', 1);
 		$markerArray['###FORGOT_PASSWORD_ENTEREMAIL###'] = $this->pi_getLL('forgot_password_enterEmail', '', 1);
 		$markerArray['###FORGOT_EMAIL###'] = $this->prefixId.'[forgot_email]';
@@ -241,7 +253,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 	protected function changePassword() {
 
 		$subpartArray = $linkpartArray = array();
-		$done = false;
+		$done = FALSE;
 
 		$minLength = intval($this->conf['newPasswordMinLength']) ? intval($this->conf['newPasswordMinLength']) : 6;
 
@@ -298,7 +310,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 								array('password' => $newPass, 'felogin_forgotHash' => '')
 							);
 						$markerArray['###STATUS_MESSAGE###'] = $this->getDisplayText('change_password_done_message', $this->conf['changePasswordMessage_stdWrap.']);
-						$done = true;
+						$done = TRUE;
 						$subpartArray['###CHANGEPASSWORD_FORM###'] = '';
 						$markerArray['###BACKLINK_LOGIN###'] = $this->getPageLink($this->pi_getLL('ll_forgot_header_backToLogin', '', 1), array());
 					}
@@ -349,25 +361,31 @@ class tx_felogin_pi1 extends tslib_pibase {
 		$isBaseURL  = !empty($GLOBALS['TSFE']->baseUrl);
 		$isFeloginBaseURL = !empty($this->conf['feloginBaseURL']);
 
-		if ($isFeloginBaseURL) {
-				// first priority
-			$this->conf['linkPrefix'] = $this->conf['feloginBaseURL'];
-		} else {
-			if ($isBaseURL) {
-					// 3rd priority
-				$this->conf['linkPrefix'] = $GLOBALS['TSFE']->baseUrl;
-			}
-		}
-
-		if ($this->conf['linkPrefix'] == -1 && !$isAbsRelPrefix) {
-				// no preix is set, return the error
-			return $this->pi_getLL('ll_change_password_nolinkprefix_message');
-		}
-
-		$link = ($isAbsRelPrefix ? '' : $this->conf['linkPrefix']) . $this->pi_getPageLink($GLOBALS['TSFE']->id, '', array(
+		$link = $this->pi_getPageLink($GLOBALS['TSFE']->id, '', array(
 			$this->prefixId . '[user]' => $user['uid'],
 			$this->prefixId . '[forgothash]' => $randHash
 		));
+
+			// Prefix link if necessary
+		if ($isFeloginBaseURL) {
+				// First priority, use specific base URL
+				// "absRefPrefix" must be removed first, otherwise URL will be prepended twice
+			if (!empty($GLOBALS['TSFE']->absRefPrefix)) {
+				$link = substr($link, strlen($GLOBALS['TSFE']->absRefPrefix));
+			}
+			$link = $this->conf['feloginBaseURL'] . $link;
+		} elseif ($isAbsRelPrefix) {
+			// Second priority
+			// absRefPrefix must not necessarily contain a hostname and URL scheme, so add it if needed
+			$link = t3lib_div::locationHeaderUrl($link);
+		} elseif ($isBaseURL) {
+				// Third priority
+				// Add the global base URL to the link
+			$link = $GLOBALS['TSFE']->baseUrlWrap($link);
+		} else {
+				// no prefix is set, return the error
+			return $this->pi_getLL('ll_change_password_nolinkprefix_message');
+		}
 
 		$msg = sprintf($this->pi_getLL('ll_forgot_validate_reset_password', '', 0), $user['username'], $link, $validEndString);
 
@@ -392,10 +410,11 @@ class tx_felogin_pi1 extends tslib_pibase {
 		$subpartArray = $linkpartArray = array();
 
 		$markerArray['###STATUS_HEADER###'] = $this->getDisplayText('status_header',$this->conf['logoutHeader_stdWrap.']);
-		$markerArray['###STATUS_MESSAGE###']=$this->getDisplayText('status_message',$this->conf['logoutMessage_stdWrap.']);$this->cObj->stdWrap($this->flexFormValue('message','s_status'),$this->conf['logoutMessage_stdWrap.']);
+		$markerArray['###STATUS_MESSAGE###'] = $this->getDisplayText('status_message', $this->conf['logoutMessage_stdWrap.']);
+		$this->cObj->stdWrap($this->flexFormValue('message', 's_status'), $this->conf['logoutMessage_stdWrap.']);
 
 		$markerArray['###LEGEND###'] = $this->pi_getLL('logout', '', 1);
-		$markerArray['###ACTION_URI###'] = $this->getPageLink('',array(),true);
+		$markerArray['###ACTION_URI###'] = $this->getPageLink('',array(),TRUE);
 		$markerArray['###LOGOUT_LABEL###'] = $this->pi_getLL('logout', '', 1);
 		$markerArray['###NAME###'] = htmlspecialchars($GLOBALS['TSFE']->fe_user->user['name']);
 		$markerArray['###STORAGE_PID###'] = $this->spid;
@@ -420,7 +439,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 	 */
 	 protected function showLogin() {
 		$subpart = $this->cObj->getSubpart($this->template, '###TEMPLATE_LOGIN###');
-		$subpartArray = $linkpartArray = array();
+		$subpartArray = $linkpartArray = $markerArray = array();
 
 		$gpRedirectUrl = '';
 
@@ -457,8 +476,8 @@ class tx_felogin_pi1 extends tslib_pibase {
 		} else {
 			if($this->logintype === 'logout') {
 					// login form after logout
-				$markerArray['###STATUS_HEADER###'] = $this->getDisplayText('logout_header',$this->conf['welcomeHeader_stdWrap.']);
-				$markerArray['###STATUS_MESSAGE###'] = $this->getDisplayText('logout_message',$this->conf['welcomeMessage_stdWrap.']);
+				$markerArray['###STATUS_HEADER###'] = $this->getDisplayText('logout_header', $this->conf['logoutHeader_stdWrap.']);
+				$markerArray['###STATUS_MESSAGE###'] = $this->getDisplayText('logout_message', $this->conf['logoutMessage_stdWrap.']);
 			} else {
 					// login form
 				$markerArray['###STATUS_HEADER###'] = $this->getDisplayText('welcome_header',$this->conf['welcomeHeader_stdWrap.']);
@@ -503,7 +522,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 		}
 
 			// Login form
-		$markerArray['###ACTION_URI###'] = $this->getPageLink('',array(),true);
+		$markerArray['###ACTION_URI###'] = $this->getPageLink('',array(),TRUE);
 		$markerArray['###EXTRA_HIDDEN###'] = $extraHidden; // used by kb_md5fepw extension...
 		$markerArray['###LEGEND###'] = $this->pi_getLL('login', '', 1);
 		$markerArray['###LOGIN_LABEL###'] = $this->pi_getLL('login', '', 1);
@@ -597,10 +616,10 @@ class tx_felogin_pi1 extends tslib_pibase {
 								$match = array();
 								if (preg_match('/^http://([[:alnum:]._-]+)//', $url, $match)) {
 									$redirect_domain = $match[1];
-									$found = false;
+									$found = FALSE;
 									foreach(t3lib_div::trimExplode(',', $this->conf['domains'], TRUE) as $d) {
 										if (preg_match('/(^|\.)/'.$d.'$', $redirect_domain)) {
-											$found = true;
+											$found = TRUE;
 											break;
 										}
 									}
@@ -616,7 +635,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 							}
 						break;
 					}
-				} else if ($this->logintype === 'login') { // after login-error
+				} elseif ($this->logintype === 'login') { // after login-error
 					switch ($redirMethod) {
 						case 'loginError':
 							if ($this->conf['redirectPageLoginError']) {
@@ -754,11 +773,11 @@ class tx_felogin_pi1 extends tslib_pibase {
 	 *
 	 * @param	string		linktext
 	 * @param	array		link vars
-	 * @param	boolean		true: returns only url  false (default) returns the link)
+	 * @param	boolean		TRUE: returns only url  FALSE (default) returns the link)
 	 *
 	 * @return	string		link or url
 	 */
-	 protected function getPageLink($label, $piVars,$returnUrl = false) {
+	 protected function getPageLink($label, $piVars,$returnUrl = FALSE) {
 		$additionalParams = '';
 
 		if (count($piVars)) {
@@ -797,7 +816,7 @@ class tx_felogin_pi1 extends tslib_pibase {
 		$getVars = t3lib_div::_GET();
 
 		foreach ($getVars as $key => $val) {
-			if (stristr($key,$this->prefixId) === false) {
+			if (stristr($key,$this->prefixId) === FALSE) {
 				if (is_array($val)) {
 					foreach ($val as $key1 => $val1) {
 						if ($this->conf['preserveGETvars'] == 'all' || in_array($key . '[' . $key1 .']', $preserveVars)) {

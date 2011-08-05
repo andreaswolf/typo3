@@ -30,21 +30,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   57: class tx_lowlevel_cleanflexform extends tx_lowlevel_cleaner_core
- *   64:     function tx_lowlevel_cleanflexform()
- *   89:     function main()
- *  122:     function main_parseTreeCallBack($tableName,$uid,$echoLevel,$versionSwapmode,$rootIsVersion)
- *  154:     function main_autoFix($resultArray)
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 /**
@@ -61,8 +46,8 @@ class tx_lowlevel_syslog extends tx_lowlevel_cleaner_core {
 	 *
 	 * @return	void
 	 */
-	function tx_lowlevel_cleanflexform()	{
-		parent::tx_lowlevel_cleaner_core();
+	function __construct()	{
+		parent::__construct();
 
 		$this->cli_help['name'] = 'syslog -- Show entries from syslog';
 		$this->cli_help['description'] = trim('
@@ -70,6 +55,19 @@ Showing last 25 hour entries from the syslog. More features pending. This is the
 ');
 
 		$this->cli_help['examples'] = '';
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tx_lowlevel_syslog() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tx_lowlevel_syslog::__construct();
 	}
 
 	/**

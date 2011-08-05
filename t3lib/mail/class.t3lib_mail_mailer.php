@@ -35,8 +35,6 @@ require_once(PATH_typo3 . 'contrib/swiftmailer/swift_required.php');
  * This will use the setting in TYPO3_CONF_VARS to choose the correct transport
  * for it to work out-of-the-box.
  *
- * $Id$
- *
  * @author	Ernesto Baschny <ernst@cron-it.de>
  * @package TYPO3
  * @subpackage t3lib
@@ -99,7 +97,7 @@ class t3lib_mail_Mailer extends Swift_Mailer {
 				if ($port === '') {
 					$port = '25';
 				}
-				$useEncryption = ($mailSettings['transport_smtp_encrypt'] ? TRUE : FALSE);
+				$useEncryption = ($mailSettings['transport_smtp_encrypt'] ? $mailSettings['transport_smtp_encrypt'] : NULL);
 
 					// Create our transport
 				$this->transport = Swift_SmtpTransport::newInstance($host, $port, $useEncryption);
@@ -130,7 +128,7 @@ class t3lib_mail_Mailer extends Swift_Mailer {
 			case 'mbox':
 				$mboxFile = $mailSettings['transport_mbox_file'];
 				if ($mboxFile == '') {
-					throw new t3lib_exception('$TYPO3_CONF_VARS[\'MAIL\'][\'transport_mbox_file\'] needs to be set when transport is set to "mbox"');
+					throw new t3lib_exception('$TYPO3_CONF_VARS[\'MAIL\'][\'transport_mbox_file\'] needs to be set when transport is set to "mbox"', 1294586645);
 				}
 					// Create our transport
 				$this->transport = t3lib_div::makeInstance('t3lib_mail_mboxtransport', $mboxFile);

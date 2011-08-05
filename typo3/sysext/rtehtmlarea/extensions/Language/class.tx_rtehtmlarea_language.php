@@ -26,8 +26,6 @@
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
  *
- * TYPO3 SVN ID: $Id$
- *
  */
 class tx_rtehtmlarea_language extends tx_rtehtmlarea_api {
 
@@ -49,10 +47,10 @@ class tx_rtehtmlarea_language extends tx_rtehtmlarea_api {
 		);
 
 	public function main($parentObject) {
-		if (!t3lib_extMgm::isLoaded('static_info_tables')) {
-			$this->pluginButtons = t3lib_div::rmFromList('language', $this->pluginButtons);
+		if (t3lib_extMgm::isLoaded('static_info_tables') && file_exists(t3lib_extMgm::extPath('static_info_tables') . 'class.tx_staticinfotables_div.php')) {
+			require_once(t3lib_extMgm::extPath('static_info_tables') . 'class.tx_staticinfotables_div.php');
 		} else {
-			require_once(t3lib_extMgm::extPath('static_info_tables').'class.tx_staticinfotables_div.php');
+			$this->pluginButtons = t3lib_div::rmFromList('language', $this->pluginButtons);
 		}
 		return parent::main($parentObject);
 	}
@@ -127,8 +125,8 @@ class tx_rtehtmlarea_language extends tx_rtehtmlarea_api {
 				$where.' AND lg_constructed = 0 '.
 				($this->htmlAreaRTE->is_FE() ? $GLOBALS['TSFE']->sys_page->enableFields($table) : t3lib_BEfunc::BEenableFields($table) .  t3lib_BEfunc::deleteClause($table))
 				);
-			$prefixLabelWithCode = !$this->thisConfig['buttons.']['language.']['prefixLabelWithCode'] ? false : true;
-			$postfixLabelWithCode = !$this->thisConfig['buttons.']['language.']['postfixLabelWithCode'] ? false : true;
+			$prefixLabelWithCode = !$this->thisConfig['buttons.']['language.']['prefixLabelWithCode'] ? FALSE : TRUE;
+			$postfixLabelWithCode = !$this->thisConfig['buttons.']['language.']['postfixLabelWithCode'] ? FALSE : TRUE;
 			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
 				$code = strtolower($row['lg_iso_2']).($row['lg_country_iso_2']?'-'.strtoupper($row['lg_country_iso_2']):'');
 				foreach ($titleFields as $titleField) {

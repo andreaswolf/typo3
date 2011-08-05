@@ -27,33 +27,9 @@
 /**
  * Contains class for loading database groups
  *
- * $Id$
  * Revised for TYPO3 3.6 September/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   76: class t3lib_loadDBGroup
- *  111:	 function start($itemlist, $tablelist, $MMtable='', $MMuid=0, $currentTable='', $conf=array())
- *  179:	 function readList($itemlist)
- *  225:	 function readMM($tableName,$uid)
- *  276:	 function writeMM($tableName,$uid,$prependTableName=0)
- *  352:	 function readForeignField($uid, $conf)
- *  435:	 function writeForeignField($conf, $parentUid, $updateToUid=0)
- *  510:	 function getValueArray($prependTableName='')
- *  538:	 function convertPosNeg($valueArray,$fTable,$nfTable)
- *  560:	 function getFromDB()
- *  595:	 function readyForInterface()
- *  621:	 function countItems($returnAsArray = true)
- *  636:	 function updateRefIndex($table,$id)
- *
- * TOTAL FUNCTIONS: 12
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -215,7 +191,7 @@ class t3lib_loadDBGroup {
 				$theID = strrev($parts[0]);
 
 					// Check that the id IS an integer:
-				if (t3lib_div::testInt($theID)) {
+				if (t3lib_utility_Math::canBeInterpretedAsInteger($theID)) {
 						// Get the table name: If a part of the exploded string, use that. Otherwise if the id number is LESS than zero, use the second table, otherwise the first table
 					$theTable = trim($parts[1]) ? strrev(trim($parts[1])) : ($this->secondTable && $theID < 0 ? $this->secondTable : $this->firstTable);
 						// If the ID is not blank and the table name is among the names in the inputted tableList, then proceed:
@@ -615,9 +591,9 @@ class t3lib_loadDBGroup {
 		$foreign_table_field = $conf['foreign_table_field'];
 
 			// if there are table items and we have a proper $parentUid
-		if (t3lib_div::testInt($parentUid) && count($this->tableArray)) {
+		if (t3lib_utility_Math::canBeInterpretedAsInteger($parentUid) && count($this->tableArray)) {
 				// if updateToUid is not a positive integer, set it to '0', so it will be ignored
-			if (!(t3lib_div::testInt($updateToUid) && $updateToUid > 0)) {
+			if (!(t3lib_utility_Math::canBeInterpretedAsInteger($updateToUid) && $updateToUid > 0)) {
 				$updateToUid = 0;
 			}
 
@@ -752,7 +728,7 @@ class t3lib_loadDBGroup {
 				$theID = strrev($parts[0]);
 				$theTable = strrev($parts[1]);
 
-				if (t3lib_div::testInt($theID) && (!$theTable || !strcmp($theTable, $fTable) || !strcmp($theTable, $nfTable))) {
+				if (t3lib_utility_Math::canBeInterpretedAsInteger($theID) && (!$theTable || !strcmp($theTable, $fTable) || !strcmp($theTable, $nfTable))) {
 					$valueArray[$key] = $theTable && strcmp($theTable, $fTable) ? $theID * -1 : $theID;
 				}
 			}
@@ -802,8 +778,6 @@ class t3lib_loadDBGroup {
 	 * @see t3lib_transferdata::renderRecord()
 	 */
 	function readyForInterface() {
-		global $TCA;
-
 		if (!is_array($this->itemArray)) {
 			return FALSE;
 		}
@@ -814,7 +788,7 @@ class t3lib_loadDBGroup {
 
 		foreach ($this->itemArray as $key => $val) {
 			$theRow = $this->results[$val['table']][$val['id']];
-			if ($theRow && is_array($TCA[$val['table']])) {
+			if ($theRow && is_array($GLOBALS['TCA'][$val['table']])) {
 				$label = t3lib_div::fixed_lgd_cs(strip_tags(t3lib_BEfunc::getRecordTitle($val['table'], $theRow)), $titleLen);
 				$label = ($label) ? $label : '[...]';
 				$output[] = str_replace(',', '', $val['table'] . '_' . $val['id'] . '|' . rawurlencode($label));
@@ -860,10 +834,10 @@ class t3lib_loadDBGroup {
 	 * @param	string		$parentUid: The uid of the parent record
 	 * @param	array		$parentConf: The TCA configuration of the parent field embedding the child records
 	 * @param	array		$childRec: The record row of the child record
-	 * @return	boolean		Returns true if looking from the symmetric ("other") side to the relation.
+	 * @return	boolean		Returns TRUE if looking from the symmetric ("other") side to the relation.
 	 */
 	function isOnSymmetricSide($parentUid, $parentConf, $childRec) {
-		return t3lib_div::testInt($childRec['uid']) && $parentConf['symmetric_field'] && $parentUid == $childRec[$parentConf['symmetric_field']]
+		return t3lib_utility_Math::canBeInterpretedAsInteger($childRec['uid']) && $parentConf['symmetric_field'] && $parentUid == $childRec[$parentConf['symmetric_field']]
 				? TRUE
 				: FALSE;
 	}

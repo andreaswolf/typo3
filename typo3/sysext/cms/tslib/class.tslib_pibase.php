@@ -27,75 +27,10 @@
 /**
  * This script contains the parent class, 'pibase', providing an API with the most basic methods for frontend plugins
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  132: class tslib_pibase
- *
- *              SECTION: Init functions
- *  214:     function tslib_pibase()
- *  240:     function pi_setPiVarDefaults()
- *
- *              SECTION: Link functions
- *  277:     function pi_getPageLink($id,$target='',$urlParameters=array())
- *  293:     function pi_linkToPage($str,$id,$target='',$urlParameters=array())
- *  308:     function pi_linkTP($str,$urlParameters=array(),$cache=0,$altPageId=0)
- *  331:     function pi_linkTP_keepPIvars($str,$overrulePIvars=array(),$cache=0,$clearAnyway=0,$altPageId=0)
- *  355:     function pi_linkTP_keepPIvars_url($overrulePIvars=array(),$cache=0,$clearAnyway=0,$altPageId=0)
- *  373:     function pi_list_linkSingle($str,$uid,$cache=FALSE,$mergeArr=array(),$urlOnly=FALSE,$altPageId=0)
- *  401:     function pi_openAtagHrefInJSwindow($str,$winName='',$winParams='width=670,height=500,status=0,menubar=0,scrollbars=1,resizable=1')
- *
- *              SECTION: Functions for listing, browsing, searching etc.
- *  456:     function pi_list_browseresults($showResultCount=1,$tableParams='',$wrapArr=array(), $pointerName = 'pointer', $hscText = TRUE)
- *  618:     function pi_list_searchBox($tableParams='')
- *  649:     function pi_list_modeSelector($items=array(),$tableParams='')
- *  687:     function pi_list_makelist($res,$tableParams='')
- *  722:     function pi_list_row($c)
- *  734:     function pi_list_header()
- *
- *              SECTION: Stylesheet, CSS
- *  765:     function pi_getClassName($class)
- *  777:     function pi_classParam($class)
- *  791:     function pi_setClassStyle($class,$data,$selector='')
- *  802:     function pi_wrapInBaseClass($str)
- *
- *              SECTION: Frontend editing: Edit panel, edit icons
- *  858:     function pi_getEditPanel($row='',$tablename='',$label='',$conf=Array())
- *  900:     function pi_getEditIcon($content,$fields,$title='',$row='',$tablename='',$oConf=array())
- *
- *              SECTION: Localization, locallang functions
- *  947:     function pi_getLL($key,$alt='',$hsc=FALSE)
- *  970:     function pi_loadLL()
- *
- *              SECTION: Database, queries
- * 1048:     function pi_list_query($table,$count=0,$addWhere='',$mm_cat='',$groupBy='',$orderBy='',$query='',$returnQueryArray=FALSE)
- * 1140:     function pi_exec_query($table,$count=0,$addWhere='',$mm_cat='',$groupBy='',$orderBy='',$query='')
- * 1155:     function pi_getRecord($table,$uid,$checkPage=0)
- * 1166:     function pi_getPidList($pid_list,$recursive=0)
- * 1191:     function pi_prependFieldsWithTable($table,$fieldList)
- * 1211:     function pi_getCategoryTableContents($table,$pid,$whereClause='',$groupBy='',$orderBy='',$limit='')
- *
- *              SECTION: Various
- * 1255:     function pi_isOnlyFields($fList,$lowerThan=-1)
- * 1275:     function pi_autoCache($inArray)
- * 1306:     function pi_RTEcssText($str)
- *
- *              SECTION: FlexForms related functions
- * 1328:     function pi_initPIflexForm($field='pi_flexform')
- * 1346:     function pi_getFFvalue($T3FlexForm_array,$fieldName,$sheet='sDEF',$lang='lDEF',$value='vDEF')
- * 1363:     function pi_getFFvalueFromSheetArray($sheetArray,$fieldNameArr,$value)
- *
- * TOTAL FUNCTIONS: 35
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -205,7 +140,7 @@ class tslib_pibase {
 	 *
 	 * @return	void
 	 */
-	function tslib_pibase()	{
+	function __construct()	{
 
 			// Setting piVars:
 		if ($this->prefixId)	{
@@ -224,6 +159,19 @@ class tslib_pibase {
 				$this->altLLkey = $GLOBALS['TSFE']->config['config']['language_alt'];
 			}
 		}
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tslib_pibase() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tslib_pibase::__construct();
 	}
 
 	/**
@@ -304,7 +252,7 @@ class tslib_pibase {
 		$conf['useCacheHash'] = $this->pi_USER_INT_obj ? 0 : $cache;
 		$conf['no_cache'] = $this->pi_USER_INT_obj ? 0 : !$cache;
 		$conf['parameter'] = $altPageId ? $altPageId : ($this->pi_tmpPageId ? $this->pi_tmpPageId : $GLOBALS['TSFE']->id);
-		$conf['additionalParams'] = $this->conf['parent.']['addParams'].t3lib_div::implodeArrayForUrl('', $urlParameters, '', true).$this->pi_moreParams;
+		$conf['additionalParams'] = $this->conf['parent.']['addParams'].t3lib_div::implodeArrayForUrl('', $urlParameters, '', TRUE).$this->pi_moreParams;
 
 		return $this->cObj->typoLink($str, $conf);
 	}
@@ -359,7 +307,7 @@ class tslib_pibase {
 	 * @param	integer		UID of the record for which to display details (basically this will become the value of [showUid]
 	 * @param	boolean		See pi_linkTP_keepPIvars
 	 * @param	array		Array of values to override in the current piVars. Same as $overrulePIvars in pi_linkTP_keepPIvars
-	 * @param	boolean		If true, only the URL is returned, not a full link
+	 * @param	boolean		If TRUE, only the URL is returned, not a full link
 	 * @param	integer		Alternative page ID for the link. (By default this function links to the SAME page!)
 	 * @return	string		The input string wrapped in <a> tags
 	 * @see pi_linkTP(), pi_linkTP_keepPIvars()
@@ -443,7 +391,7 @@ class tslib_pibase {
 	 * @param	array		Array with elements to overwrite the default $wrapper-array.
 	 * @param	string		varname for the pointer.
 	 * @param	boolean		enable htmlspecialchars() for the pi_getLL function (set this to FALSE if you want f.e use images instead of text for links like 'previous' and 'next').
-	 * @param   boolean     forces the output of the page browser if you set this option to "true" (otherwise it's only drawn if enough entries are available)
+	 * @param   boolean     forces the output of the page browser if you set this option to "TRUE" (otherwise it's only drawn if enough entries are available)
  	 * @return	string		Output HTML-Table, wrapped in <div>-tags with a class attribute (if $wrapArr is not passed,
 	 */
 	function pi_list_browseresults($showResultCount=1, $tableParams='', $wrapArr=array(), $pointerName='pointer', $hscText=TRUE, $forceOutput=FALSE) {
@@ -462,9 +410,9 @@ class tslib_pibase {
 			// Initializing variables:
 		$pointer = intval($this->piVars[$pointerName]);
 		$count = intval($this->internal['res_count']);
-		$results_at_a_time = t3lib_div::intInRange($this->internal['results_at_a_time'],1,1000);
+		$results_at_a_time = t3lib_utility_Math::forceIntegerInRange($this->internal['results_at_a_time'],1,1000);
 		$totalPages = ceil($count/$results_at_a_time);
-		$maxPages = t3lib_div::intInRange($this->internal['maxPages'],1,100);
+		$maxPages = t3lib_utility_Math::forceIntegerInRange($this->internal['maxPages'],1,100);
 		$pi_isOnlyFields = $this->pi_isOnlyFields($this->pi_isOnlyFields);
 
 		if (!$forceOutput && $count <= $results_at_a_time) {
@@ -488,7 +436,7 @@ class tslib_pibase {
 				$pagefloat = ceil(($maxPages - 1)/2);
 			} else {
 				// pagefloat set as integer. 0 = left, value >= $this->internal['maxPages'] = right
-				$pagefloat = t3lib_div::intInRange($this->internal['pagefloat'],-1,$maxPages-1);
+				$pagefloat = t3lib_utility_Math::forceIntegerInRange($this->internal['pagefloat'],-1,$maxPages-1);
 			}
 		} else {
 			$pagefloat = -1; // pagefloat disabled
@@ -517,14 +465,14 @@ class tslib_pibase {
 				$firstPage = max(0,$lastPage-$maxPages);
 			} else {
 				$firstPage = 0;
-				$lastPage = t3lib_div::intInRange($totalPages,1,$maxPages);
+				$lastPage = t3lib_utility_Math::forceIntegerInRange($totalPages,1,$maxPages);
 			}
 			$links=array();
 
 				// Make browse-table/links:
 			if ($showFirstLast) { // Link to first page
 				if ($pointer>0)	{
-					$links[]=$this->cObj->wrap($this->pi_linkTP_keepPIvars($this->pi_getLL('pi_list_browseresults_first','<< First',$hscText),array($pointerName => null),$pi_isOnlyFields),$wrapper['inactiveLinkWrap']);
+					$links[]=$this->cObj->wrap($this->pi_linkTP_keepPIvars($this->pi_getLL('pi_list_browseresults_first','<< First',$hscText),array($pointerName => NULL),$pi_isOnlyFields),$wrapper['inactiveLinkWrap']);
 				} else {
 					$links[]=$this->cObj->wrap($this->pi_getLL('pi_list_browseresults_first','<< First',$hscText),$wrapper['disabledLinkWrap']);
 				}
@@ -842,7 +790,7 @@ class tslib_pibase {
 	 * @param	string		Table name
 	 * @param	string		A label to show with the panel.
 	 * @param	array		TypoScript parameters to pass along to the EDITPANEL content Object that gets rendered. The property "allow" WILL get overridden/set though.
-	 * @return	string		Returns false/blank if no BE User login and of course if the panel is not shown for other reasons. Otherwise the HTML for the panel (a table).
+	 * @return	string		Returns FALSE/blank if no BE User login and of course if the panel is not shown for other reasons. Otherwise the HTML for the panel (a table).
 	 * @see tslib_cObj::EDITPANEL()
 	 */
 	function pi_getEditPanel($row='',$tablename='',$label='',$conf=Array())	{
@@ -931,23 +879,47 @@ class tslib_pibase {
 	 *
 	 * @param	string		The key from the LOCAL_LANG array for which to return the value.
 	 * @param	string		Alternative string to return IF no value is found set for the key, neither for the local language nor the default.
-	 * @param	boolean		If true, the output label is passed through htmlspecialchars()
+	 * @param	boolean		If TRUE, the output label is passed through htmlspecialchars()
 	 * @return	string		The value from LOCAL_LANG.
 	 */
-	function pi_getLL($key,$alt='',$hsc=FALSE)	{
-			// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
-		if (isset($this->LOCAL_LANG[$this->LLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->LLkey][$key], $this->LOCAL_LANG_charset[$this->LLkey][$key]);
-		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$this->altLLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->altLLkey][$key], $this->LOCAL_LANG_charset[$this->altLLkey][$key]);
-		} elseif (isset($this->LOCAL_LANG['default'][$key]))	{
-			$word = $this->LOCAL_LANG['default'][$key];	// No charset conversion because default is english and thereby ASCII
+	public function pi_getLL($key, $alternativeLabel = '', $hsc = FALSE) {
+		if (isset($this->LOCAL_LANG[$this->LLkey][$key][0]['target'])) {
+
+				// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
+			if (isset($this->LOCAL_LANG_charset[$this->LLkey][$key])) {
+				$word = $GLOBALS['TSFE']->csConv(
+					$this->LOCAL_LANG[$this->LLkey][$key][0]['target'],
+					$this->LOCAL_LANG_charset[$this->LLkey][$key]
+				);
+			} else {
+				$word = $this->LOCAL_LANG[$this->LLkey][$key][0]['target'];
+			}
+		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$this->altLLkey][$key][0]['target'])) {
+
+				// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
+			if (isset($this->LOCAL_LANG_charset[$this->altLLkey][$key])) {
+				$word = $GLOBALS['TSFE']->csConv(
+					$this->LOCAL_LANG[$this->altLLkey][$key][0]['target'],
+					$this->LOCAL_LANG_charset[$this->altLLkey][$key]
+				);
+			} else {
+				$word = $this->LOCAL_LANG[$this->altLLkey][$key][0]['target'];
+			}
+		} elseif (isset($this->LOCAL_LANG['default'][$key][0]['target'])) {
+
+				// Get default translation (without charset conversion, english)
+			$word = $this->LOCAL_LANG['default'][$key][0]['target'];
 		} else {
-			$word = $this->LLtestPrefixAlt.$alt;
+
+				// Return alternative string or empty
+			$word = (isset($this->LLtestPrefixAlt)) ? $this->LLtestPrefixAlt . $alternativeLabel : $alternativeLabel;
 		}
 
-		$output = $this->LLtestPrefix.$word;
-		if ($hsc)	$output = htmlspecialchars($output);
+		$output = (isset($this->LLtestPrefix)) ? $this->LLtestPrefix . $word : $word;
+
+		if ($hsc) {
+			$output = htmlspecialchars($output);
+		}
 
 		return $output;
 	}
@@ -958,28 +930,35 @@ class tslib_pibase {
 	 *
 	 * @return	void
 	 */
-	function pi_loadLL()	{
-		if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath)	{
+	public function pi_loadLL() {
+		if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath) {
 			$basePath = 'EXT:' . $this->extKey . '/' . dirname($this->scriptRelPath) . '/locallang.xml';
 
 				// Read the strings in the required charset (since TYPO3 4.2)
-			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey,$GLOBALS['TSFE']->renderCharset);
-			if ($this->altLLkey)	{
-				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
-				$this->LOCAL_LANG = array_merge(is_array($this->LOCAL_LANG) ? $this->LOCAL_LANG : array(),$tempLOCAL_LANG);
+			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey, $GLOBALS['TSFE']->renderCharset);
+			if ($this->altLLkey) {
+				$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
 			}
 
 				// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
 			$confLL = $this->conf['_LOCAL_LANG.'];
 			if (is_array($confLL)) {
-				foreach ($confLL as $k => $lA) {
-					if (is_array($lA))	{
-						$k = substr($k,0,-1);
-						foreach($lA as $llK => $llV)	{
-							if (!is_array($llV))	{
-								$this->LOCAL_LANG[$k][$llK] = $llV;
-									// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages
-								$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : $GLOBALS['TSFE']->csConvObj->charSetArray[$k];
+				foreach ($confLL as $languageKey => $languageArray) {
+						// Don't process label if the langue is not loaded
+					$languageKey = substr($languageKey,0,-1);
+					if (is_array($languageArray) && is_array($this->LOCAL_LANG[$languageKey])) {
+							// Remove the dot after the language key
+						foreach ($languageArray as $labelKey => $labelValue) {
+							if (!is_array($labelValue))	{
+								$this->LOCAL_LANG[$languageKey][$labelKey][0]['target'] = $labelValue;
+
+									// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset"
+									// and if that is not set, assumed to be that of the individual system languages
+								if ($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']) {
+									$this->LOCAL_LANG_charset[$languageKey][$labelKey] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
+								} else {
+									$this->LOCAL_LANG_charset[$languageKey][$labelKey] = $GLOBALS['TSFE']->csConvObj->charSetArray[$languageKey];
+								}
 							}
 						}
 					}
@@ -1016,103 +995,6 @@ class tslib_pibase {
 	 * Database, queries
 	 *
 	 **************************/
-
-	/**
-	 * Makes a standard query for listing of records based on standard input vars from the 'browser' ($this->internal['results_at_a_time'] and $this->piVars['pointer']) and 'searchbox' ($this->piVars['sword'] and $this->internal['searchFieldList'])
-	 * Set $count to 1 if you wish to get a count(*) query for selecting the number of results.
-	 * Notice that the query will use $this->conf['pidList'] and $this->conf['recursive'] to generate a PID list within which to search for records.
-	 *
-	 * @param	string		See pi_exec_query()
-	 * @param	boolean		See pi_exec_query()
-	 * @param	string		See pi_exec_query()
-	 * @param	mixed		See pi_exec_query()
-	 * @param	string		See pi_exec_query()
-	 * @param	string		See pi_exec_query()
-	 * @param	string		See pi_exec_query()
-	 * @param	boolean		If set, the function will return the query not as a string but array with the various parts.
-	 * @return	mixed		The query build.
-	 * @access private
-	 * @deprecated since TYPO3 3.6, this function will be removed in TYPO3 4.5, use pi_exec_query() instead!
-	 * @todo	Deprecated but still used in the Core!
-	 */
-	function pi_list_query($table,$count=0,$addWhere='',$mm_cat='',$groupBy='',$orderBy='',$query='',$returnQueryArray=FALSE)	{
-		t3lib_div::logDeprecatedFunction();
-
-		// Begin Query:
-		if (!$query)	{
-				// Fetches the list of PIDs to select from.
-				// TypoScript property .pidList is a comma list of pids. If blank, current page id is used.
-				// TypoScript property .recursive is a int+ which determines how many levels down from the pids in the pid-list subpages should be included in the select.
-			$pidList = $this->pi_getPidList($this->conf['pidList'],$this->conf['recursive']);
-			if (is_array($mm_cat))	{
-				$query='FROM '.$table.','.$mm_cat['table'].','.$mm_cat['mmtable'].LF.
-						' WHERE '.$table.'.uid='.$mm_cat['mmtable'].'.uid_local AND '.$mm_cat['table'].'.uid='.$mm_cat['mmtable'].'.uid_foreign '.LF.
-						(strcmp($mm_cat['catUidList'],'')?' AND '.$mm_cat['table'].'.uid IN ('.$mm_cat['catUidList'].')':'').LF.
-						' AND '.$table.'.pid IN ('.$pidList.')'.LF.
-						$this->cObj->enableFields($table).LF;	// This adds WHERE-clauses that ensures deleted, hidden, starttime/endtime/access records are NOT selected, if they should not! Almost ALWAYS add this to your queries!
-			} else {
-				$query='FROM '.$table.' WHERE pid IN ('.$pidList.')'.LF.
-						$this->cObj->enableFields($table).LF;	// This adds WHERE-clauses that ensures deleted, hidden, starttime/endtime/access records are NOT selected, if they should not! Almost ALWAYS add this to your queries!
-			}
-		}
-
-			// Split the "FROM ... WHERE" string so we get the WHERE part and TABLE names separated...:
-		list($TABLENAMES, $WHERE) = preg_split('/WHERE/i', trim($query), 2);
-		$TABLENAMES = trim(substr(trim($TABLENAMES),5));
-		$WHERE = trim($WHERE);
-
-			// Add '$addWhere'
-		if ($addWhere)	{$WHERE.=' '.$addWhere.LF;}
-
-			// Search word:
-		if ($this->piVars['sword'] && $this->internal['searchFieldList'])	{
-			$WHERE.=$this->cObj->searchWhere($this->piVars['sword'],$this->internal['searchFieldList'],$table).LF;
-		}
-
-		if ($count) {
-			$queryParts = array(
-				'SELECT' => 'count(*)',
-				'FROM' => $TABLENAMES,
-				'WHERE' => $WHERE,
-				'GROUPBY' => '',
-				'ORDERBY' => '',
-				'LIMIT' => ''
-			);
-		} else {
-				// Order by data:
-			if (!$orderBy && $this->internal['orderBy'])	{
-				if (t3lib_div::inList($this->internal['orderByList'],$this->internal['orderBy']))	{
-					$orderBy = 'ORDER BY '.$table.'.'.$this->internal['orderBy'].($this->internal['descFlag']?' DESC':'');
-				}
-			}
-
-				// Limit data:
-			$pointer = $this->piVars['pointer'];
-			$pointer = intval($pointer);
-			$results_at_a_time = t3lib_div::intInRange($this->internal['results_at_a_time'],1,1000);
-			$LIMIT = ($pointer*$results_at_a_time).','.$results_at_a_time;
-
-				// Add 'SELECT'
-			$queryParts = array(
-				'SELECT' => $this->pi_prependFieldsWithTable($table,$this->pi_listFields),
-				'FROM' => $TABLENAMES,
-				'WHERE' => $WHERE,
-				'GROUPBY' => $GLOBALS['TYPO3_DB']->stripGroupBy($groupBy),
-				'ORDERBY' => $GLOBALS['TYPO3_DB']->stripOrderBy($orderBy),
-				'LIMIT' => $LIMIT
-			);
-		}
-
-		$query = $GLOBALS['TYPO3_DB']->SELECTquery (
-					$queryParts['SELECT'],
-					$queryParts['FROM'],
-					$queryParts['WHERE'],
-					$queryParts['GROUPBY'],
-					$queryParts['ORDERBY'],
-					$queryParts['LIMIT']
-				);
-		return $returnQueryArray ? $queryParts : $query;
-	}
 
 	/**
 	 * Executes a standard SELECT query for listing of records based on standard input vars from the 'browser' ($this->internal['results_at_a_time'] and $this->piVars['pointer']) and 'searchbox' ($this->piVars['sword'] and $this->internal['searchFieldList'])
@@ -1182,7 +1064,7 @@ class tslib_pibase {
 				// Limit data:
 			$pointer = $this->piVars['pointer'];
 			$pointer = intval($pointer);
-			$results_at_a_time = t3lib_div::intInRange($this->internal['results_at_a_time'], 1, 1000);
+			$results_at_a_time = t3lib_utility_Math::forceIntegerInRange($this->internal['results_at_a_time'], 1, 1000);
 			$LIMIT = ($pointer * $results_at_a_time) . ',' . $results_at_a_time;
 
 				// Add 'SELECT'
@@ -1205,7 +1087,7 @@ class tslib_pibase {
 	 * @param	string		The table name
 	 * @param	integer		The uid of the record from the table
 	 * @param	boolean		If $checkPage is set, it's required that the page on which the record resides is accessible
-	 * @return	array		If record is found, an array. Otherwise false.
+	 * @return	array		If record is found, an array. Otherwise FALSE.
 	 */
 	function pi_getRecord($table,$uid,$checkPage=0)	{
 		return $GLOBALS['TSFE']->sys_page->checkRecord($table,$uid,$checkPage);
@@ -1223,13 +1105,13 @@ class tslib_pibase {
 			$pid_list = $GLOBALS['TSFE']->id;
 		}
 
-		$recursive = t3lib_div::intInRange($recursive, 0);
+		$recursive = t3lib_utility_Math::forceIntegerInRange($recursive, 0);
 
 		$pid_list_arr = array_unique(t3lib_div::trimExplode(',', $pid_list, 1));
 		$pid_list     = array();
 
 		foreach($pid_list_arr as $val) {
-			$val = t3lib_div::intInRange($val, 0);
+			$val = t3lib_utility_Math::forceIntegerInRange($val, 0);
 			if ($val) {
 				$_list = $this->cObj->getTreeList(-1 * $val, $recursive);
 				if ($_list) {
@@ -1305,12 +1187,12 @@ class tslib_pibase {
 	 **************************/
 
 	/**
-	 * Returns true if the piVars array has ONLY those fields entered that is set in the $fList (commalist) AND if none of those fields value is greater than $lowerThan field if they are integers.
+	 * Returns TRUE if the piVars array has ONLY those fields entered that is set in the $fList (commalist) AND if none of those fields value is greater than $lowerThan field if they are integers.
 	 * Notice that this function will only work as long as values are integers.
 	 *
 	 * @param	string		List of fields (keys from piVars) to evaluate on
 	 * @param	integer		Limit for the values.
-	 * @return	boolean		Returns true (1) if conditions are met.
+	 * @return	boolean		Returns TRUE (1) if conditions are met.
 	 */
 	function pi_isOnlyFields($fList,$lowerThan=-1)	{
 		$lowerThan = $lowerThan==-1 ? $this->pi_lowerThan : $lowerThan;
@@ -1318,18 +1200,18 @@ class tslib_pibase {
 		$fList = t3lib_div::trimExplode(',',$fList,1);
 		$tempPiVars = $this->piVars;
 		foreach ($fList as $k) {
-			if (!t3lib_div::testInt($tempPiVars[$k]) || $tempPiVars[$k]<$lowerThan)		unset($tempPiVars[$k]);
+			if (!t3lib_utility_Math::canBeInterpretedAsInteger($tempPiVars[$k]) || $tempPiVars[$k]<$lowerThan)		unset($tempPiVars[$k]);
 		}
 		if (!count($tempPiVars))	return 1;
 	}
 
 	/**
-	 * Returns true if the array $inArray contains only values allowed to be cached based on the configuration in $this->pi_autoCacheFields
+	 * Returns TRUE if the array $inArray contains only values allowed to be cached based on the configuration in $this->pi_autoCacheFields
 	 * Used by ->pi_linkTP_keepPIvars
 	 * This is an advanced form of evaluation of whether a URL should be cached or not.
 	 *
 	 * @param	array		An array with piVars values to evaluate
-	 * @return	boolean		Returns true (1) if conditions are met.
+	 * @return	boolean		Returns TRUE (1) if conditions are met.
 	 * @see pi_linkTP_keepPIvars()
 	 */
 	function pi_autoCache($inArray)	{
@@ -1423,7 +1305,7 @@ class tslib_pibase {
 
 		$tempArr=$sheetArray;
 		foreach($fieldNameArr as $k => $v)	{
-			if (t3lib_div::testInt($v))	{
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($v))	{
 				if (is_array($tempArr))	{
 					$c=0;
 					foreach($tempArr as $values)	{

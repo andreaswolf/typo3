@@ -2,7 +2,7 @@
  *  Copyright notice
  *
  *  (c) 2009-2010 Michael Klapper <michael.klapper@aoemedia.de>
- *  (c) 2010 Jeff Segars <jeff@webempoweredchurch.org>
+ *  (c) 2010-2011 Jeff Segars <jeff@webempoweredchurch.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -44,7 +44,7 @@ TYPO3.BackendLiveSearch = Ext.extend(Ext.form.ComboBox, {
 	listWidth: 315,
 	listHovered: false,
 	loadingText: null,
-	minChars: 2,
+	minChars: 1,
 	resizable: false,
 	title: null,
 	width: 205,
@@ -179,7 +179,7 @@ TYPO3.BackendLiveSearch = Ext.extend(Ext.form.ComboBox, {
 					click : function () {
 							// go to db_list.php and search for given search value
 							// @todo the current selected page ID from the page tree is required, also we need the
-							// values of $BE_USER->returnWebmounts() to search only during the allowed pages
+							// values of $GLOBALS['BE_USER']->returnWebmounts() to search only during the allowed pages
 						TYPO3.ModuleMenu.App.showModule('web_list', this.getSearchResultsUrl(this.getValue()));
 						this.collapse();
 					}

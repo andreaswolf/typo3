@@ -37,7 +37,7 @@
 require ('init.php');
 
 $query = t3lib_div::getIndpEnv('QUERY_STRING');
-t3lib_div::deprecationLog('The filelist module is a system extension now, do not link to this file.' .
+t3lib_div::deprecationLog('file_list.php is deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.8. The filelist module is a system extension now, do not link to this file.' .
 	LF .
 	'Referer: ' . t3lib_div::getIndpEnv('HTTP_REFERER')
 );
@@ -46,6 +46,6 @@ if (t3lib_extMgm::isLoaded('filelist')) {
 } else {
 	$title = sprintf($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:extension.not.installed'), 'list');
 	$message = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:link.to.filelist.correctly');
-	throw new RuntimeException($title . ': ' . $message);
+	throw new RuntimeException($title . ': ' . $message, 1294586842);
 }
 ?>

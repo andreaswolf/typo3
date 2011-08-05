@@ -27,24 +27,10 @@
 /**
  * Dummy document - displays nothing but background color.
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   68: class SC_dummy
- *   76:     function main()
- *   92:     function printContent()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 require ('init.php');
@@ -74,13 +60,11 @@ class SC_dummy {
 	 * @return	void
 	 */
 	function main()	{
-		global $TBE_TEMPLATE;
-
 			// Start page
-		$this->content.=$TBE_TEMPLATE->startPage('Dummy document');
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->startPage('Dummy document');
 
 			// End page:
-		$this->content.=$TBE_TEMPLATE->endPage();
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->endPage();
 	}
 
 	/**

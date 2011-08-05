@@ -27,44 +27,9 @@
 /**
  * Contains class with basic file management functions
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   81: class t3lib_basicFileFunctions
- *
- *			  SECTION: Checking functions
- *  133:	 function init($mounts, $f_ext)
- *  152:	 function getTotalFileInfo($wholePath)
- *  172:	 function is_allowed($iconkey,$type)
- *  197:	 function checkIfFullAccess($theDest)
- *  211:	 function is_webpath($path)
- *  231:	 function checkIfAllowed($ext, $theDest, $filename='')
- *  241:	 function checkFileNameLen($fileName)
- *  251:	 function is_directory($theDir)
- *  268:	 function isPathValid($theFile)
- *  283:	 function getUniqueName($theFile, $theDest, $dontCheckForUnique=0)
- *  326:	 function checkPathAgainstMounts($thePath)
- *  342:	 function findFirstWebFolder()
- *  362:	 function blindPath($thePath)
- *  378:	 function findTempFolder()
- *
- *			  SECTION: Cleaning functions
- *  412:	 function cleanDirectoryName($theDir)
- *  422:	 function rmDoubleSlash($string)
- *  432:	 function slashPath($path)
- *  446:	 function cleanFileName($fileName,$charset='')
- *  480:	 function formatSize($sizeInBytes)
- *
- * TOTAL FUNCTIONS: 19
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -87,7 +52,7 @@ class t3lib_basicFileFunctions {
 	var $f_ext = Array(); // See comment in header
 	var $mounts = Array(); // See comment in header
 	var $webPath = ''; // Set to DOCUMENT_ROOT.
-	var $isInit = 0; // Set to true after init()/start();
+	var $isInit = 0; // Set to TRUE after init()/start();
 
 
 	/**********************************
@@ -114,16 +79,16 @@ class t3lib_basicFileFunctions {
 	 *		 $f_ext['ftpspace']['allow']='*';
 	 *		 $f_ext['ftpspace']['deny']='';
 	 *	 The control of fileextensions goes in two catagories. Webspace and Ftpspace. Webspace is folders accessible from a webbrowser (below TYPO3_DOCUMENT_ROOT) and ftpspace is everything else.
-	 *	 The control is done like this: If an extension matches 'allow' then the check returns true. If not and an extension matches 'deny' then the check return false. If no match at all, returns true.
+	 *	 The control is done like this: If an extension matches 'allow' then the check returns TRUE. If not and an extension matches 'deny' then the check return FALSE. If no match at all, returns TRUE.
 	 *	 You list extensions comma-separated. If the value is a '*' every extension is allowed
 	 *	 The list is case-insensitive when used in this class (see init())
 	 *  Typically TYPO3_CONF_VARS['BE']['fileExtensions'] would be passed along as $f_ext.
 	 *
 	 *  Example:
-	 *	 $basicff->init($GLOBALS['FILEMOUNTS'],$TYPO3_CONF_VARS['BE']['fileExtensions']);
+	 *	 $basicff->init($GLOBALS['FILEMOUNTS'],$GLOBALS['TYPO3_CONF_VARS']['BE']['fileExtensions']);
 	 *
-	 * @param	array		Contains the paths of the file mounts for the current BE user. Normally $GLOBALS['FILEMOUNTS'] is passed. This variable is set during backend user initialization; $FILEMOUNTS = $BE_USER->returnFilemounts(); (see typo3/init.php)
-	 * @param	array		Array with information about allowed and denied file extensions. Typically passed: $TYPO3_CONF_VARS['BE']['fileExtensions']
+	 * @param	array		Contains the paths of the file mounts for the current BE user. Normally $GLOBALS['FILEMOUNTS'] is passed. This variable is set during backend user initialization; $FILEMOUNTS = $GLOBALS['BE_USER']->returnFilemounts(); (see typo3/init.php)
+	 * @param	array		Array with information about allowed and denied file extensions. Typically passed: $GLOBALS['TYPO3_CONF_VARS']['BE']['fileExtensions']
 	 * @return	void
 	 * @see typo3/init.php, t3lib_userAuthGroup::returnFilemounts()
 	 */
@@ -179,21 +144,21 @@ class t3lib_basicFileFunctions {
 	 *
 	 * @param	string		The extension to check, eg. "php" or "html" etc.
 	 * @param	string		Either "webspage" or "ftpspace" - points to a key in $this->f_ext
-	 * @return	boolean		True if file extension is allowed.
+	 * @return	boolean		TRUE if file extension is allowed.
 	 */
 	function is_allowed($iconkey, $type) {
 		if (isset($this->f_ext[$type])) {
 			$ik = strtolower($iconkey);
 			if ($ik) {
-					// If the extension is found amongst the allowed types, we return true immediately
+					// If the extension is found amongst the allowed types, we return TRUE immediately
 				if ($this->f_ext[$type]['allow'] == '*' || t3lib_div::inList($this->f_ext[$type]['allow'], $ik)) {
 					return TRUE;
 				}
-					// If the extension is found amongst the denied types, we return false immediately
+					// If the extension is found amongst the denied types, we return FALSE immediately
 				if ($this->f_ext[$type]['deny'] == '*' || t3lib_div::inList($this->f_ext[$type]['deny'], $ik)) {
 					return FALSE;
 				}
-					// If no match we return true
+					// If no match we return TRUE
 				return TRUE;
 			} else { // If no extension:
 				if ($this->f_ext[$type]['allow'] == '*') {
@@ -209,7 +174,7 @@ class t3lib_basicFileFunctions {
 	}
 
 	/**
-	 * Returns true if you can operate of ANY file ('*') in the space $theDest is in ('webspace' / 'ftpspace')
+	 * Returns TRUE if you can operate of ANY file ('*') in the space $theDest is in ('webspace' / 'ftpspace')
 	 *
 	 * @param	string		Absolute path
 	 * @return	boolean
@@ -225,7 +190,7 @@ class t3lib_basicFileFunctions {
 
 	/**
 	 * Checks if $this->webPath (should be TYPO3_DOCUMENT_ROOT) is in the first part of $path
-	 * Returns true also if $this->init is not set or if $path is empty...
+	 * Returns TRUE also if $this->init is not set or if $path is empty...
 	 *
 	 * @param	string		Absolute path to check
 	 * @return	boolean
@@ -238,7 +203,7 @@ class t3lib_basicFileFunctions {
 				return t3lib_div::isFirstPartOfStr($testPath, $testPathWeb);
 			}
 		}
-		return TRUE; // Its more safe to return true (as the webpath is more restricted) if something went wrong...
+		return TRUE; // Its more safe to return TRUE (as the webpath is more restricted) if something went wrong...
 	}
 
 	/**
@@ -248,14 +213,14 @@ class t3lib_basicFileFunctions {
 	 * @param	string		File extension, eg. "php" or "html"
 	 * @param	string		Absolute path for which to test
 	 * @param	string		Filename to check against TYPO3_CONF_VARS[BE][fileDenyPattern]
-	 * @return	boolean		True if extension/filename is allowed
+	 * @return	boolean		TRUE if extension/filename is allowed
 	 */
 	function checkIfAllowed($ext, $theDest, $filename = '') {
 		return t3lib_div::verifyFilenameAgainstDenyPattern($filename) && $this->is_allowed($ext, ($this->is_webpath($theDest) ? 'webspace' : 'ftpspace'));
 	}
 
 	/**
-	 * Returns true if the input filename string is shorter than $this->maxInputNameLen.
+	 * Returns TRUE if the input filename string is shorter than $this->maxInputNameLen.
 	 *
 	 * @param	string		Filename, eg "somefile.html"
 	 * @return	boolean
@@ -268,7 +233,7 @@ class t3lib_basicFileFunctions {
 	 * Cleans $theDir for slashes in the end of the string and returns the new path, if it exists on the server.
 	 *
 	 * @param	string		Directory path to check
-	 * @return	string		Returns the cleaned up directory name if OK, otherwise false.
+	 * @return	string		Returns the cleaned up directory name if OK, otherwise FALSE.
 	 */
 	function is_directory($theDir) {
 		if ($this->isPathValid($theDir)) {
@@ -284,7 +249,7 @@ class t3lib_basicFileFunctions {
 	 * Wrapper for t3lib_div::validPathStr()
 	 *
 	 * @param	string		Filepath to evaluate
-	 * @return	boolean		True, if no '//', '..' or '\' is in the $theFile
+	 * @return	boolean		TRUE, if no '//', '..' or '\' is in the $theFile
 	 * @see	t3lib_div::validPathStr()
 	 */
 	function isPathValid($theFile) {
@@ -361,11 +326,9 @@ class t3lib_basicFileFunctions {
 	 * @return	string		The key to the first mount inside PATH_site."fileadmin" found, otherwise nothing is returned.
 	 */
 	function findFirstWebFolder() {
-		global $TYPO3_CONF_VARS;
-
 		if (is_array($this->mounts)) {
 			foreach ($this->mounts as $k => $val) {
-				if (t3lib_div::isFirstPartOfStr($val['path'], PATH_site . $TYPO3_CONF_VARS['BE']['fileadminDir'])) {
+				if (t3lib_div::isFirstPartOfStr($val['path'], PATH_site . $GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'])) {
 					return $k;
 				}
 			}

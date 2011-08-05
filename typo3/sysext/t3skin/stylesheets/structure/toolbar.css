@@ -1,7 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Toolbar inside the Topbar
 
-$Id$
 - - - - - - - - - - - - - - - - - - - - - */
 
 .typo3-top-toolbar {
@@ -17,7 +16,7 @@ $Id$
 	padding: 0px;
 }
 
-#typo3-toolbar li {
+#typo3-toolbar>li {
 	display: inline;
 	float: left;
 	margin-right: -1px; /* necessary for overlaying the separators with the active state background */
@@ -45,4 +44,26 @@ $Id$
 	position: absolute;
 	top: 25px;
 	z-index: 100;
+}
+
+ul.toolbar-item-menu li a {
+	float: none;
+	min-height: 19px;
+	padding-left: 2px;
+	padding-top: 2px;
+	vertical-align: middle;
+}
+
+ul.toolbar-item-menu li a {
+	display: block;
+	padding-bottom: 2px;
+	padding-left: 3px;
+	vertical-align: middle;
+}
+
+ul.toolbar-item-menu {
+	margin: 0;
+	padding: 2px 0 0;
+	position: absolute;
+	width: 180px;
 }

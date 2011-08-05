@@ -24,41 +24,6 @@
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   89: class t3lib_refindex
- *  107:	 function updateRefIndexTable($table,$uid,$testOnly=FALSE)
- *  178:	 function generateRefIndexData($table,$uid)
- *  255:	 function createEntryData($table,$uid,$field,$flexpointer,$deleted,$ref_table,$ref_uid,$ref_string='',$sort=-1,$softref_key='',$softref_id='')
- *  282:	 function createEntryData_dbRels($table,$uid,$fieldname,$flexpointer,$deleted,$items)
- *  299:	 function createEntryData_fileRels($table,$uid,$fieldname,$flexpointer,$deleted,$items)
- *  320:	 function createEntryData_softreferences($table,$uid,$fieldname,$flexpointer,$deleted,$keys)
- *
- *			  SECTION: Get relations from table row
- *  376:	 function getRelations($table,$row,$onlyField='')
- *  473:	 function getRelations_flexFormCallBack($dsArr, $dataValue, $PA, $structurePath, &$pObj)
- *  523:	 function getRelations_procFiles($value, $conf, $uid)
- *  573:	 function getRelations_procDB($value, $conf, $uid)
- *
- *			  SECTION: Setting values
- *  616:	 function setReferenceValue($hash,$newValue,$returnDataArray=FALSE)
- *  699:	 function setReferenceValue_dbRels($refRec,$itemArray,$newValue,&$dataArray,$flexpointer='')
- *  737:	 function setReferenceValue_fileRels($refRec,$itemArray,$newValue,&$dataArray,$flexpointer='')
- *  775:	 function setReferenceValue_softreferences($refRec,$softref,$newValue,&$dataArray,$flexpointer='')
- *
- *			  SECTION: Helper functions
- *  822:	 function isReferenceField($conf)
- *  832:	 function destPathFromUploadFolder($folder)
- *  842:	 function error($msg)
- *  853:	 function updateIndex($testOnly,$cli_echo=FALSE)
- *
- * TOTAL FUNCTIONS: 18
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 /**
@@ -168,16 +133,14 @@ class t3lib_refindex {
 
 	/**
 	 * Returns array of arrays with an index of all references found in record from table/uid
-	 * If the result is used to update the sys_refindex table then ->WSOL must NOT be true (no workspace overlay anywhere!)
+	 * If the result is used to update the sys_refindex table then ->WSOL must NOT be TRUE (no workspace overlay anywhere!)
 	 *
-	 * @param	string		Table name from $TCA
+	 * @param	string		Table name from $GLOBALS['TCA']
 	 * @param	integer		Record UID
 	 * @return	array		Index Rows
 	 */
 	function generateRefIndexData($table, $uid) {
-		global $TCA;
-
-		if (isset($TCA[$table])) {
+		if (isset($GLOBALS['TCA'][$table])) {
 				// Get raw record from DB:
 			$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $table, 'uid=' . intval($uid));
 
@@ -188,7 +151,7 @@ class t3lib_refindex {
 				$this->words = array();
 
 					// Deleted:
-				$deleted = $TCA[$table]['ctrl']['delete'] ? ($record[$TCA[$table]['ctrl']['delete']] ? 1 : 0) : 0;
+				$deleted = (($GLOBALS['TCA'][$table]['ctrl']['delete'] && $record[$GLOBALS['TCA'][$table]['ctrl']['delete']]) ? 1 : 0);
 
 					// Get all relations from record:
 				$dbrels = $this->getRelations($table, $record);
@@ -236,8 +199,8 @@ class t3lib_refindex {
 
 					// Word indexing:
 				t3lib_div::loadTCA($table);
-				foreach ($TCA[$table]['columns'] as $field => $conf) {
-					if (t3lib_div::inList('input,text', $conf['config']['type']) && strcmp($record[$field], '') && !t3lib_div::testInt($record[$field])) {
+				foreach ($GLOBALS['TCA'][$table]['columns'] as $field => $conf) {
+					if (t3lib_div::inList('input,text', $conf['config']['type']) && strcmp($record[$field], '') && !t3lib_utility_Math::canBeInterpretedAsInteger($record[$field])) {
 						$this->words_strings[$field] = $record[$field];
 					}
 				}
@@ -374,7 +337,6 @@ class t3lib_refindex {
 	 * @see export_addRecord()
 	 */
 	function getRelations($table, $row, $onlyField = '') {
-		global $TCA;
 
 			// Load full table description
 		t3lib_div::loadTCA($table);
@@ -385,8 +347,9 @@ class t3lib_refindex {
 
 		$outRow = array();
 		foreach ($row as $field => $value) {
-			if (!in_array($field, $nonFields) && is_array($TCA[$table]['columns'][$field]) && (!$onlyField || $onlyField === $field)) {
-				$conf = $TCA[$table]['columns'][$field]['config'];
+			if (!in_array($field, $nonFields) && is_array($GLOBALS['TCA'][$table]['columns'][$field])
+				&& (!$onlyField || $onlyField === $field)) {
+				$conf = $GLOBALS['TCA'][$table]['columns'][$field]['config'];
 
 					// Add files
 				if ($result = $this->getRelations_procFiles($value, $conf, $uid)) {
@@ -521,7 +484,7 @@ class t3lib_refindex {
 	 * @param	string		Field value
 	 * @param	array		Field configuration array of type "TCA/columns"
 	 * @param	integer		Field uid
-	 * @return	array		If field type is OK it will return an array with the files inside. Else false
+	 * @return	array		If field type is OK it will return an array with the files inside. Else FALSE
 	 */
 	function getRelations_procFiles($value, $conf, $uid) {
 			// Take care of files...
@@ -572,7 +535,7 @@ class t3lib_refindex {
 	 * @param	array		Field configuration array of type "TCA/columns"
 	 * @param	integer		Field uid
 	 * @param	string		Table name
-	 * @return	array		If field type is OK it will return an array with the database relations. Else false
+	 * @return	array		If field type is OK it will return an array with the database relations. Else FALSE
 	 */
 	function getRelations_procDB($value, $conf, $uid, $table = '') {
 
@@ -611,7 +574,7 @@ class t3lib_refindex {
 	 * @param	mixed		Value you wish to set for reference. If NULL, the reference is removed (unless a soft-reference in which case it can only be set to a blank string). If you wish to set a database reference, use the format "[table]:[uid]". Any other case, the input value is set as-is
 	 * @param	boolean		Return $dataArray only, do not submit it to database.
 	 * @param	boolean		If set, it will bypass check for workspace-zero and admin user
-	 * @return	string		If a return string, that carries an error message, otherwise false (=OK) (except if $returnDataArray is set!)
+	 * @return	string		If a return string, that carries an error message, otherwise FALSE (=OK) (except if $returnDataArray is set!)
 	 */
 	function setReferenceValue($hash, $newValue, $returnDataArray = FALSE, $bypassWorkspaceAdminCheck = FALSE) {
 
@@ -731,7 +694,7 @@ class t3lib_refindex {
 	 * @param	string		Value to substitute current value with (or NULL to unset it)
 	 * @param	array		data array in which the new value is set (passed by reference)
 	 * @param	string		Flexform pointer, if in a flex form field.
-	 * @return	string		Error message if any, otherwise false = OK
+	 * @return	string		Error message if any, otherwise FALSE = OK
 	 */
 	function setReferenceValue_dbRels($refRec, $itemArray, $newValue, &$dataArray, $flexpointer = '') {
 		if (!strcmp($itemArray[$refRec['sorting']]['id'], $refRec['ref_uid']) && !strcmp($itemArray[$refRec['sorting']]['table'], $refRec['ref_table'])) {
@@ -771,7 +734,7 @@ class t3lib_refindex {
 	 * @param	string		Value to substitute current value with (or NULL to unset it)
 	 * @param	array		data array in which the new value is set (passed by reference)
 	 * @param	string		Flexform pointer, if in a flex form field.
-	 * @return	string		Error message if any, otherwise false = OK
+	 * @return	string		Error message if any, otherwise FALSE = OK
 	 */
 	function setReferenceValue_fileRels($refRec, $itemArray, $newValue, &$dataArray, $flexpointer = '') {
 		if (!strcmp(substr($itemArray[$refRec['sorting']]['ID_absFile'], strlen(PATH_site)), $refRec['ref_string']) && !strcmp('_FILE', $refRec['ref_table'])) {
@@ -811,7 +774,7 @@ class t3lib_refindex {
 	 * @param	string		Value to substitute current value with
 	 * @param	array		data array in which the new value is set (passed by reference)
 	 * @param	string		Flexform pointer, if in a flex form field.
-	 * @return	string		Error message if any, otherwise false = OK
+	 * @return	string		Error message if any, otherwise FALSE = OK
 	 */
 	function setReferenceValue_softreferences($refRec, $softref, $newValue, &$dataArray, $flexpointer = '') {
 		if (is_array($softref['keys'][$refRec['softref_key']][$refRec['softref_id']])) {
@@ -851,10 +814,10 @@ class t3lib_refindex {
 	 *******************************/
 
 	/**
-	 * Returns true if the TCA/columns field type is a DB reference field
+	 * Returns TRUE if the TCA/columns field type is a DB reference field
 	 *
 	 * @param	array		config array for TCA/columns field
-	 * @return	boolean		True if DB reference field (group/db or select with foreign-table)
+	 * @return	boolean		TRUE if DB reference field (group/db or select with foreign-table)
 	 */
 	function isReferenceField($conf) {
 		return ($conf['type'] == 'group' && $conf['internal_type'] == 'db') || (($conf['type'] == 'select' || $conf['type'] == 'inline') && $conf['foreign_table']);
@@ -891,8 +854,6 @@ class t3lib_refindex {
 	 * @return	array		Header and body status content
 	 */
 	function updateIndex($testOnly, $cli_echo = FALSE) {
-		global $TCA, $TYPO3_DB;
-
 		$errors = array();
 		$tableNames = array();
 		$recCount = 0;
@@ -907,12 +868,12 @@ class t3lib_refindex {
 		}
 
 			// Traverse all tables:
-		foreach ($TCA as $tableName => $cfg) {
+		foreach ($GLOBALS['TCA'] as $tableName => $cfg) {
 			$tableNames[] = $tableName;
 			$tableCount++;
 
 				// Traverse all records in tables, including deleted records:
-			$allRecs = $TYPO3_DB->exec_SELECTgetRows('uid', $tableName, '1=1'); //.t3lib_BEfunc::deleteClause($tableName)
+			$allRecs = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', $tableName, '1=1'); //.t3lib_BEfunc::deleteClause($tableName)
 			$uidList = array(0);
 			foreach ($allRecs as $recdat) {
 				$refIndexObj = t3lib_div::makeInstance('t3lib_refindex');
@@ -930,8 +891,9 @@ class t3lib_refindex {
 			}
 
 				// Searching lost indexes for this table:
-			$where = 'tablename=' . $TYPO3_DB->fullQuoteStr($tableName, 'sys_refindex') . ' AND recuid NOT IN (' . implode(',', $uidList) . ')';
-			$lostIndexes = $TYPO3_DB->exec_SELECTgetRows('hash', 'sys_refindex', $where);
+			$where = 'tablename=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($tableName, 'sys_refindex') .
+				' AND recuid NOT IN (' . implode(',', $uidList) . ')';
+			$lostIndexes = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('hash', 'sys_refindex', $where);
 			if (count($lostIndexes)) {
 				$Err = 'Table ' . $tableName . ' has ' . count($lostIndexes) . ' lost indexes which are now deleted';
 				$errors[] = $Err;
@@ -939,14 +901,16 @@ class t3lib_refindex {
 					echo $Err . LF;
 				}
 				if (!$testOnly) {
-					$TYPO3_DB->exec_DELETEquery('sys_refindex', $where);
+					$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', $where);
 				}
 			}
 		}
 
 			// Searching lost indexes for non-existing tables:
-		$where = 'tablename NOT IN (' . implode(',', $TYPO3_DB->fullQuoteArray($tableNames, 'sys_refindex')) . ')';
-		$lostTables = $TYPO3_DB->exec_SELECTgetRows('hash', 'sys_refindex', $where);
+		$where = 'tablename NOT IN (' .
+				implode(',', $GLOBALS['TYPO3_DB']->fullQuoteArray($tableNames, 'sys_refindex')) .
+				 ')';
+		$lostTables = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('hash', 'sys_refindex', $where);
 		if (count($lostTables)) {
 			$Err = 'Index table hosted ' . count($lostTables) . ' indexes for non-existing tables, now removed';
 			$errors[] = $Err;
@@ -954,7 +918,7 @@ class t3lib_refindex {
 				echo $Err . LF;
 			}
 			if (!$testOnly) {
-				$TYPO3_DB->exec_DELETEquery('sys_refindex', $where);
+				$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', $where);
 			}
 		}
 

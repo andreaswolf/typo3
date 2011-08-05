@@ -49,7 +49,6 @@
  * For a detailed description of this script, the scope of constants and variables in it,
  * please refer to the document "Inside TYPO3"
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -60,17 +59,13 @@
 // *******************************
 // Checking PHP version
 // *******************************
-if (version_compare(phpversion(), '5.2', '<'))	die ('TYPO3 requires PHP 5.2.0 or higher.');
+if (version_compare(phpversion(), '5.3', '<'))	die ('TYPO3 requires PHP 5.3.0 or higher.');
 
 
 // *******************************
 // Set error reporting
 // *******************************
-if (defined('E_DEPRECATED')) {
-	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-} else {
-	error_reporting(E_ALL ^ E_NOTICE);
-}
+error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
 
 // *******************************
 // Prevent any unwanted output that may corrupt AJAX/compression. Note: this does
@@ -189,6 +184,9 @@ die();
 	}
 }
 
+	// fix include path for pear packages
+set_include_path(get_include_path() . PATH_SEPARATOR . PATH_typo3 . 'contrib/pear/');
+
 // *********************
 // Unset variable(s) in global scope (fixes #13959)
 // *********************
@@ -229,19 +227,7 @@ $TYPO3_DB->debugOutput = $TYPO3_CONF_VARS['SYS']['sqlDebug'];
 $CLIENT = t3lib_div::clientInfo();					// $CLIENT includes information about the browser/user-agent
 $PARSETIME_START = t3lib_div::milliseconds();		// Is set to the system time in milliseconds. This could be used to output script parsetime in the end of the script
 
-// ***********************************
-// Initializing the Caching System
-// ***********************************
 
-if (TYPO3_UseCachingFramework) {
-	$typo3CacheManager = t3lib_div::makeInstance('t3lib_cache_Manager');
-	$typo3CacheFactory = t3lib_div::makeInstance('t3lib_cache_Factory');
-	$typo3CacheFactory->setCacheManager($typo3CacheManager);
-
-	t3lib_cache::initPageCache();
-	t3lib_cache::initPageSectionCache();
-	t3lib_cache::initContentHashCache();
-}
 // *************************
 // CLI dispatch processing
 // *************************
@@ -275,7 +261,7 @@ if ((TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && basename(PATH_thisScript) == 
 // Check Hardcoded lock on BE:
 // **********************
 if ($TYPO3_CONF_VARS['BE']['adminOnly'] < 0) {
-	throw new RuntimeException('TYPO3 Backend locked: Backend and Install Tool are locked for maintenance. [BE][adminOnly] is set to "' . intval($TYPO3_CONF_VARS['BE']['adminOnly']) . '".');
+	throw new RuntimeException('TYPO3 Backend locked: Backend and Install Tool are locked for maintenance. [BE][adminOnly] is set to "' . intval($TYPO3_CONF_VARS['BE']['adminOnly']) . '".', 1294586847);
 }
 if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && @is_file(PATH_typo3conf . 'LOCK_BACKEND')) {
 	if (TYPO3_PROCEED_IF_NO_USER == 2) {
@@ -285,7 +271,7 @@ if (!(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) && @is_file(PATH_typo3conf . 'L
 		if ($fContent)	{
 			header('Location: '.$fContent);	// Redirect
 		} else {
-			throw new RuntimeException('TYPO3 Backend locked: Browser backend is locked for maintenance. Remove lock by removing the file "typo3conf/LOCK_BACKEND" or use CLI-scripts.');
+			throw new RuntimeException('TYPO3 Backend locked: Browser backend is locked for maintenance. Remove lock by removing the file "typo3conf/LOCK_BACKEND" or use CLI-scripts.', 1294586848);
 		}
 		exit;
 	}
@@ -369,14 +355,8 @@ if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_INSTALL) {
 	// Redirect to install tool if database host and database are not defined
 if (!TYPO3_db_host && !TYPO3_db) {
 	t3lib_utility_Http::redirect('install/index.php?mode=123&step=1&password=joh316');
-} elseif ($TYPO3_DB->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password)) {
-	if (!TYPO3_db)	{
-		throw new RuntimeException('Database Error: No database selected', time());
-	} elseif (!$TYPO3_DB->sql_select_db(TYPO3_db))	{
-		throw new RuntimeException('Database Error: Cannot connect to the current database, "' . TYPO3_db . '"', time());
-	}
 } else {
-	throw new RuntimeException('Database Error: The current username, password or host was not accepted when the connection to the database was attempted to be established!', time());
+	$TYPO3_DB->connectDB();
 }
 
 
@@ -384,7 +364,7 @@ if (!TYPO3_db_host && !TYPO3_db) {
 // Checks for proper browser
 // *******************************
 if (!$CLIENT['BROWSER'] && !(TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI)) {
-	throw new RuntimeException('Browser Error: Your browser version looks incompatible with this TYPO3 version!', time());
+	throw new RuntimeException('Browser Error: Your browser version looks incompatible with this TYPO3 version!', 1294587023);
 }
 
 
@@ -413,7 +393,7 @@ $spriteManager->loadCacheFile();
 // *******************************
 /*
 	NOTICE:
-	if constant TYPO3_PROCEED_IF_NO_USER is defined true (in the mainscript), this script will return even though a user did not log in!
+	if constant TYPO3_PROCEED_IF_NO_USER is defined TRUE (in the mainscript), this script will return even though a user did not log in!
 */
 $BE_USER = t3lib_div::makeInstance('t3lib_beUserAuth');	// New backend user object
 $BE_USER->warningEmail = $TYPO3_CONF_VARS['BE']['warning_email_addr'];
@@ -434,6 +414,8 @@ $FILEMOUNTS = $BE_USER->returnFilemounts();
 // *******************************
 // $GLOBALS['LANG'] initialisation
 // *******************************
+// $GLOBALS needed here ?? we still are in the global scope.
+
 $GLOBALS['LANG'] = t3lib_div::makeInstance('language');
 $GLOBALS['LANG']->init($BE_USER->uc['lang']);
 
@@ -458,7 +440,7 @@ if (TYPO3_REQUESTTYPE & TYPO3_REQUESTTYPE_CLI) {
 // ****************
 ob_clean();
 if (extension_loaded('zlib') && $TYPO3_CONF_VARS['BE']['compressionLevel'])	{
-	if (t3lib_div::testInt($TYPO3_CONF_VARS['BE']['compressionLevel'])) {
+	if (t3lib_utility_Math::canBeInterpretedAsInteger($TYPO3_CONF_VARS['BE']['compressionLevel'])) {
 		@ini_set('zlib.output_compression_level', $TYPO3_CONF_VARS['BE']['compressionLevel']);
 	}
 	ob_start('ob_gzhandler');

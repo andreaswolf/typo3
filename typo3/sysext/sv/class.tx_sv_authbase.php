@@ -29,23 +29,6 @@
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   62: class tx_sv_authbase extends t3lib_svbase
- *   87:     function initAuth($mode, $loginData, $authInfo, &$pObj)
- *  110:     function compareUident($user, $loginData, $security_level='')
- *  129:     function writelog($type,$action,$error,$details_nr,$details,$data,$tablename='',$recuid='',$recpid='')
- *
- *              SECTION: create/update user - EXPERIMENTAL
- *  158:     function fetchUserRecord($username, $extraWhere='', $dbUserSetup='')
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 require_once(PATH_t3lib . 'class.t3lib_svbase.php');
 
@@ -69,8 +52,8 @@ class tx_sv_authbase extends t3lib_svbase 	{
 	var $db_user = array();		// User db table definition
 	var $db_groups = array();	// Usergroups db table definition
 
-	var $writeAttemptLog = false;	// If the writelog() functions is called if a login-attempt has be tried without success
-	var $writeDevLog = false;	// If the t3lib_div::devLog() function should be used
+	var $writeAttemptLog = FALSE;	// If the writelog() functions is called if a login-attempt has be tried without success
+	var $writeDevLog = FALSE;	// If the t3lib_div::devLog() function should be used
 
 
 	/**
@@ -103,7 +86,7 @@ class tx_sv_authbase extends t3lib_svbase 	{
 	 * @param	array		user data array
 	 * @param	array		login data array
 	 * @param	string		security_level
-	 * @return	boolean		true if login data matched
+	 * @return	boolean		TRUE if login data matched
 	 */
 	function compareUident($user, $loginData, $security_level='') {
 		return $this->pObj->compareUident($user, $loginData, $security_level);
@@ -151,7 +134,7 @@ class tx_sv_authbase extends t3lib_svbase 	{
 	 * @param	string		user name
 	 * @param	string		additional WHERE clause: " AND ...
 	 * @param	array		User db table definition: $this->db_user
-	 * @return	mixed		user array or false
+	 * @return	mixed		user array or FALSE
 	 */
 	function fetchUserRecord($username, $extraWhere='', $dbUserSetup='')	{
 

@@ -27,31 +27,10 @@
 /**
  * Library with a single function addElement that returns tablerows based on some input.
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   80: class t3lib_recordList
- *  123:	 function addElement($h,$icon,$data,$tdParams='',$lMargin='',$altLine='')
- *  198:	 function writeTop()
- *  206:	 function writeBottom()
- *  225:	 function fwd_rwd_nav($table='')
- *  258:	 function fwd_rwd_HTML($type,$pointer,$table='')
- *  284:	 function listURL($altId='')
- *  294:	 function CBfunctions()
- *  344:	 function initializeLanguages()
- *  411:	 function languageFlag($sys_language_uid)
- *
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -70,7 +49,6 @@ class t3lib_recordList {
 	var $leftMargin = 0; // OBSOLETE - NOT USED ANYMORE. leftMargin
 	var $showIcon = 1;
 	var $no_noWrap = 0;
-	var $oddColumnsTDParams = ''; // Deprecated since TYPO3 4.2, remove in 4.4. If set this is <td>-params for odd columns in addElement. Used with db_layout / pages section
 	var $oddColumnsCssClass = ''; // If set this is <td> CSS-classname for odd columns in addElement. Used with db_layout / pages section
 	var $backPath = '';
 	var $fieldArray = Array(); // Decides the columns shown. Filled with values that refers to the keys of the data-array. $this->fieldArray[0] is the title column.
@@ -344,7 +322,6 @@ class t3lib_recordList {
 	 * @return	void
 	 */
 	function initializeLanguages() {
-		global $TCA, $LANG;
 
 			// Look up page overlays:
 		$this->pageOverlays = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(

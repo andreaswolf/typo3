@@ -27,63 +27,10 @@
 /**
  * Contains class for TYPO3 clipboard for records and files
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   97: class t3lib_clipboard
- *
- *			  SECTION: Initialize
- *  150:	 function initializeClipboard()
- *  179:	 function lockToNormal()
- *  196:	 function setCmd($cmd)
- *  243:	 function setCurrentPad($padIdent)
- *  258:	 function endClipboard()
- *  271:	 function cleanUpCBC($CBarr,$table,$removeDeselected=0)
- *
- *			  SECTION: Clipboard HTML renderings
- *  306:	 function printClipboard()
- *  413:	 function printContentFromTab($pad)
- *  487:	 function padTitleWrap($str,$pad)
- *  504:	 function linkItemText($str,$rec,$table='')
- *  531:	 function selUrlDB($table,$uid,$copy=0,$deselect=0,$baseArray=array())
- *  547:	 function selUrlFile($path,$copy=0,$deselect=0,$baseArray=array())
- *  564:	 function pasteUrl($table,$uid,$setRedirect=1)
- *  581:	 function deleteUrl($setRedirect=1,$file=0)
- *  598:	 function editUrl()
- *  619:	 function removeUrl($table,$uid)
- *  632:	 function confirmMsg($table,$rec,$type,$clElements)
- *  680:	 function clLabel($key,$Akey='labels')
- *  689:	 function exportClipElementParameters()
- *
- *			  SECTION: Helper functions
- *  739:	 function removeElement($el)
- *  751:	 function saveClipboard()
- *  761:	 function currentMode()
- *  771:	 function cleanCurrent()
- *  798:	 function elFromTable($matchTable='',$pad='')
- *  829:	 function isSelected($table,$uid)
- *  843:	 function getSelectedRecord($table='',$uid='')
- *  861:	 function isElements()
- *
- *			  SECTION: FOR USE IN tce_db.php:
- *  902:	 function makePasteCmdArray($ref,$CMD)
- *  931:	 function makeDeleteCmdArray($CMD)
- *
- *			  SECTION: FOR USE IN tce_file.php:
- *  974:	 function makePasteCmdArray_file($ref,$FILE)
- *  996:	 function makeDeleteCmdArray_file($FILE)
- *
- * TOTAL FUNCTIONS: 31
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -137,17 +84,15 @@ class t3lib_clipboard {
 	 * @return	void
 	 */
 	function initializeClipboard() {
-		global $BE_USER;
-
 		$this->backPath = $GLOBALS['BACK_PATH'];
 
 			// Get data
-		$clipData = $BE_USER->getModuleData('clipboard', $BE_USER->getTSConfigVal('options.saveClipboard') ? '' : 'ses');
+		$clipData = $GLOBALS['BE_USER']->getModuleData('clipboard', $GLOBALS['BE_USER']->getTSConfigVal('options.saveClipboard') ? '' : 'ses');
 
 			// NumberTabs
-		$clNP = $BE_USER->getTSConfigVal('options.clipboardNumberPads');
-		if (t3lib_div::testInt($clNP) && $clNP >= 0) {
-			$this->numberTabs = t3lib_div::intInRange($clNP, 0, 20);
+		$clNP = $GLOBALS['BE_USER']->getTSConfigVal('options.clipboardNumberPads');
+		if (t3lib_utility_Math::canBeInterpretedAsInteger($clNP) && $clNP >= 0) {
+			$this->numberTabs = t3lib_utility_Math::forceIntegerInRange($clNP, 0, 20);
 		}
 
 			// Resets/reinstates the clipboard pads
@@ -289,8 +234,6 @@ class t3lib_clipboard {
 	 * @return	string		HTML output
 	 */
 	function printClipboard() {
-		global $TBE_TEMPLATE, $LANG;
-
 		$out = array();
 		$elCount = count($this->elFromTable($this->fileMode ? '_FILE' : ''));
 
@@ -329,7 +272,7 @@ class t3lib_clipboard {
 		if ($elCount) {
 			if ($GLOBALS['BE_USER']->jsConfirmation(4)) {
 				$js = "
-			if(confirm(" . $GLOBALS['LANG']->JScharCode(sprintf($LANG->sL('LLL:EXT:lang/locallang_core.php:mess.deleteClip'), $elCount)) . ")){
+			if(confirm(" . $GLOBALS['LANG']->JScharCode(sprintf($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:mess.deleteClip'), $elCount)) . ")){
 				window.location.href='" . $this->deleteUrl(0, $this->fileMode ? 1 : 0) . "&redirect='+top.rawurlencode(window.location.href);
 			}
 					";
@@ -353,7 +296,7 @@ class t3lib_clipboard {
 				'</td>
 				<td>' .
 				'<a href="' . htmlspecialchars($rmall_url) . '#clip_head">' .
-				t3lib_iconWorks::getSpriteIcon('actions-document-close', array('title' => $LANG->sL('LLL:EXT:lang/locallang_core.php:buttons.clear', TRUE))) .
+				t3lib_iconWorks::getSpriteIcon('actions-document-close', array('title' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:buttons.clear', TRUE))) .
 				'</a></td>
 			</tr>';
 
@@ -409,8 +352,6 @@ class t3lib_clipboard {
 	 * @access private
 	 */
 	function printContentFromTab($pad) {
-		global $TBE_TEMPLATE;
-
 		$lines = array();
 		if (is_array($this->clipData[$pad]['el'])) {
 			foreach ($this->clipData[$pad]['el'] as $k => $v) {
@@ -707,8 +648,7 @@ class t3lib_clipboard {
 			if ($table == '_FILE') {
 				$thisRecTitle = basename($rec);
 				if ($this->current == 'normal') {
-					reset($clElements);
-					$selItem = current($clElements);
+					$selItem = reset($clElements);
 					$selRecTitle = basename($selItem);
 				} else {
 					$selRecTitle = count($clElements);
@@ -812,8 +752,7 @@ class t3lib_clipboard {
 	 * @access private
 	 */
 	function saveClipboard() {
-		global $BE_USER;
-		$BE_USER->pushModuleData('clipboard', $this->clipData);
+		$GLOBALS['BE_USER']->pushModuleData('clipboard', $this->clipData);
 	}
 
 	/**
@@ -917,7 +856,7 @@ class t3lib_clipboard {
 	/**
 	 * Reports if the current pad has elements (does not check file/DB type OR if file/DBrecord exists or not. Only counting array)
 	 *
-	 * @return	boolean		True if elements exist.
+	 * @return	boolean		TRUE if elements exist.
 	 */
 	function isElements() {
 		return is_array($this->clipData[$this->current]['el']) && count($this->clipData[$this->current]['el']);

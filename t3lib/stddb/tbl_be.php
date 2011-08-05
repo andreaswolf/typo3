@@ -27,7 +27,6 @@
 /**
  * Contains the dynamic configuation of the fields in the core tables of TYPO3: be_users, be_groups and sys_filemounts
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -248,18 +247,17 @@ $TCA['be_users'] = array(
 				'type' => 'check',
 				'items' => array(
 					array('LLL:EXT:lang/locallang_tca.xml:workspace_perms_live', 0),
-					array('LLL:EXT:lang/locallang_tca.xml:workspace_perms_draft', 0),
 				),
-				'default' => 3
+				'default' => 1
 			)
 		),
 		'starttime' => array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.starttime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0',
 			)
 		),
@@ -267,9 +265,9 @@ $TCA['be_users'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.endtime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0',
 				'range' => array(
 					'upper' => mktime(0, 0, 0, 12, 31, 2020),
@@ -285,38 +283,38 @@ $TCA['be_users'] = array(
 					array('Albanian', 'sq'),
 					array('Arabic', 'ar'),
 					array('Basque', 'eu'),
-					array('Bosnian', 'ba'),
-					array('Brazilian Portuguese', 'br'),
+					array('Bosnian', 'bs'),
+					array('Brazilian Portuguese', 'pt_BR'),
 					array('Bulgarian', 'bg'),
 					array('Catalan', 'ca'),
 					array('Chinese (Simpl.)', 'ch'),
-					array('Chinese (Trad.)', 'hk'),
+					array('Chinese (Trad.)', 'zh'),
 					array('Croatian', 'hr'),
-					array('Czech', 'cz'),
-					array('Danish', 'dk'),
+					array('Czech', 'cs'),
+					array('Danish', 'da'),
 					array('Dutch', 'nl'),
 					array('Esperanto', 'eo'),
 					array('Estonian', 'et'),
 					array('Faroese', 'fo'),
 					array('Finnish', 'fi'),
 					array('French', 'fr'),
-					array('French (Canada)', 'qc'),
-					array('Galician', 'ga'),
-					array('Georgian', 'ge'),
+					array('French (Canada)', 'fr_CA'),
+					array('Galician', 'gl'),
+					array('Georgian', 'ka'),
 					array('German', 'de'),
-					array('Greek', 'gr'),
-					array('Greenlandic', 'gl'),
+					array('Greek', 'el'),
+					array('Greenlandic', 'kl'),
 					array('Hebrew', 'he'),
 					array('Hindi', 'hi'),
 					array('Hungarian', 'hu'),
 					array('Icelandic', 'is'),
 					array('Italian', 'it'),
-					array('Japanese', 'jp'),
+					array('Japanese', 'ja'),
 					array('Khmer', 'km'),
-					array('Korean', 'kr'),
+					array('Korean', 'ko'),
 					array('Latvian', 'lv'),
 					array('Lithuanian', 'lt'),
-					array('Malay', 'my'),
+					array('Malay', 'ms'),
 					array('Norwegian', 'no'),
 					array('Persian', 'fa'),
 					array('Polish', 'pl'),
@@ -325,13 +323,13 @@ $TCA['be_users'] = array(
 					array('Russian', 'ru'),
 					array('Serbian', 'sr'),
 					array('Slovak', 'sk'),
-					array('Slovenian', 'si'),
+					array('Slovenian', 'sl'),
 					array('Spanish', 'es'),
-					array('Swedish', 'se'),
+					array('Swedish', 'sv'),
 					array('Thai', 'th'),
 					array('Turkish', 'tr'),
-					array('Ukrainian', 'ua'),
-					array('Vietnamese', 'vn'),
+					array('Ukrainian', 'uk'),
+					array('Vietnamese', 'vi'),
 				)
 			)
 		),
@@ -509,7 +507,6 @@ $TCA['be_groups'] = array(
 				'type' => 'check',
 				'items' => array(
 					array('LLL:EXT:lang/locallang_tca.xml:workspace_perms_live', 0),
-					array('LLL:EXT:lang/locallang_tca.xml:workspace_perms_draft', 0),
 				),
 				'default' => 0
 			)
@@ -826,9 +823,9 @@ $TCA['sys_news'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.starttime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0'
 			)
 		),
@@ -837,9 +834,9 @@ $TCA['sys_news'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.endtime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0'
 			)
 		),

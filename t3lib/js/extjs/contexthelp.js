@@ -1,7 +1,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Steffen Kamper <steffen@typo3.org>
+ *  (c) 2010-2011 Steffen Kamper <steffen@typo3.org>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -100,6 +100,9 @@ TYPO3.ContextHelp = function() {
 		tip.body.dom.innerHTML = response.description;
 		tip.cshLink = response.id;
 		tip.moreInfo = response.moreInfo;
+		if (tip.moreInfo) {
+			tip.addClass('tipIsLinked');
+		}
 		tip.setTitle(response.title);
 		tip.doAutoWidth();
 	}

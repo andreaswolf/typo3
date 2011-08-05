@@ -31,20 +31,6 @@
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 /**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   58: class tx_lowlevel_double_files extends tx_lowlevel_cleaner_core
- *   67:     function tx_lowlevel_double_files()
- *   99:     function main()
- *  182:     function main_autoFix($resultArray)
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
-/**
  * Looking for double files
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -60,8 +46,8 @@ class tx_lowlevel_double_files extends tx_lowlevel_cleaner_core {
 	 *
 	 * @return	void
 	 */
-	function tx_lowlevel_double_files()	{
-		parent::tx_lowlevel_cleaner_core();
+	function __construct()	{
+		parent::__construct();
 
 			// Setting up help:
 		$this->cli_help['name'] = 'double_files -- Looking for files from TYPO3 managed records which are referenced more than one time (only one time allowed)';
@@ -84,6 +70,19 @@ Manual repair suggestions:
 
 		$this->cli_help['examples'] = '/.../cli_dispatch.phpsh lowlevel_cleaner double_files -s -r
 This will check the system for double files relations.';
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tx_lowlevel_double_files() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tx_lowlevel_double_files::__construct();
 	}
 
 	/**

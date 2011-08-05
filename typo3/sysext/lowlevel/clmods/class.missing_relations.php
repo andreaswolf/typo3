@@ -30,20 +30,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   56: class tx_lowlevel_missing_relations extends tx_lowlevel_cleaner_core
- *   65:     function tx_lowlevel_missing_relations()
- *  101:     function main()
- *  173:     function main_autoFix($resultArray)
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 /**
@@ -62,8 +48,8 @@ class tx_lowlevel_missing_relations extends tx_lowlevel_cleaner_core {
 	 *
 	 * @return	void
 	 */
-	function tx_lowlevel_missing_relations()	{
-		parent::tx_lowlevel_cleaner_core();
+	function __construct()	{
+		parent::__construct();
 
 			// Setting up help:
 		$this->cli_help['name'] = 'missing_relations -- Find all record references pointing to a non-existing record.';
@@ -91,6 +77,18 @@ NOTICE: Uses the Reference Index Table (sys_refindex) for analysis. Update it be
 Reports missing relations';
 	}
 
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tx_lowlevel_missing_relations() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tx_lowlevel_missing_relations::__construct();
+	}
 
 	/**
 	 * Find relations pointing to non-existing records

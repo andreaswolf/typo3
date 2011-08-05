@@ -26,30 +26,11 @@
 ***************************************************************/
 /**
  * Form-data processing
- * included from index_ts.php
+ * Included from index_ts.php
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   83: class tslib_feTCE
- *  100:     function start($data,$FEData)
- *  187:     function checkDoublePostExist($table,$doublePostField,$key)
- *  200:     function calcDoublePostKey($array)
- *  212:     function includeScripts()
- *  232:     function execNEWinsert($table, $dataArr)
- *  258:     function clear_cacheCmd($cacheCmd)
- *  274:     function getConf($table)
- *
- * TOTAL FUNCTIONS: 7
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -77,7 +58,7 @@
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package TYPO3
  * @subpackage tslib
- * @deprecated since TYPO3 3.6
+ * @deprecated since TYPO3 3.6, will be removed in TYPO3 4.8
  */
 class tslib_feTCE	{
 
@@ -85,6 +66,10 @@ class tslib_feTCE	{
 	var $extScriptsConf=array();
 	var $newData=array();
 	var $extraList = 'pid';
+
+	public function __construct() {
+		t3lib_div::logDeprecatedFunction();
+	}
 
 	/**
 	 * Starting the processing of user input.
@@ -217,7 +202,7 @@ class tslib_feTCE	{
 	/**
 	 * Method available to the submit scripts for creating insert queries.
 	 * Automatically adds tstamp, crdate, cruser_id field/value pairs.
-	 * Will allow only field names which are either found in $TCA[...][columns] OR in the $this->extraList
+	 * Will allow only field names which are either found in $GLOBALS['TCA'][...][columns] OR in the $this->extraList
 	 * Executes an insert query!
 	 *
 	 * @param	string		The table name for which to create the insert statement
@@ -236,7 +221,11 @@ class tslib_feTCE	{
 			$dataArr[$field] = $GLOBALS['EXEC_TIME'];
 			$extraList .= ',' . $field;
 		}
-		if ($GLOBALS['TCA'][$table]['ctrl']['cruser_id'])	{$field=$GLOBALS['TCA'][$table]['ctrl']['cruser_id']; $dataArr[$field]=0; $extraList.=','.$field;}
+		if ($GLOBALS['TCA'][$table]['ctrl']['cruser_id']) {
+			$field = $GLOBALS['TCA'][$table]['ctrl']['cruser_id'];
+			$dataArr[$field] = 0;
+			$extraList .= ',' . $field;
+		}
 
 		unset($dataArr['uid']);	// uid can never be set
 		$insertFields = array();
@@ -262,15 +251,10 @@ class tslib_feTCE	{
 		$cacheCmd = intval($cacheCmd);
 
 		if ($cacheCmd)	{
-			if (TYPO3_UseCachingFramework) {
-				$pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages');
-				$pageCache->flushByTag('pageId_' . $cacheCmd);
-			} else {
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id = ' . $cacheCmd);
-			}
+			$pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages')->flushByTag('pageId_' . $cacheCmd);
 
 			if ($cacheCmd == intval($GLOBALS['TSFE']->id)) {
-					// Setting no_cache true if the cleared-cache page is the current page!
+					// Setting no_cache TRUE if the cleared-cache page is the current page!
 				$GLOBALS['TSFE']->set_no_cache();
 			}
 		}

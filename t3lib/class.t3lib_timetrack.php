@@ -27,41 +27,10 @@
 /**
  * Contains class with time tracking functions
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author  Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   88: class t3lib_timeTrack
- *
- *			  SECTION: Logging parsing times in the scripts
- *  144:	 function start()
- *  164:	 function push($tslabel, $value='')
- *  189:	 function pull($content='')
- *  207:	 function setTSlogMessage($content,$num=0)
- *  221:	 function setTSselectQuery($query,$msg)
- *  234:	 function incStackPointer()
- *  245:	 function decStackPointer()
- *  255:	 function mtime()
- *  265:	 function convertMicrotime($microtime)
- *
- *			  SECTION: Printing the parsing time information (for Admin Panel)
- *  298:	 function printTSlog()
- *  447:	 function fixContent(&$arr, $content, $depthData='', $first=0, $vKey='')
- *  511:	 function fixCLen($c,$v)
- *  527:	 function fw($str)
- *  541:	 function createHierarchyArray(&$arr,$pointer,$uniqueId)
- *  561:	 function debug_typo3PrintError($header,$text,$js,$baseUrl='')
- *
- * TOTAL FUNCTIONS: 15
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -282,6 +251,7 @@ class t3lib_timeTrack {
 				$data['key'] = implode($data['stackPointer'] ? '.' : '/', end($data['tsStack']));
 			}
 		}
+		unset($data);
 
 			// Create hierarchical array of keys pointing to the stack
 		$arr = array();
@@ -366,7 +336,7 @@ class t3lib_timeTrack {
 
 				// key value:
 			$keyValue = $data['value'];
-			$item .= '<td class="' . $logRowClass . ' typo3-adminPanel-tsLogTime" style="' . $bgColor . '">' . $this->fw(htmlspecialchars($keyValue)) . '</td>';
+			$item .= '<td class="' . $logRowClass . ' typo3-adminPanel-tsLogTime">' . $this->fw(htmlspecialchars($keyValue)) . '</td>';
 
 			if ($this->printConf['allTime']) {
 				$item .= '<td class="' . $logRowClass . ' typo3-adminPanel-tsLogTime"> ' . $this->fw($data['starttime']) . '</td>';
@@ -425,14 +395,14 @@ class t3lib_timeTrack {
 		$c = 0;
 			// First, find number of entries
 		foreach ($arr as $k => $v) {
-			if (t3lib_div::testInt($k)) {
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($k)) {
 				$ac++;
 			}
 		}
 			// Traverse through entries
 		$subtime = 0;
 		foreach ($arr as $k => $v) {
-			if (t3lib_div::testInt($k)) {
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($k)) {
 				$c++;
 
 				$deeper = is_array($arr[$k . '.']) ? 1 : 0;
@@ -464,7 +434,7 @@ class t3lib_timeTrack {
 
 			// Traverse array again, this time substitute the unique hash with the red key
 		foreach ($arr as $k => $v) {
-			if (t3lib_div::testInt($k)) {
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($k)) {
 				if (strlen($this->tsStackLog[$v]['content'])) {
 					$content = str_replace($v, '<strong style="color:red;">[' . $this->tsStackLog[$v]['key'] . ']</strong>', $content);
 				}

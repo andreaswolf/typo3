@@ -32,19 +32,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   67: class tx_impexp_clickmenu
- *   79:     function main(&$backRef,$menuItems,$table,$uid)
- *  121:     function includeLL()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 
@@ -77,8 +64,6 @@ class tx_impexp_clickmenu {
 	 * @todo	Skinning for icons...
 	 */
 	function main(&$backRef,$menuItems,$table,$uid)	{
-		global $BE_USER,$TCA;
-
 		$localItems=array();
 		if (($backRef->cmLevel && t3lib_div::_GP('subname')=='moreoptions') || ($table==='pages' && $uid==0))	{	// Show import/export on second level menu OR root level.
 

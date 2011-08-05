@@ -29,9 +29,9 @@
 /**
  * Contains HTML class object.
  *
- * $Id: class.tslib_content.php 7905 2010-06-13 14:42:33Z ohader $
  * @author Xavier Perseguers <typo3@perseguers.ch>
  * @author Steffen Kamper <steffen@typo3.org>
+ * @deprecated since TYPO3 4.6, will be removed in TYPO3 4.8 - use TEXT from now on
  */
 class tslib_content_Html extends tslib_content_Abstract {
 
@@ -42,6 +42,7 @@ class tslib_content_Html extends tslib_content_Abstract {
 	 * @return	string		Output
 	 */
 	public function render($conf = array()) {
+		t3lib_div::logDeprecatedFunction();
 
 		$theValue = $conf['value'];
 
@@ -54,9 +55,7 @@ class tslib_content_Html extends tslib_content_Abstract {
 		}
 
 		return $theValue;
-
 	}
-
 }
 
 

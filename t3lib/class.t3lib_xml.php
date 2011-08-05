@@ -27,38 +27,9 @@
 /**
  * Contains class for creating XML output from records
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   86: class t3lib_xml
- *  102:	 function t3lib_xml($topLevelName)
- *  113:	 function setRecFields($table,$list)
- *  122:	 function getResult()
- *  132:	 function WAPHeader()
- *  144:	 function renderHeader()
- *  155:	 function renderFooter()
- *  167:	 function newLevel($name,$beginEndFlag=0,$params=array())
- *  192:	 function output($content)
- *  208:	 function indent($b)
- *  224:	 function renderRecords($table,$res)
- *  237:	 function addRecord($table,$row)
- *  255:	 function getRowInXML($table,$row)
- *  271:	 function utf8($content)
- *  281:	 function substNewline($string)
- *  292:	 function fieldWrap($field,$value)
- *  301:	 function WAPback()
- *  315:	 function addLine($str)
- *
- * TOTAL FUNCTIONS: 17
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -88,8 +59,22 @@ class t3lib_xml {
 	 * @param	string		Top Level Name
 	 * @return	void
 	 */
-	function t3lib_xml($topLevelName) {
+	function __construct($topLevelName) {
 		$this->topLevelName = $topLevelName;
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @param string Top Level Name
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function t3lib_xml($topLevelName) {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		t3lib_xml::__construct($topLevelName);
 	}
 
 	/**
@@ -149,7 +134,7 @@ class t3lib_xml {
 	 * Indents/Outdents a new level named, $name
 	 *
 	 * @param	string		The name of the new element for this level
-	 * @param	boolean		If false, then this function call will *end* the level, otherwise create it.
+	 * @param	boolean		If FALSE, then this function call will *end* the level, otherwise create it.
 	 * @param	array		Array of attributes in key/value pairs which will be added to the element (tag), $name
 	 * @return	void
 	 */
@@ -190,7 +175,7 @@ class t3lib_xml {
 	 * Increments/Decrements Indentation counter, ->XMLIndent
 	 * Sets and returns ->Icode variable which is a line prefix consisting of a number of tab-chars corresponding to the indent-levels of the current posision (->XMLindent)
 	 *
-	 * @param	boolean		If true the XMLIndent var is increased, otherwise decreased
+	 * @param	boolean		If TRUE the XMLIndent var is increased, otherwise decreased
 	 * @return	string		->Icode - the prefix string with TAB-chars.
 	 */
 	function indent($b) {

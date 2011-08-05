@@ -27,35 +27,9 @@
 /**
  * Contains class for creating WAP pages for TYPO3
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  129: class user_wapversion
- *  141:     function main_wapversion($content,$conf)
- *  200:     function contentAbstract()
- *  217:     function contentAll($chunkLgd=850)
- *  277:     function cHeader($str)
- *  291:     function cBodytext($str,$start=0,$max=0)
- *  303:     function nl2br($str)
- *  314:     function getContentResult($table)
- *  329:     function bold($str)
- *  339:     function paragraph($str)
- *  349:     function line($str)
- *  360:     function navLink($str,$pointer)
- *  370:     function menuCurrentLevel($indent)
- *  405:     function link($str,$id,$deck='')
- *  421:     function cleanMenuArray($menu)
- *
- * TOTAL FUNCTIONS: 14
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 /**
  * Class that creates the current page and content element records as an WML structure using the library "t3lib_xml"
@@ -134,7 +108,7 @@ class user_wapversion {
 			));
 
 			$cParts = $this->contentAll();
-			$pointer = t3lib_div::intInRange($GLOBALS['TSFE']->idParts[1],1,10000);
+			$pointer = t3lib_utility_Math::forceIntegerInRange($GLOBALS['TSFE']->idParts[1],1,10000);
 
 			$msg='';
 			if ($pointer-1)	{$msg.=$this->navLink(htmlspecialchars($conf['navLabels.']['prev']),$pointer-1).' ';}
@@ -281,13 +255,14 @@ class user_wapversion {
 	 * Selects all records from $table having the current page id as PID (records belonging to that page)
 	 * Used to select content elements from "tt_content"
 	 *
-	 * @param	string		A tablename found in $TCA
+	 * @param	string		A tablename found in $GLOBALS['TCA']
 	 * @return	pointer		A database resource pointer
 	 */
 	function getContentResult($table) {
-		global $TCA;
-		if ($TCA[$table])	{
-			$orderBy = $TCA[$table]['ctrl']['sortby'] ? 'ORDER BY '.$TCA[$table]['ctrl']['sortby'] : $TCA[$table]['ctrl']['default_sortby'];
+		if ($GLOBALS['TCA'][$table])	{
+			$orderBy = ($GLOBALS['TCA'][$table]['ctrl']['sortby']
+				? 'ORDER BY '.$GLOBALS['TCA'][$table]['ctrl']['sortby']
+				: $GLOBALS['TCA'][$table]['ctrl']['default_sortby']);
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, 'pid='.intval($GLOBALS['TSFE']->id).$this->cObj->enableFields($table), '', $GLOBALS['TYPO3_DB']->stripOrderBy($orderBy));
 			return $res;
 		}
@@ -384,16 +359,17 @@ class user_wapversion {
 	}
 
 	/**
-	 * Cleaning up the menu array returned from sys_page->getMenu(). Removing page types with doktype "5" (not in menu)
+	 * Cleaning up the menu array returned from sys_page->getMenu().
+	 * Removing pages having "not in menu" set.
 	 *
 	 * @param	array		Menu item array
-	 * @return	array		New menu item array with doktype-5 elements removed.
+	 * @return	array		New menu item array with "not in menu" elements removed.
 	 */
 	function cleanMenuArray($menu)	{
 		reset($menu);
 		$newMenu=array();
 		while(list(,$data)=each($menu))	{
-			if ($data['doktype'] != t3lib_pageSelect::DOKTYPE_HIDE_IN_MENU && !$data['nav_hide']) {
+			if (!$data['nav_hide']) {
 				$newMenu[]=$data;
 			}
 		}

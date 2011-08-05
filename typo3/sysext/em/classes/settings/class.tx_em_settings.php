@@ -27,8 +27,6 @@
 /**
  * Module: Extension manager, developer module
  *
- * $Id: class.tx_em_settings.php 2089 2010-03-22 12:03:25Z steffenk $
- *
  * @author	Steffen Kamper <info@sk-typo3.de>
  */
 
@@ -202,7 +200,14 @@ class tx_em_Settings implements t3lib_Singleton {
 			$url = 'http://' . $mirrors[$rand]['host'] . $mirrors[$rand]['path'];
 		}
 		else {
-			$url = 'http://' . $mirrors[$this->settings['selectedMirror']]['host'] . $mirrors[$this->settings['selectedMirror']]['path'];
+			$selectedMirror = NULL;
+			foreach ($mirrors as $mirror) {
+				if ($mirror['host'] === $this->settings['selectedMirror']) {
+					$selectedMirror = $mirror;
+					break;
+				}
+			}
+			$url = 'http://' . $selectedMirror['host'] . $selectedMirror['path'];
 		}
 
 		return $url;

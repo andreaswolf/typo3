@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 TYPO3 Tree Team <http://forge.typo3.org/projects/typo3v4-extjstrees>
+*  (c) 2010-2011 Stefan Galinski <stefan.galinski@gmail.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -247,8 +247,7 @@ TYPO3.Components.PageTree.Actions = {
 	 * @return {void}
 	 */
 	collapseBranch: function(node) {
-		node.collapseChildNodes(true);
-		node.collapse();
+		node.collapse(true);
 	},
 
 	/**
@@ -258,8 +257,7 @@ TYPO3.Components.PageTree.Actions = {
 	 * @return {void}
 	 */
 	expandBranch: function(node) {
-		node.expand();
-		node.expandChildNodes(true);
+		node.expand(true);
 	},
 
 	/**
@@ -381,7 +379,7 @@ TYPO3.Components.PageTree.Actions = {
 		TYPO3.Backend.ContentContainer.setUrl(
 			'sysext/impexp/app/index.php?tx_impexp[action]=export&' +
 				'id=0&tx_impexp[pagetree][id]=' + node.attributes.nodeData.id +
-				'&tx_impexp[pagetree][levels]=' + node.attributes.nodeData.id +
+				'&tx_impexp[pagetree][levels]=0' +
 				'&tx_impexp[pagetree][tables][]=_ALL'
 		);
 	},
@@ -691,6 +689,8 @@ TYPO3.Components.PageTree.Actions = {
 	 * @return {void}
 	 */
 	singleClick: function(node, tree) {
+		tree.currentSelectedNode = node;
+
 		var separator = '?';
 		if (currentSubScript.indexOf('?') !== -1) {
 			separator = '&';
@@ -703,8 +703,8 @@ TYPO3.Components.PageTree.Actions = {
 
 		fsMod.recentIds['web'] = node.attributes.nodeData.id;
 
-		TYPO3.Backend.ContentContainer.setUrl(
-			TS.PATH_typo3 + currentSubScript + separator + 'id=' + node.attributes.nodeData.id
+		TYPO3.ModuleMenu.App.openInContentFrame(
+			currentSubScript + separator + 'id=' + node.attributes.nodeData.id
 		);
 	},
 
@@ -717,7 +717,6 @@ TYPO3.Components.PageTree.Actions = {
 	 * @return {void}
 	 */
 	openCustomUrlInContentFrame: function(node, tree, contextItem) {
-		console.log(contextItem);
 		if (!contextItem.customAttributes || !contextItem.customAttributes.contentUrl) {
 			return;
 		}

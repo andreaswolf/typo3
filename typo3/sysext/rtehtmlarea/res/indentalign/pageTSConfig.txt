@@ -1,9 +1,7 @@
 # ***************************************************************************************
 # Compatibility configuration for indentation and alignment
 #
-# @author	Stanislas Rolland <stanislas.rolland(arobas)fructifor.ca>
-#
-# TYPO3 SVN ID: $Id$
+# @author	Stanislas Rolland <typo3(arobas)sjbr.ca>
 # ***************************************************************************************
 
 	## Default RTE configuration

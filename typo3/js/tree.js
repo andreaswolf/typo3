@@ -6,7 +6,7 @@
 *
 *  Copyright notice
 *
-*  (c) 2006-2010 Benjamin Mack <benni@typo3.org>
+*  (c) 2006-2011 Benjamin Mack <benni@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 t3lib/ library provided by
@@ -19,8 +19,6 @@
 *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 *
 *  This copyright notice MUST APPEAR in all copies of this script
-*
-*  TYPO3 SVN ID: $Id$
 *
 ***************************************************************/
 
@@ -309,6 +307,7 @@ function refresh_nav() {
 // Deprecated since 4.1.
 // Another JS function, for highlighting rows in the page tree, kept alive for backwards
 // compatibility. Please use the function in the "Tree" object for future implementations.
+// Still used in Core file_list.inc::linkWrapDir()
 function hilight_row(frameSetModule, highLightID) {
 	Tree.highlightActiveItem(frameSetModule, highLightID);
 }

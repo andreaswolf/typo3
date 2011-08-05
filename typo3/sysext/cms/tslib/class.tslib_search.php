@@ -29,34 +29,10 @@
  * Used to generate search queries for TypoScript.
  * The class is included from "class.tslib_pagegen.php" based on whether there has been detected content in the GPvar "sword"
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	René Fritz	<r.fritz@colorcube.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   88: class tslib_search
- *  127:     function register_tables_and_columns($requestedCols,$allowedCols)
- *  168:     function explodeCols($in)
- *  193:     function register_and_explode_search_string($sword)
- *  226:     function split($origSword, $specchars='+-', $delchars='+.,-')
- *  269:     function quotemeta($str)
- *  285:     function build_search_query($endClause)
- *  371:     function build_search_query_for_searchwords()
- *  413:     function get_operator($operator)
- *  436:     function count_query()
- *  449:     function execute_query()
- *  462:     function get_searchwords()
- *  477:     function get_searchwordsArray()
- *
- * TOTAL FUNCTIONS: 12
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -224,15 +200,15 @@ class tslib_search {
 	 */
 	function split($origSword, $specchars='+-', $delchars='+.,-')	{
 		$sword = $origSword;
-		$specs = '['.$this->quotemeta($specchars).']';
+		$specs = '[' . preg_quote($specchars, '/') . ']';
 
-			// As long as $sword is true (that means $sword MUST be reduced little by little until its empty inside the loop!)
+			// As long as $sword is TRUE (that means $sword MUST be reduced little by little until its empty inside the loop!)
 		while ($sword)	{
 			if (preg_match('/^"/',$sword))	{		// There was a double-quote and we will then look for the ending quote.
 				$sword = preg_replace('/^"/','',$sword);		// Removes first double-quote
 				preg_match('/^[^"]*/',$sword,$reg);  // Removes everything till next double-quote
 				$value[] = $reg[0];  // reg[0] is the value, should not be trimmed
-				$sword = preg_replace('/^'.$this->quotemeta($reg[0]).'/','',$sword);
+				$sword = preg_replace('/^' . preg_quote($reg[0], '/') . '/', '', $sword);
 				$sword = trim(preg_replace('/^"/','',$sword));		// Removes last double-quote
 			} elseif (preg_match('/^'.$specs.'/',$sword,$reg)) {
 				$value[] = $reg[0];
@@ -247,10 +223,10 @@ class tslib_search {
 				$sword = implode(' ',$a_sword);	// re-build $sword
 			} else {
 					// There are no double-quotes around the value. Looking for next (space) or special char.
-				preg_match('/^[^ '.$this->quotemeta($specchars).']*/',$sword,$reg);
+				preg_match('/^[^ ' . preg_quote($specchars, '/') . ']*/', $sword, $reg);
 				$word = rtrim(trim($reg[0]), $delchars);		// Delete $delchars at end of string
 				$value[] = $word;
-				$sword = trim(preg_replace('/^'.$this->quotemeta($reg[0]).'/','',$sword));
+				$sword = trim(preg_replace('/^' . preg_quote($reg[0], '/') . '/', '', $sword));
 			}
 		}
 
@@ -261,10 +237,13 @@ class tslib_search {
 	 * Local version of quotemeta. This is the same as the PHP function
 	 * but the vertical line, |, and minus, -, is also escaped with a slash.
 	 *
+	 * @deprecated This function is deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Please, use preg_quote() instead.
 	 * @param	string		String to pass through quotemeta()
 	 * @return	string		Return value
 	 */
-	function quotemeta($str)	{
+	function quotemeta($str) {
+		t3lib_div::logDeprecatedFunction();
+
 		$str = str_replace('|','\|',quotemeta($str));
 		#$str = str_replace('-','\-',$str);		// Breaks "-" which should NOT have a slash before it inside of [ ] in a regex.
 		return $str;
@@ -276,7 +255,7 @@ class tslib_search {
 	 * Sets $this->queryParts
 	 *
 	 * @param	string		$endClause is some extra conditions that the search must match.
-	 * @return	boolean		Returns true no matter what - sweet isn't it!
+	 * @return	boolean		Returns TRUE no matter what - sweet isn't it!
 	 * @access private
 	 * @see	tslib_cObj::SEARCHRESULT()
 	 */
@@ -428,7 +407,7 @@ class tslib_search {
 	/**
 	 * Counts the results and sets the result in $this->res_count
 	 *
-	 * @return	boolean		True, if $this->query was found
+	 * @return	boolean		TRUE, if $this->query was found
 	 */
 	function count_query() {
 		if (is_array($this->queryParts))	{
@@ -441,7 +420,7 @@ class tslib_search {
 	/**
 	 * Executes the search, sets result pointer in $this->result
 	 *
-	 * @return	boolean		True, if $this->query was set and query performed
+	 * @return	boolean		TRUE, if $this->query was set and query performed
 	 */
 	function execute_query() {
 		if (is_array($this->queryParts))	{

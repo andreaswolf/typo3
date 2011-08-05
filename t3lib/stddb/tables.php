@@ -27,7 +27,7 @@
 /**
  * Contains the initialization of global TYPO3 variables among which $TCA is the most significant.
  *
- * The list in order of apperance is: $PAGES_TYPES, $ICON_TYPES, $TCA, $TBE_MODULES, $TBE_STYLES, $FILEICONS
+ * The list in order of appearance is: $PAGES_TYPES, $ICON_TYPES, $TCA, $TBE_MODULES, $TBE_STYLES, $FILEICONS
  * These variables are first of all used in the backend but to some degree in the frontend as well. (See references)
  * See the document "Inside TYPO3" for a description of each variable in addition to the comment associated with each.
  *
@@ -40,8 +40,6 @@
  * or extend this information, please make an extension which does so.
  * Thus you preserve backwards compatibility.
  *
- *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -54,14 +52,11 @@
  * Here you can set the icon and especially you can define which tables are allowed on a certain pagetype (doktype)
  * NOTE: The 'default' entry in the $PAGES_TYPES-array is the 'base' for all types, and for every type the entries simply overrides the entries in the 'default' type!
  *
- * NOTE: usage of 'icon' is deprecated since TYPO3 4.4, use t3lib_SpriteManager::addTcaTypeIcon() instead
  */
 $PAGES_TYPES = array(
 	(string) t3lib_pageSelect::DOKTYPE_LINK => array(
 	),
 	(string) t3lib_pageSelect::DOKTYPE_SHORTCUT => array(
-	),
-	(string) t3lib_pageSelect::DOKTYPE_HIDE_IN_MENU => array(
 	),
 	(string) t3lib_pageSelect::DOKTYPE_BE_USER_SECTION => array(
 		'type' => 'web',
@@ -93,7 +88,7 @@ $PAGES_TYPES = array(
  * Each key is a value from the "module" field of page records and the value is an array with a key/value pair, eg. "icon" => "modules_shop.gif"
  *
  * @see t3lib_iconWorks::getIcon(), typo3/sysext/cms/ext_tables.php
- * @deprecated since TYPO3 4.4, use t3lib_SpriteManager::addTcaTypeIcon instead
+ * @deprecated since TYPO3 4.4, use t3lib_SpriteManager::addTcaTypeIcon instead, will be removed in TYPO3 4.7
  */
 $ICON_TYPES = array();
 
@@ -109,7 +104,7 @@ $ICON_TYPES = array();
  * Only the "pages" table is defined fully in this file - the others are only defined for the "ctrl" part and the columns are defined in detail in the associated file, "tbl_be.php"
  *
  * NOTE: The (default) icon for a table is defined 1) as a giffile named 'gfx/i/[tablename].gif' or 2) as the value of [table][ctrl][iconfile]
- * NOTE: [table][ctrl][rootLevel] goes NOT for pages. Apart from that if rootLevel is true, records can ONLY be created on rootLevel. If it's false records can ONLY be created OUTSIDE rootLevel
+ * NOTE: [table][ctrl][rootLevel] goes NOT for pages. Apart from that if rootLevel is TRUE, records can ONLY be created on rootLevel. If it's FALSE records can ONLY be created OUTSIDE rootLevel
  */
 $TCA = array();
 
@@ -181,6 +176,7 @@ $TCA['pages'] = array(
 			'255' => 'recycler.gif',
 		),
 		'dynamicConfigFile' => 'T3LIB:tbl_pages.php',
+		'searchFields' => 'title,alias,nav_title,subtitle,url,keywords,description,abstract,author,author_email',
 	)
 );
 
@@ -221,9 +217,10 @@ $TCA['be_users'] = array(
 		),
 		'mainpalette' => '1',
 		'useColumnsForDefaultValues' => 'usergroup,lockToDomain,options,db_mountpoints,file_mountpoints,fileoper_perms,userMods',
-		'dividers2tabs' => true,
+		'dividers2tabs' => TRUE,
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
-		'versioningWS_alwaysAllowLiveEdit' => TRUE
+		'versioningWS_alwaysAllowLiveEdit' => TRUE,
+		'searchFields' => 'username,email,realName',
 	)
 );
 
@@ -256,9 +253,10 @@ $TCA['be_groups'] = array(
 		),
 		'title' => 'LLL:EXT:lang/locallang_tca.php:be_groups',
 		'useColumnsForDefaultValues' => 'lockToDomain, fileoper_perms',
-		'dividers2tabs' => true,
+		'dividers2tabs' => TRUE,
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
-		'versioningWS_alwaysAllowLiveEdit' => TRUE
+		'versioningWS_alwaysAllowLiveEdit' => TRUE,
+		'searchFields' => 'title',
 	)
 );
 
@@ -283,7 +281,8 @@ $TCA['sys_filemounts'] = array(
 		'iconfile' => '_icon_ftp.gif',
 		'useColumnsForDefaultValues' => 'path,base',
 		'dynamicConfigFile' => 'T3LIB:tbl_be.php',
-		'versioningWS_alwaysAllowLiveEdit' => TRUE
+		'versioningWS_alwaysAllowLiveEdit' => TRUE,
+		'searchFields' => 'title,path',
 	)
 );
 
@@ -358,9 +357,7 @@ $TBE_MODULES = array(
 );
 
 	// register the pagetree core navigation component
-t3lib_extMgm::addCoreNavigationComponent('web', 'typo3-pagetree', array(
-	'TYPO3.Components.PageTree'
-));
+t3lib_extMgm::addCoreNavigationComponent('web', 'typo3-pagetree');
 
 /**
  * $TBE_STYLES configures backend styles and colors; Basically this contains all the values that can be used to create new skins for TYPO3.
@@ -386,7 +383,6 @@ t3lib_extMgm::addLLrefForTCAdescr('be_groups', 'EXT:lang/locallang_csh_be_groups
 t3lib_extMgm::addLLrefForTCAdescr('sys_filemounts', 'EXT:lang/locallang_csh_sysfilem.xml');
 t3lib_extMgm::addLLrefForTCAdescr('sys_language', 'EXT:lang/locallang_csh_syslang.xml');
 t3lib_extMgm::addLLrefForTCAdescr('sys_news', 'EXT:lang/locallang_csh_sysnews.xml');
-t3lib_extMgm::addLLrefForTCAdescr('sys_workspace', 'EXT:lang/locallang_csh_sysws.xml');
 t3lib_extMgm::addLLrefForTCAdescr('xMOD_csh_corebe', 'EXT:lang/locallang_csh_corebe.xml'); // General Core
 t3lib_extMgm::addLLrefForTCAdescr('_MOD_tools_em', 'EXT:lang/locallang_csh_em.xml'); // Extension manager
 t3lib_extMgm::addLLrefForTCAdescr('_MOD_web_info', 'EXT:lang/locallang_csh_web_info.xml'); // Web > Info
@@ -503,6 +499,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-edit-insert-default',
 	'actions-edit-localize-status-high',
 	'actions-edit-localize-status-low',
+	'actions-edit-merge-localization',
 	'actions-edit-pick-date',
 	'actions-edit-rename',
 	'actions-edit-restore',
@@ -513,6 +510,11 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'actions-input-clear',
 	'actions-insert-record',
 	'actions-insert-reference',
+	'actions-message-error-close',
+	'actions-message-information-close',
+	'actions-message-notice-close',
+	'actions-message-ok-close',
+	'actions-message-warning-close',
 	'actions-move-down',
 	'actions-move-left',
 	'actions-move-move',
@@ -586,6 +588,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-filetree-root',
 	'apps-pagetree-backend-user',
 	'apps-pagetree-backend-user-hideinmenu',
+	'apps-pagetree-collapse',
 	'apps-pagetree-drag-copy-above',
 	'apps-pagetree-drag-copy-below',
 	'apps-pagetree-drag-move-above',
@@ -595,6 +598,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 	'apps-pagetree-drag-new-between',
 	'apps-pagetree-drag-new-inside',
 	'apps-pagetree-drag-place-denied',
+	'apps-pagetree-expand',
 	'apps-pagetree-folder-contains-approve',
 	'apps-pagetree-folder-contains-board',
 	'apps-pagetree-folder-contains-fe_users',
@@ -768,6 +772,7 @@ $GLOBALS['TBE_STYLES']['spriteIconApi']['coreSpriteImageNames'] = array(
 
 
 $GLOBALS['TBE_STYLES']['spriteIconApi']['spriteIconRecordOverlayPriorities'] = array(
+	'deleted',
 	'hidden',
 	'starttime',
 	'endtime',

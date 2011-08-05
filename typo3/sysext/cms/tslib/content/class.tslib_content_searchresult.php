@@ -29,7 +29,6 @@
 /**
  * Contains SEARCHRESULT class object.
  *
- * $Id: class.tslib_content.php 7905 2010-06-13 14:42:33Z ohader $
  * @author Xavier Perseguers <typo3@perseguers.ch>
  * @author Steffen Kamper <steffen@typo3.org>
  */
@@ -50,7 +49,7 @@ class tslib_content_SearchResult extends tslib_content_Abstract {
 			$depth = 100;
 				// the startId is found
 			$theStartId = 0;
-			if (t3lib_div::testInt(t3lib_div::_GP('stype'))) {
+			if (t3lib_utility_Math::canBeInterpretedAsInteger(t3lib_div::_GP('stype'))) {
 				$temp_theStartId = t3lib_div::_GP('stype');
 				$rootLine = $GLOBALS['TSFE']->sys_page->getRootLine($temp_theStartId);
 					// The page MUST have a rootline with the Level0-page of the current site inside!!
@@ -59,7 +58,7 @@ class tslib_content_SearchResult extends tslib_content_Abstract {
 						$theStartId = $temp_theStartId;
 					}
 				}
-			} else if (t3lib_div::_GP('stype')) {
+			} elseif (t3lib_div::_GP('stype')) {
 				if (substr(t3lib_div::_GP('stype'), 0, 1) == 'L') {
 					$pointer = intval(substr(t3lib_div::_GP('stype'), 1));
 					$theRootLine = $GLOBALS['TSFE']->tmpl->rootLine;
@@ -113,7 +112,7 @@ class tslib_content_SearchResult extends tslib_content_Abstract {
 			$search->build_search_query($endClause);
 
 				// count...
-			if (t3lib_div::testInt(t3lib_div::_GP('scount'))) {
+			if (t3lib_utility_Math::canBeInterpretedAsInteger(t3lib_div::_GP('scount'))) {
 				$search->res_count = t3lib_div::_GP('scount');
 			} else {
 				$search->count_query();
@@ -146,8 +145,8 @@ class tslib_content_SearchResult extends tslib_content_Abstract {
 				$GLOBALS['TSFE']->register['SWORD_PARAMS'] = $search->get_searchwords();
 
 				$total = $search->res_count;
-				$rangeLow = t3lib_div::intInRange($spointer + 1, 1, $total);
-				$rangeHigh = t3lib_div::intInRange($spointer + $theRange, 1, $total);
+				$rangeLow = t3lib_utility_Math::forceIntegerInRange($spointer + 1, 1, $total);
+				$rangeHigh = t3lib_utility_Math::forceIntegerInRange($spointer + $theRange, 1, $total);
 					// prev/next url:
 
 				$target = isset($conf['target.'])

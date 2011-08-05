@@ -1,8 +1,6 @@
 <?php
 /*
  * Register necessary class names with autoloader
- *
- * $Id: ext_autoload.php 6536 2009-11-25 14:07:18Z stucki $
  */
 return array(
 	'tslib_adminpanel' => PATH_tslib . 'class.tslib_adminpanel.php',
@@ -36,6 +34,7 @@ return array(
 	'tslib_cobj_getimgresourcehook' => PATH_tslib . 'interfaces/interface.tslib_content_getimgresourcehook.php',
 	'tslib_content_postinithook' => PATH_tslib . 'interfaces/interface.tslib_content_postinithook.php',
 	'tslib_content_stdwraphook' => PATH_tslib . 'interfaces/interface.tslib_content_stdwraphook.php',
+	'tslib_adminpanelhook' => PATH_tslib . 'interfaces/interface.tslib_adminPanelHook.php',
 	'user_various' => PATH_tslib . 'media/scripts/example_callfunction.php',
 	'tslib_gmenu_foldout' => PATH_tslib . 'media/scripts/gmenu_foldout.php',
 	'tslib_gmenu_layers' => PATH_tslib . 'media/scripts/gmenu_layers.php',

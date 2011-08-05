@@ -27,66 +27,9 @@
 /**
  * FE admin lib
  *
- * $Id: fe_adminLib.inc 6454 2009-11-17 16:51:32Z steffenk $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  132: class user_feAdmin
- *  179:     function init($content,$conf)
- *
- *              SECTION: Data processing
- *  423:     function parseValues()
- *  518:     function processFiles($cmdParts,$theField)
- *  624:     function overrideValues()
- *  640:     function defaultValues()
- *  659:     function evalValues()
- *  781:     function userProcess($mConfKey,$passVar)
- *  799:     function userProcess_alt($confVal,$confArr,$passVar)
- *
- *              SECTION: Database manipulation functions
- *  841:     function save()
- *  899:     function deleteRecord()
- *  929:     function deleteFilesFromRecord($uid)
- *
- *              SECTION: Command "display" functions
- *  986:     function displayDeleteScreen()
- * 1014:     function displayCreateScreen()
- * 1037:     function displayEditScreen()
- * 1088:     function displayEditForm($origArr)
- * 1116:     function procesSetFixed()
- *
- *              SECTION: Template processing functions
- * 1205:     function removeRequired($templateCode,$failure)
- * 1223:     function getPlainTemplate($key,$r='')
- * 1240:     function modifyDataArrForFormUpdate($inputArr)
- * 1309:     function setCObjects($templateCode,$currentArr=array(),$markerArray='',$specialPrefix='')
- *
- *              SECTION: Emailing
- * 1371:     function sendInfoMail()
- * 1419:     function compileMail($key, $DBrows, $recipient, $setFixedConfig=array())
- * 1465:     function sendMail($recipient, $admin, $content='', $adminContent='')
- * 1510:     function isHTMLContent($c)
- * 1531:     function sendHTMLMail($content,$recipient,$dummy,$fromEmail,$fromName,$replyTo='')
- *
- *              SECTION: Various helper functions
- * 1615:     function aCAuth($r)
- * 1629:     function authCode($r,$extra='')
- * 1655:     function setfixed($markerArray, $setfixed, $r)
- * 1693:     function setfixedHash($recCopy,$fields='')
- * 1714:     function isPreview()
- * 1723:     function createFileFuncObj()
- * 1734:     function clearCacheIfSet()
- * 1749:     function getFailure($theField, $theCmd, $label)
- *
- * TOTAL FUNCTIONS: 33
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 /**
  * This library provides a HTML-template file based framework for Front End creating/editing/deleting records authenticated by email or fe_user login.
@@ -103,7 +46,7 @@
 class user_feAdmin	{
 
 		// External, static:
-	var $recInMarkersHSC = TRUE;		// If true, values from the record put into markers going out into HTML will be passed through htmlspecialchars()!
+	var $recInMarkersHSC = TRUE;		// If TRUE, values from the record put into markers going out into HTML will be passed through htmlspecialchars()!
 
 	var $dataArr = array();
 	var $failureMsg = array();
@@ -451,7 +394,7 @@ class user_feAdmin	{
 							if (is_array($this->dataArr[$theField]))	{
 								$val = 0;
 								foreach ($this->dataArr[$theField] as $kk => $vv) {
-									$kk = t3lib_div::intInRange($kk,0);
+									$kk = t3lib_utility_Math::forceIntegerInRange($kk,0);
 									if ($kk<=30)	{
 										if ($vv)	{
 											$val|=pow(2,$kk);
@@ -646,7 +589,7 @@ class user_feAdmin	{
 					$recExist=1;
 				break;
 				default:
-					$recordTestPid = $this->thePid ? $this->thePid : t3lib_div::intval_positive($this->dataArr['pid']);
+					$recordTestPid = $this->thePid ? $this->thePid : t3lib_utility_Math::convertToPositiveInteger($this->dataArr['pid']);
 				break;
 			}
 
@@ -986,7 +929,7 @@ class user_feAdmin	{
 			if (!is_array($this->dataArr)) {
 				$this->dataArr = array();
 			}
-			
+
 			$markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $this->dataArr, '', TRUE, 'FIELD_', $this->recInMarkersHSC);
 			if ($this->conf['create.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
 			$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
@@ -1347,7 +1290,7 @@ class user_feAdmin	{
 				}
 
 					// Getting records
-				if (t3lib_div::testInt($fetch))	{
+				if (t3lib_utility_Math::canBeInterpretedAsInteger($fetch))	{
 					$DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable,'uid',$fetch,$pidLock,'','','1');
 				} elseif ($fetch) {	// $this->conf['email.']['field'] must be a valid field in the table!
 					$DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable,$this->conf['email.']['field'],$fetch,$pidLock,'','','100');
@@ -1401,7 +1344,7 @@ class user_feAdmin	{
 		if ($userContent['all'])	$userContent['final'] .=$this->cObj->substituteSubpart($userContent['all'], '###SUB_RECORD###', $userContent['accum']);
 		if ($adminContent['all'])	$adminContent['final'].=$this->cObj->substituteSubpart($adminContent['all'], '###SUB_RECORD###', $adminContent['accum']);
 
-		if (t3lib_div::testInt($recipient))	{
+		if (t3lib_utility_Math::canBeInterpretedAsInteger($recipient))	{
 			$fe_userRec = $GLOBALS['TSFE']->sys_page->getRawRecord('fe_users',$recipient);
 			$recipient=$fe_userRec['email'];
 		}
@@ -1469,7 +1412,7 @@ class user_feAdmin	{
 	 * Detects if content is HTML (looking for <html> tag as first and last in string)
 	 *
 	 * @param	string		Content string to test
-	 * @return	boolean		Returns true if the content begins and ends with <html></html>-tags
+	 * @return	boolean		Returns TRUE if the content begins and ends with <html></html>-tags
 	 */
 	function isHTMLContent($c)	{
 		$c = trim($c);
@@ -1561,17 +1504,17 @@ class user_feAdmin	{
 
 
 	/**
-	 * Returns true if authentication is OK based on the "aC" code which is a GET parameter set from outside with a hash string which must match some internal hash string.
+	 * Returns TRUE if authentication is OK based on the "aC" code which is a GET parameter set from outside with a hash string which must match some internal hash string.
 	 * This allows to authenticate editing without having a fe_users login
 	 * Uses $this->authCode which is set in init() by "t3lib_div::_GP('aC');"
 	 *
 	 * @param	array		The data array for which to evaluate authentication
-	 * @return	boolean		True if authenticated OK
+	 * @return	boolean		TRUE if authenticated OK
 	 * @see authCode(), init()
 	 */
 	function aCAuth($r)	{
 		if ($this->authCode && !strcmp($this->authCode,$this->authCode($r)))	{
-			return true;
+			return TRUE;
 		}
 	}
 
@@ -1661,7 +1604,7 @@ class user_feAdmin	{
 
 
 	/**
-	 * Returns true if preview display is on.
+	 * Returns TRUE if preview display is on.
 	 *
 	 * @return	boolean
 	 */

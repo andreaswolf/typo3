@@ -29,25 +29,13 @@
  * The selector-box menu is an alternative to the vertical default menu.
  * If configured to appear it will be displayed in the top-frame.
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   73: class SC_alt_menu_sel
- *   81:     function main()
- *  108:     function printContent()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7.
+ * 		The TYPO3 backend is using typo3/backend.php with less frames,
+ * 		which makes this file obsolete.
  */
 
 
@@ -79,27 +67,25 @@ class SC_alt_menu_sel {
 	 * @return	void
 	 */
 	function main()	{
-		global $TBE_MODULES,$TBE_TEMPLATE;
-
 			// Initialize modules
 		$loadModules = t3lib_div::makeInstance('t3lib_loadModules');
 		$loadModules->observeWorkspaces = TRUE;
-		$loadModules->load($TBE_MODULES);
+		$loadModules->load($GLOBALS['TBE_MODULES']);
 
 			// Start page
-		$TBE_TEMPLATE->form = '<form action="">';
+		$GLOBALS['TBE_TEMPLATE']->form = '<form action="">';
 
 			// add menu JS
 		$alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
-		$TBE_TEMPLATE->JScodeArray[] = $alt_menuObj->generateMenuJScode($loadModules->modules);
+		$GLOBALS['TBE_TEMPLATE']->JScodeArray[] = $alt_menuObj->generateMenuJScode($loadModules->modules);
 
-		$this->content.=$TBE_TEMPLATE->startPage('Selector box menu');
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->startPage('Selector box menu');
 
 			// Make menu and add it:
 		$this->content.=$alt_menuObj->topMenu($loadModules->modules,0,'',2);
 
 			// End page:
-		$this->content.=$TBE_TEMPLATE->endPage();
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->endPage();
 	}
 
 	/**

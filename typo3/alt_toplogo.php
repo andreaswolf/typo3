@@ -28,25 +28,13 @@
  * Top logo frame
  * Displays the logo in the top frame (upper left corner)
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   66: class SC_alt_toplogo
- *   74:     function main()
- *  105:     function printContent()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7.
+ * 		The TYPO3 backend is using typo3/backend.php with less frames,
+ * 		which makes this file obsolete.
  */
 
 require ('init.php');
@@ -74,17 +62,15 @@ class SC_alt_toplogo {
 	 * @return	void
 	 */
 	function main()	{
-		global $TBE_TEMPLATE,$TBE_STYLES;
-
 			// Start page
-		$this->content.=$TBE_TEMPLATE->startPage('Logo frame');
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->startPage('Logo frame');
 
 			// Set logo:
 		$logo = t3lib_div::makeInstance('TYPO3logo');
 		$this->content .= $logo->render();
 
 			// End page:
-		$this->content.=$TBE_TEMPLATE->endPage();
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->endPage();
 	}
 
 	/**

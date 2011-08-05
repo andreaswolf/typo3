@@ -27,31 +27,11 @@
 /**
  * This document provides a class that loads the modules for the TYPO3 interface.
  *
- * $Id$
  * Modifications by René Fritz, 2001
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @internal
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   79: class t3lib_loadModules
- *   99:	 function load($modulesArray,$BE_USER='')
- *  370:	 function checkExtensionModule($name)
- *  389:	 function checkMod($name, $fullpath)
- *  471:	 function checkModAccess($name,$MCONF)
- *  495:	 function checkModWorkspace($name,$MCONF)
- *  519:	 function parseModulesArray($arr)
- *  548:	 function cleanName ($str)
- *  559:	 function getRelativePath($baseDir,$destDir)
- *
- * TOTAL FUNCTIONS: 8
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -79,7 +59,7 @@ class t3lib_loadModules {
 	 * @var t3lib_beUserAuth
 	 */
 	var $BE_USER;
-	var $observeWorkspaces = FALSE; // If set true, workspace "permissions" will be observed so non-allowed modules will not be included in the array of modules.
+	var $observeWorkspaces = FALSE; // If set TRUE, workspace "permissions" will be observed so non-allowed modules will not be included in the array of modules.
 
 	/**
 	 * Contains the registered navigation components
@@ -106,7 +86,6 @@ class t3lib_loadModules {
 		}
 
 		/*
-
 					 $modulesArray might look like this when entering this function.
 					 Notice the two modules added by extensions - they have a path attached
 
@@ -124,19 +103,11 @@ class t3lib_loadModules {
 							)
 
 					)
+		*/
 
-					 */
-			//
+			// Collect required module meta information
 		$this->absPathArray = $modulesArray['_PATHS'];
-		unset($modulesArray['_PATHS']);
-			// unset the array for calling external backend module dispatchers in typo3/mod.php
-		unset($modulesArray['_dispatcher']);
-			// unset the array for calling backend modules based on external backend module dispatchers in typo3/mod.php
-		unset($modulesArray['_configuration']);
-
 		$this->navigationComponents = $modulesArray['_navigationComponents'];
-		unset($modulesArray['_navigationComponents']);
-
 		$theMods = $this->parseModulesArray($modulesArray);
 
 		/*
@@ -174,7 +145,7 @@ class t3lib_loadModules {
 				}
 			}
 
-				// if $theMainMod is not set (false) there is no access to the module !(?)
+				// if $theMainMod is not set (FALSE) there is no access to the module !(?)
 			if ($theMainMod && !is_null($path)) {
 				$this->modules[$mods] = $theMainMod;
 
@@ -220,8 +191,6 @@ class t3lib_loadModules {
 	 * @return	string		If found, the relative path from PATH_site
 	 */
 	function checkExtensionModule($name) {
-		global $TYPO3_LOADED_EXT;
-
 		if (isset($this->absPathArray[$name])) {
 			return rtrim(substr($this->absPathArray[$name], strlen(PATH_site)), '/');
 		}
@@ -231,7 +200,7 @@ class t3lib_loadModules {
 	 * Here we check for the module.
 	 * Return values:
 	 *	 'notFound':	If the module was not found in the path (no "conf.php" file)
-	 *	 false:		If no access to the module (access check failed)
+	 *	 FALSE:		If no access to the module (access check failed)
 	 *	 array():	Configuration array, in case a valid module where access IS granted exists.
 	 *
 	 * @param	string		Module name
@@ -341,7 +310,7 @@ class t3lib_loadModules {
 					$modconf['navigationComponentId'] = $this->navigationComponents[$name]['componentId'];
 						// check if the parent has a navigation component that also
 						// goes down to the submodules (if they haven't overwritten it yet)
-				} else if ($mainModule && is_array($this->navigationComponents[$mainModule])) {
+				} elseif ($mainModule && is_array($this->navigationComponents[$mainModule])) {
 					$modconf['navigationComponentId'] = $this->navigationComponents[$mainModule]['componentId'];
 				}
 			} else {
@@ -354,17 +323,17 @@ class t3lib_loadModules {
 	}
 
 	/**
-	 * Returns true if the internal BE_USER has access to the module $name with $MCONF (based on security level set for that module)
+	 * Returns TRUE if the internal BE_USER has access to the module $name with $MCONF (based on security level set for that module)
 	 *
 	 * @param	string		Module name
 	 * @param	array		MCONF array (module configuration array) from the modules conf.php file (contains settings about what access level the module has)
-	 * @return	boolean		True if access is granted for $this->BE_USER
+	 * @return	boolean		TRUE if access is granted for $this->BE_USER
 	 */
 	function checkModAccess($name, $MCONF) {
 		if ($MCONF['access']) {
 			$access = strtolower($MCONF['access']);
 				// Checking if admin-access is required
-			if (strstr($access, 'admin')) { // If admin-permissions is required then return true if user is admin
+			if (strstr($access, 'admin')) { // If admin-permissions is required then return TRUE if user is admin
 				if ($this->BE_USER->isAdmin()) {
 					return TRUE;
 				}
@@ -392,7 +361,7 @@ class t3lib_loadModules {
 	 *
 	 * @param	string		Module name
 	 * @param	array		MCONF array (module configuration array) from the modules conf.php file (contains settings about workspace restrictions)
-	 * @return	boolean		True if access is granted for $this->BE_USER
+	 * @return	boolean		TRUE if access is granted for $this->BE_USER
 	 */
 	function checkModWorkspace($name, $MCONF) {
 		if ($this->observeWorkspaces) {
@@ -415,7 +384,7 @@ class t3lib_loadModules {
 
 	/**
 	 * Parses the moduleArray ($TBE_MODULES) into a internally useful structure.
-	 * Returns an array where the keys are names of the module and the values may be true (only module) or an array (of submodules)
+	 * Returns an array where the keys are names of the module and the values may be TRUE (only module) or an array (of submodules)
 	 *
 	 * @param	array		moduleArray ($TBE_MODULES)
 	 * @return	array		Output structure with available modules
@@ -424,7 +393,12 @@ class t3lib_loadModules {
 		$theMods = array();
 		if (is_array($arr)) {
 			foreach ($arr as $mod => $subs) {
-				$mod = $this->cleanName($mod); // clean module name to alphanum
+					// Module names must not start with an underline character
+				if (strpos($mod, '_') === 0) {
+					continue;
+				}
+					// Module names must be alpha-numeric
+				$mod = $this->cleanName($mod);
 				if ($mod) {
 					if ($subs) {
 						$subsArr = t3lib_div::trimExplode(',', $subs);

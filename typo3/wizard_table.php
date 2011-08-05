@@ -28,33 +28,10 @@
  * Wizard to help make tables (eg. for tt_content elements) of type "table".
  * Each line is a table row, each cell divided by a |
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   84: class SC_wizard_table
- *  116:     function init()
- *  158:     function main()
- *  173:     function printContent()
- *  184:     function tableWizard()
- *
- *              SECTION: Helper functions
- *  223:     function getConfigCode($row)
- *  293:     function getTableHTML($cfgArr,$row)
- *  450:     function changeFunc()
- *  572:     function cfgArray2CfgString($cfgArr)
- *  603:     function cfgString2CfgArray($cfgStr,$cols)
- *
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -62,7 +39,7 @@
 $BACK_PATH='';
 require ('init.php');
 require ('template.php');
-$LANG->includeLLFile('EXT:lang/locallang_wizards.xml');
+$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_wizards.xml');
 
 
 
@@ -92,7 +69,7 @@ class SC_wizard_table {
 	var $doc;
 	var $content;				// Content accumulation for the module.
 	var $include_once=array();	// List of files to include.
-	var $inputStyle=0;			// True, then <input> fields are shown, not textareas.
+	var $inputStyle=0;			// TRUE, then <input> fields are shown, not textareas.
 
 
 		// Internal, static:
@@ -125,7 +102,7 @@ class SC_wizard_table {
 
 			// Setting options:
 		$this->xmlStorage = $this->P['params']['xmlOutput'];
-		$this->numNewRows = t3lib_div::intInRange($this->P['params']['numNewRows'],1,50,5);
+		$this->numNewRows = t3lib_utility_Math::forceIntegerInRange($this->P['params']['numNewRows'],1,50,5);
 
 			// Textareas or input fields:
 		$this->inputStyle=isset($this->TABLECFG['textFields']) ? $this->TABLECFG['textFields'] : 1;
@@ -236,7 +213,7 @@ class SC_wizard_table {
 			// First, check the references by selecting the record:
 		$row = t3lib_BEfunc::getRecord($this->P['table'],$this->P['uid']);
 		if (!is_array($row)) {
-			throw new RuntimeException('Wizard Error: No reference to record');
+			throw new RuntimeException('Wizard Error: No reference to record', 1294587125);
 		}
 
 			// This will get the content of the form configuration code field to us - possibly cleaned up, saved to database etc. if the form has been submitted in the meantime.
@@ -342,8 +319,6 @@ class SC_wizard_table {
 	 * @access private
 	 */
 	function getTableHTML($cfgArr,$row)	{
-		global $LANG;
-
 			// Traverse the rows:
 		$tRows=array();
 		$k=0;
@@ -373,19 +348,19 @@ class SC_wizard_table {
 
 				$brTag=$this->inputStyle?'':'<br />';
 				if ($k!=0)	{
-					$ctrl.='<input type="image" name="TABLE[row_up]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2up.gif','').$onClick.' title="'.$LANG->getLL('table_up',1).'" />'.$brTag;
+					$ctrl.='<input type="image" name="TABLE[row_up]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2up.gif','').$onClick.' title="'.$GLOBALS['LANG']->getLL('table_up',1).'" />'.$brTag;
 				} else {
-					$ctrl.='<input type="image" name="TABLE[row_bottom]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_up.gif','').$onClick.' title="'.$LANG->getLL('table_bottom',1).'" />'.$brTag;
+					$ctrl.='<input type="image" name="TABLE[row_bottom]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_up.gif','').$onClick.' title="'.$GLOBALS['LANG']->getLL('table_bottom',1).'" />'.$brTag;
 				}
-				$ctrl.='<input type="image" name="TABLE[row_remove]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/garbage.gif','').$onClick.' title="'.$LANG->getLL('table_removeRow',1).'" />'.$brTag;
+				$ctrl.='<input type="image" name="TABLE[row_remove]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/garbage.gif','').$onClick.' title="'.$GLOBALS['LANG']->getLL('table_removeRow',1).'" />'.$brTag;
 
 // FIXME what is $tLines? See wizard_forms.php for the same.
 				if (($k+1)!=count($tLines))	{
-					$ctrl.='<input type="image" name="TABLE[row_down]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2down.gif','').$onClick.' title="'.$LANG->getLL('table_down',1).'" />'.$brTag;
+					$ctrl.='<input type="image" name="TABLE[row_down]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2down.gif','').$onClick.' title="'.$GLOBALS['LANG']->getLL('table_down',1).'" />'.$brTag;
 				} else {
-					$ctrl.='<input type="image" name="TABLE[row_top]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_down.gif','').$onClick.' title="'.$LANG->getLL('table_top',1).'" />'.$brTag;
+					$ctrl.='<input type="image" name="TABLE[row_top]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_down.gif','').$onClick.' title="'.$GLOBALS['LANG']->getLL('table_top',1).'" />'.$brTag;
 				}
-				$ctrl.='<input type="image" name="TABLE[row_add]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/add.gif','').$onClick.' title="'.$LANG->getLL('table_addRow',1).'" />'.$brTag;
+				$ctrl.='<input type="image" name="TABLE[row_add]['.(($k+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/add.gif','').$onClick.' title="'.$GLOBALS['LANG']->getLL('table_addRow',1).'" />'.$brTag;
 
 				$tRows[]='
 					<tr class="bgColor4">
@@ -403,8 +378,7 @@ class SC_wizard_table {
 		$cells=array();
 		$cells[]='';
 			// Finding first row:
-		reset($cfgArr);
-		$firstRow=current($cfgArr);
+		$firstRow = reset($cfgArr);
 		if (is_array($firstRow))	{
 
 				// Init:
@@ -415,17 +389,17 @@ class SC_wizard_table {
 			foreach($firstRow as $temp)	{
 				$ctrl='';
 				if ($a!=0)	{
-					$ctrl.='<input type="image" name="TABLE[col_left]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2left.gif','').' title="'.$LANG->getLL('table_left',1).'" />';
+					$ctrl.='<input type="image" name="TABLE[col_left]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2left.gif','').' title="'.$GLOBALS['LANG']->getLL('table_left',1).'" />';
 				} else {
-					$ctrl.='<input type="image" name="TABLE[col_end]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_left.gif','').' title="'.$LANG->getLL('table_end',1).'" />';
+					$ctrl.='<input type="image" name="TABLE[col_end]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_left.gif','').' title="'.$GLOBALS['LANG']->getLL('table_end',1).'" />';
 				}
-				$ctrl.='<input type="image" name="TABLE[col_remove]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/garbage.gif','').' title="'.$LANG->getLL('table_removeColumn',1).'" />';
+				$ctrl.='<input type="image" name="TABLE[col_remove]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/garbage.gif','').' title="'.$GLOBALS['LANG']->getLL('table_removeColumn',1).'" />';
 				if (($a+1)!=$cols)	{
-					$ctrl.='<input type="image" name="TABLE[col_right]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2right.gif','').' title="'.$LANG->getLL('table_right',1).'" />';
+					$ctrl.='<input type="image" name="TABLE[col_right]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/pil2right.gif','').' title="'.$GLOBALS['LANG']->getLL('table_right',1).'" />';
 				} else {
-					$ctrl.='<input type="image" name="TABLE[col_start]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_right.gif','').' title="'.$LANG->getLL('table_start',1).'" />';
+					$ctrl.='<input type="image" name="TABLE[col_start]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/turn_right.gif','').' title="'.$GLOBALS['LANG']->getLL('table_start',1).'" />';
 				}
-				$ctrl.='<input type="image" name="TABLE[col_add]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/add.gif','').' title="'.$LANG->getLL('table_addColumn',1).'" />';
+				$ctrl.='<input type="image" name="TABLE[col_add]['.(($a+1)*2).']"'.t3lib_iconWorks::skinImg($this->doc->backPath,'gfx/add.gif','').' title="'.$GLOBALS['LANG']->getLL('table_addColumn',1).'" />';
 				$cells[]='<span class="c-wizButtonsH">'.$ctrl.'</span>';
 
 					// Incr. counter:
@@ -461,7 +435,7 @@ class SC_wizard_table {
 				'.
 				'<input type="hidden" name="TABLE[textFields]" value="0" />'.
 				'<input type="checkbox" name="TABLE[textFields]" id="textFields" value="1"'.($this->inputStyle?' checked="checked"':'').' /> <label for="textFields">'.
-				$LANG->getLL('table_smallFields').'</label>
+				$GLOBALS['LANG']->getLL('table_smallFields').'</label>
 			</div>
 
 			<br /><br />
@@ -516,7 +490,7 @@ class SC_wizard_table {
 			$cmd='row_down';
 		}
 
-		if ($cmd && t3lib_div::testInt($kk)) {
+		if ($cmd && t3lib_utility_Math::canBeInterpretedAsInteger($kk)) {
 			if (substr($cmd,0,4)=='row_')	{
 				switch($cmd)	{
 					case 'row_remove':
@@ -524,7 +498,7 @@ class SC_wizard_table {
 					break;
 					case 'row_add':
 						for($a=1;$a<=$this->numNewRows;$a++)	{
-							if (!isset($this->TABLECFG['c'][$kk+$a]))	{	// Checking if set: The point is that any new row inbetween existing rows will be true after one row is added while if rows are added in the bottom of the table there will be no existing rows to stop the addition of new rows which means it will add up to $this->numNewRows rows then.
+							if (!isset($this->TABLECFG['c'][$kk+$a]))	{	// Checking if set: The point is that any new row inbetween existing rows will be TRUE after one row is added while if rows are added in the bottom of the table there will be no existing rows to stop the addition of new rows which means it will add up to $this->numNewRows rows then.
 								$this->TABLECFG['c'][$kk+$a] = array();
 							} else {
 								break;

@@ -31,26 +31,13 @@
  * Will appear as the default document in the top frame if configured to appear.
  * This is the default menu used during "condensed mode"
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant content
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   74: class SC_alt_topmenu_dummy
- *   82:     function main()
- *  162:     function dummyContent()
- *  178:     function printContent()
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7.
+ * 		The TYPO3 backend is using typo3/backend.php with less frames,
+ * 		which makes this file obsolete.
  */
 
 
@@ -81,10 +68,9 @@ class SC_alt_topmenu_dummy {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$BACK_PATH,$TBE_MODULES,$TBE_TEMPLATE;
 
 			// Remember if noMenuMode is set to 'icons' or not because the hook will be ignored in this case.
-		if (!strcmp($BE_USER->uc['noMenuMode'],'icons'))	{ $iconMenuMode = true; }
+		if (!strcmp($GLOBALS['BE_USER']->uc['noMenuMode'],'icons'))	{ $iconMenuMode = TRUE; }
 
 		$contentArray=array();
 
@@ -113,20 +99,20 @@ class SC_alt_topmenu_dummy {
 				// Loading the modules for this backend user:
 			$loadModules = t3lib_div::makeInstance('t3lib_loadModules');
 			$loadModules->observeWorkspaces = TRUE;
-			$loadModules->load($TBE_MODULES);
+			$loadModules->load($GLOBALS['TBE_MODULES']);
 
 				// Creating menu object:
 			$alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
 
 				// Start page
-			$TBE_TEMPLATE->bodyTagId.= '-iconmenu';
-			$TBE_TEMPLATE->JScodeArray[] = $alt_menuObj->generateMenuJScode($loadModules->modules);
+			$GLOBALS['TBE_TEMPLATE']->bodyTagId.= '-iconmenu';
+			$GLOBALS['TBE_TEMPLATE']->JScodeArray[] = $alt_menuObj->generateMenuJScode($loadModules->modules);
 
-			$this->content.=$TBE_TEMPLATE->startPage('Top frame icon menu');
+			$this->content .= $GLOBALS['TBE_TEMPLATE']->startPage('Top frame icon menu');
 
 			if ($iconMenuMode)	{
 				$contentArray[0][] = '<td class="c-menu">'.$alt_menuObj->topMenu($loadModules->modules,0,'',3).'</td>';
-				if ($BE_USER->isAdmin())	{
+				if ($GLOBALS['BE_USER']->isAdmin())	{
 					$contentArray[1][] = '<td class="c-admin">'.$alt_menuObj->adminButtons().'</td>';
 				}
 				$contentArray[2][] = '<td class="c-logout">'.$alt_menuObj->topButtons().'</td>';
@@ -150,7 +136,7 @@ class SC_alt_topmenu_dummy {
 				</table>';
 
 				// End page:
-			$this->content.=$TBE_TEMPLATE->endPage();
+			$this->content .= $GLOBALS['TBE_TEMPLATE']->endPage();
 		} else {
 				// Make dummy content:
 			$this->dummyContent();
@@ -163,13 +149,11 @@ class SC_alt_topmenu_dummy {
 	 * @return	void
 	 */
 	function dummyContent()	{
-		global $TBE_TEMPLATE;
-
 			// Start page
-		$this->content.=$TBE_TEMPLATE->startPage('Top frame dummy display');
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->startPage('Top frame dummy display');
 
 			// End page:
-		$this->content.=$TBE_TEMPLATE->endPage();
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->endPage();
 	}
 
 	/**

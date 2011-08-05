@@ -29,8 +29,6 @@
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	reports
- *
- * $Id$
  */
 class tx_reports_reports_status_Status {
 
@@ -58,7 +56,7 @@ class tx_reports_reports_status_Status {
 		$this->value    = (string) $value;
 		$this->message  = (string) $message;
 
-		$this->severity = t3lib_div::intInRange(
+		$this->severity = t3lib_utility_Math::forceIntegerInRange(
 			$severity,
 			self::NOTICE, self::ERROR, self::OK
 		);

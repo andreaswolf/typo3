@@ -28,26 +28,12 @@
  * Module: About
  * This document shows some standard-information for TYPO3 CMS: About-text, version number and so on.
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	Steffen Kamper <steffen@typo3.org>
  * @package TYPO3
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   73: class SC_mod_help_about_index
- *   91:	 function main()
- *  125:	 function printContent()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 unset($MCONF);
@@ -154,7 +140,7 @@ class SC_mod_help_about_index {
 	protected function renderAboutTypo3() {
 		$minorText = sprintf($GLOBALS['LANG']->getLL('minor'), 'TYPO3 Ver. ' . htmlspecialchars(TYPO3_version) . ', Copyright &copy; ' . htmlspecialchars(TYPO3_copyright_year), 'Kasper Sk&aring;rh&oslash;j');
 		$content = '
-			<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/typo3logo.gif', 'width="123" height="34"') . ' alt="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:typo3_logo', true) . '" />
+			<img' . t3lib_iconWorks::skinImg($GLOBALS['BACK_PATH'], 'gfx/typo3logo.gif', 'width="123" height="34"') . ' alt="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:typo3_logo', TRUE) . '" />
 			<div class="typo3-mod-help-about-index-php-inner">
 				<h2>' . $GLOBALS['LANG']->getLL('welcome', TRUE) . '</h2>
 					<p>' . $minorText . '</p>
@@ -205,8 +191,8 @@ class SC_mod_help_about_index {
 	protected function render3rdPartyCredits() {
 		$content = '
 			<div class="typo3-mod-help-about-index-php-inner">
-				<h2>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:external_libraries', true) . '</h2>
-				<p>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:external_thanks', true) . '</p>
+				<h2>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:external_libraries', TRUE) . '</h2>
+				<p>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:external_thanks', TRUE) . '</p>
 				<br />
 				<table border="0" cellspacing="2" cellpadding="1">
 				<tr><td width="280">Audio player Plugin</td><td><a href="http://www.1pixelout.net/code/audio-player-wordpress-plugin/" target="_blank">www.1pixelout.net</a></td></tr>
@@ -264,7 +250,7 @@ class SC_mod_help_about_index {
 	 * @return void
 	 */
 	protected function renderExtensionAuthors() {
-		$content = '<table border="0" cellspacing="2" cellpadding="1"><tr><th>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension', true) . '</th><th>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension_author', true) . '</th></tr>';
+		$content = '<table border="0" cellspacing="2" cellpadding="1"><tr><th>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension', TRUE) . '</th><th>' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_help_about.xml:extension_author', TRUE) . '</th></tr>';
 
 		$loadedExtensions = $GLOBALS['TYPO3_LOADED_EXT'];
 		foreach ($loadedExtensions as $extensionKey => $extension) {

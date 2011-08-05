@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 TYPO3 Tree Team <http://forge.typo3.org/projects/typo3v4-extjstrees>
+*  (c) 2010-2011 Stefan Galinski <stefan.galinski@gmail.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -55,6 +55,13 @@ TYPO3.Components.PageTree.Tree = Ext.extend(Ext.tree.TreePanel, {
 	 * @type {TYPO3.Components.PageTree.TreeEditor}
 	 */
 	treeEditor: null,
+
+	/**
+	 * Currently Selected Node
+	 *
+	 * @type {Ext.tree.TreeNode}
+	 */
+	currentSelectedNode: null,
 
 	/**
 	 * Enable the drag and drop feature

@@ -241,7 +241,7 @@
 								<type>check</type>
 								<items type="array">
 									<numIndex index="1" type="array">
-										<numIndex index="0">LLL:EXT:lang/locallang_core.xml:labels.enabled</numIndex>
+										<numIndex index="0">LLL:EXT:lang/locallang_common.xml:disable</numIndex>
 										<numIndex index="1">1</numIndex>
 									</numIndex>
 								</items>
@@ -362,7 +362,7 @@
 							</config>
 						</TCEforms>
 					</forgot_header>
-					<forgot_message>
+					<forgot_reset_message>
 						<TCEforms>
 							<label>LLL:EXT:felogin/locallang_db.xml:tt_content.pi_flexform.forgot_message</label>
 							<config>
@@ -371,7 +371,7 @@
 								<rows>5</rows>
 							</config>
 						</TCEforms>
-					</forgot_message>
+					</forgot_reset_message>
 				</el>
 			</ROOT>
 		</s_messages>

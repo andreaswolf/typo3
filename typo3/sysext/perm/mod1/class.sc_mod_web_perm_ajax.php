@@ -21,31 +21,6 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   66: class SC_mod_web_perm_ajax
- *
- *              SECTION: Init method for this class
- *   97:     public function __construct()
- *
- *              SECTION: Main dispatcher method
- *  143:     public function dispatch($params = array(), TYPO3AJAX &$ajaxObj = null)
- *
- *              SECTION: Helpers for this script
- *  259:     private function renderUserSelector($page, $ownerUid, $username = '')
- *  302:     private function renderGroupSelector($page, $groupUid, $groupname = '')
- *  350:     private function renderOwnername($page, $ownerUid, $username)
- *  363:     private function renderGroupname($page, $groupUid, $groupname)
- *  375:     private function renderToggleEditLock($page, $editlockstate)
- *  389:     private function renderPermissions($int, $pageId = 0, $who = 'user')
- *
- * TOTAL FUNCTIONS: 8
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 $GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_mod_web_perm.xml');
 
@@ -55,7 +30,6 @@ $GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_mod_web_perm.xml');
  * (user and group)) via new TYPO3AJAX facility
  *
  * @author		Andreas Kundoch <typo3@mehrwert.de>
- * @version		$Id$
  * @package		TYPO3
  * @subpackage	core
  * @license		GPL
@@ -127,7 +101,7 @@ class SC_mod_web_perm_ajax {
 	 * @param	TYPO3AJAX		$ajaxObj: object of type TYPO3AJAX
 	 * @return	Void
 	 */
-	public function dispatch($params = array(), TYPO3AJAX &$ajaxObj = null) {
+	public function dispatch($params = array(), TYPO3AJAX &$ajaxObj = NULL) {
 		$content = '';
 
 			// Basic test for required value
@@ -325,7 +299,7 @@ class SC_mod_web_perm_ajax {
 	 * @param	Boolean		$validUser: Must be set to FALSE, if the user has no name or is deleted
 	 * @return	String		The new group wrapped in HTML
 	 */
-	public function renderOwnername($page, $ownerUid, $username, $validUser = true) {
+	public function renderOwnername($page, $ownerUid, $username, $validUser = TRUE) {
 		$elementId = 'o_'.$page;
 		$ret = '<span id="' . $elementId . '"><a class="ug_selector" onclick="WebPermissions.showChangeOwnerSelector(' . $page . ', ' . $ownerUid . ', \'' . $elementId.'\', \'' . htmlspecialchars($username) . '\');">' . ($validUser ? ($username == '' ? ('<span class=not_set>['. $GLOBALS['LANG']->getLL('notSet') .']</span>') : htmlspecialchars(t3lib_div::fixed_lgd_cs($username, 20))) :  ('<span class=not_set title="' . htmlspecialchars(t3lib_div::fixed_lgd_cs($username, 20)) . '">[' . $GLOBALS['LANG']->getLL('deleted') . ']</span>')) . '</a></span>';
 		return $ret;
@@ -341,7 +315,7 @@ class SC_mod_web_perm_ajax {
 	 * @param	Boolean		$validGroup: Must be set to FALSE, if the group has no name or is deleted
 	 * @return	String		The new group wrapped in HTML
 	 */
-	public function renderGroupname($page, $groupUid, $groupname, $validGroup = true) {
+	public function renderGroupname($page, $groupUid, $groupname, $validGroup = TRUE) {
 		$elementId = 'g_'.$page;
 		$ret = '<span id="'.$elementId . '"><a class="ug_selector" onclick="WebPermissions.showChangeGroupSelector(' . $page . ', ' . $groupUid . ', \'' . $elementId . '\', \'' . htmlspecialchars($groupname) . '\');">'. ($validGroup ? ($groupname == '' ? ('<span class=not_set>['. $GLOBALS['LANG']->getLL('notSet') .']</span>') : htmlspecialchars(t3lib_div::fixed_lgd_cs($groupname, 20))) : ('<span class=not_set title="' . htmlspecialchars(t3lib_div::fixed_lgd_cs($groupname, 20)) . '">[' . $GLOBALS['LANG']->getLL('deleted') . ']</span>')) . '</a></span>';
 		return $ret;

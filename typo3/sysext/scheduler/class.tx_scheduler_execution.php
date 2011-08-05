@@ -32,8 +32,6 @@
  *
  * @package		TYPO3
  * @subpackage	tx_scheduler
- *
- * $Id$
  */
 class tx_scheduler_Execution {
 
@@ -59,7 +57,7 @@ class tx_scheduler_Execution {
 	protected $interval;
 
 	/**
-	 * Flag for concurrent executions: true if allowed, false otherwise (default)
+	 * Flag for concurrent executions: TRUE if allowed, FALSE otherwise (default)
 	 *
 	 * @var	boolean	$multiple
 	 */
@@ -89,8 +87,8 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to set the start date
 	 *
-	 * @param	integer		$start: start date (timestamp)
-	 * @return	void
+	 * @param integer $start Start date (timestamp)
+	 * @return void
 	 */
 	public function setStart($start) {
 		$this->start = $start;
@@ -99,7 +97,7 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to get the start date
 	 *
-	 * @return	integer		start date (timestamp)
+	 * @return integer Start date (timestamp)
 	 */
 	public function getStart() {
 		return $this->start;
@@ -108,8 +106,8 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to set the end date
 	 *
-	 * @param	integer		$end: end date (timestamp)
-	 * @return	void
+	 * @param integer $end End date (timestamp)
+	 * @return void
 	 */
 	public function setEnd($end) {
 		$this->end = $end;
@@ -118,7 +116,7 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to get the end date
 	 *
-	 * @return	integer		end date (timestamp)
+	 * @return integer End date (timestamp)
 	 */
 	public function getEnd() {
 		return $this->end;
@@ -127,8 +125,8 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to set the interval
 	 *
-	 * @param	integer		$interval: interval (in seconds)
-	 * @return	void
+	 * @param integer $interval Interval (in seconds)
+	 * @return void
 	 */
 	public function setInterval($interval) {
 		$this->interval = $interval;
@@ -137,7 +135,7 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to get the interval
 	 *
-	 * @return	integer		interval (in seconds)
+	 * @return integer Interval (in seconds)
 	 */
 	public function getInterval() {
 		return $this->interval;
@@ -146,8 +144,8 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to set the multiple execution flag
 	 *
-	 * @param	boolean		$multiple: true if concurrent executions are allowed, false otherwise
-	 * @return	void
+	 * @param boolean $multiple TRUE if concurrent executions are allowed, FALSE otherwise
+	 * @return void
 	 */
 	public function setMultiple($multiple) {
 		$this->multiple = $multiple;
@@ -156,7 +154,7 @@ class tx_scheduler_Execution {
 	/**
 	 * This method is used to get the multiple execution flag
 	 *
-	 * @return	boolean		true if concurrent executions are allowed, false otherwise
+	 * @return boolean TRUE if concurrent executions are allowed, FALSE otherwise
 	 */
 	public function getMultiple() {
 		return $this->multiple;
@@ -165,8 +163,8 @@ class tx_scheduler_Execution {
 	/**
 	 * Set the value of the cron command
 	 *
-	 * @param	string		$cmd: cron command, using cron-like syntax
-	 * @return	void
+	 * @param string $cmd Cron command, using cron-like syntax
+	 * @return void
 	 */
 	public function setCronCmd($cmd) {
 		$this->cronCmd = $cmd;
@@ -175,7 +173,7 @@ class tx_scheduler_Execution {
 	/**
 	 * Get the value of the cron command
 	 *
-	 * @return	string		cron command, using cron-like syntax
+	 * @return string Cron command, using cron-like syntax
 	 */
 	public function getCronCmd() {
 		return $this->cronCmd;
@@ -187,10 +185,10 @@ class tx_scheduler_Execution {
 	 * is created and its start date is in the past (even for only a few seconds),
 	 * the next run time calculation (which happens upon saving) will disable
 	 * that task, because it was meant to run only once and is in the past.
-	 * Setting this flag to true preserves this task for a single run.
-	 * Upon next execution, this flag is set to false.
+	 * Setting this flag to TRUE preserves this task for a single run.
+	 * Upon next execution, this flag is set to FALSE.
 	 *
-	 * @param	boolean		Is newly created single execution?
+	 * @param boolean $isNewSingleExecution Is newly created single execution?
 	 * @return	void
 	 * @see tx_scheduler_Execution::getNextExecution()
 	 */
@@ -201,7 +199,7 @@ class tx_scheduler_Execution {
 	/**
 	 * Get whether this is a newly created single execution
 	 *
-	 * @return	boolean		Is newly created single execution?
+	 * @return boolean Is newly created single execution?
 	 */
 	public function getIsNewSingleExecution() {
 		return $this->isNewSingleExecution;
@@ -214,7 +212,7 @@ class tx_scheduler_Execution {
 	/**
 	 * This method gets or calculates the next execution date
 	 *
-	 * @return	integer		Timestamp of the next execution
+	 * @return integer Timestamp of the next execution
 	 */
 	public function getNextExecution() {
 
@@ -235,7 +233,7 @@ class tx_scheduler_Execution {
 				if ($this->cronCmd) {
 						// If it uses cron-like syntax, calculate next date
 					$date = $this->getNextCronExecution();
-				} else if ($this->interval == 0) {
+				} elseif ($this->interval == 0) {
 						// If not and there's no interval either, it's a singe execution: use start date
 					$date = $this->start;
 				} else {
@@ -257,11 +255,12 @@ class tx_scheduler_Execution {
 	}
 
 	/**
-	 * Calulates the next execution from a cron command
+	 * Calculates the next execution from a cron command
 	 *
-	 * @return	integer		Next execution (timestamp)
+	 * @return integer Next execution (timestamp)
 	 */
 	public function getNextCronExecution() {
+			/** @var $cronCmd tx_scheduler_CronCmd */
 		$cronCmd = t3lib_div::makeInstance('tx_scheduler_CronCmd', $this->getCronCmd());
 		$cronCmd->calculateNextValue();
 
@@ -271,7 +270,7 @@ class tx_scheduler_Execution {
 	/**
 	 * Checks if the schedule for a task is started or not
 	 *
-	 * @return	boolean		True if the schedule is already active, false otherwise
+	 * @return boolean TRUE if the schedule is already active, FALSE otherwise
 	 */
 	public function isStarted() {
 		return $this->start < time();
@@ -280,7 +279,7 @@ class tx_scheduler_Execution {
 	/**
 	 * Checks if the schedule for a task is passed or not
 	 *
-	 * @return	boolean		True if the schedule is not active anymore, false otherwise
+	 * @return boolean TRUE if the schedule is not active anymore, FALSE otherwise
 	 */
 	public function isEnded() {
 		if (empty($this->end)) {

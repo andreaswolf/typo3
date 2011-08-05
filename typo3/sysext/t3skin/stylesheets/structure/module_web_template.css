@@ -1,7 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Web > Template
 
-$Id$
 - - - - - - - - - - - - - - - - - - - - - */
 
 .typo3-tstemplate-ceditor-control {
@@ -22,11 +21,6 @@ div.typo3-tstemplate-ceditor-colorblock {
 }
 
 * html div.typo3-tstemplate-ceditor-colorblock {
-	display: inline;
-}
-
-/* IE 6 Fix */
-* + html div.typo3-tstemplate-ceditor-colorblock {
 	display: inline;
 }
 

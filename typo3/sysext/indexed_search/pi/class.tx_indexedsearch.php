@@ -27,80 +27,11 @@
 /**
  * Index search frontend
  *
- * $Id$
- *
  * Creates a searchform for indexed search. Indexing must be enabled
  * for this to make sense.
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @co-author	Christian Jul Jensen <christian@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  123: class tx_indexedsearch extends tslib_pibase
- *  168:     function main($content, $conf)
- *  200:     function initialize()
- *  413:     function getSearchWords($defOp)
- *  447:     function procSearchWordsByLexer($SWArr)
- *
- *              SECTION: Main functions
- *  491:     function doSearch($sWArr)
- *  549:     function getResultRows($sWArr,$freeIndexUid=-1)
- *  623:     function getResultRows_SQLpointer($sWArr,$freeIndexUid=-1)
- *  647:     function getDisplayResults($sWArr, $resData, $freeIndexUid=-1)
- *  699:     function compileResult($resultRows, $freeIndexUid=-1)
- *
- *              SECTION: Searching functions (SQL)
- *  800:     function getPhashList($sWArr)
- *  901:     function execPHashListQuery($wordSel,$plusQ='')
- *  921:     function sectionTableWhere()
- *  968:     function mediaTypeWhere()
- *  993:     function languageWhere()
- * 1005:     function freeIndexUidWhere($freeIndexUid)
- * 1046:     function execFinalQuery($list,$freeIndexUid=-1)
- * 1189:     function checkResume($row)
- * 1236:     function isDescending($inverse=FALSE)
- * 1250:     function writeSearchStat($sWArr,$count,$pt)
- *
- *              SECTION: HTML output functions
- * 1302:     function makeSearchForm($optValues)
- * 1436:     function renderSelectBoxValues($value,$optValues)
- * 1455:     function printRules()
- * 1474:     function printResultSectionLinks()
- * 1508:     function makeSectionHeader($id, $sectionTitleLinked, $countResultRows)
- * 1529:     function printResultRow($row, $headerOnly=0)
- * 1598:     function pi_list_browseresults($showResultCount=1,$addString='',$addPart='',$freeIndexUid=-1)
- *
- *              SECTION: Support functions for HTML output (with a minimum of fixed markup)
- * 1686:     function prepareResultRowTemplateData($row, $headerOnly)
- * 1740:     function tellUsWhatIsSeachedFor($sWArr)
- * 1774:     function wrapSW($str)
- * 1786:     function renderSelectBox($name,$value,$optValues)
- * 1810:     function makePointerSelector_link($str,$p,$freeIndexUid)
- * 1825:     function makeItemTypeIcon($it,$alt='',$specRowConf)
- * 1867:     function makeRating($row)
- * 1911:     function makeDescription($row,$noMarkup=0,$lgd=180)
- * 1942:     function markupSWpartsOfString($str)
- * 2022:     function makeTitle($row)
- * 2046:     function makeInfo($row,$tmplArray)
- * 2075:     function getSpecialConfigForRow($row)
- * 2099:     function makeLanguageIndication($row)
- * 2142:     function makeAccessIndication($id)
- * 2157:     function linkPage($id,$str,$row=array(),$markUpSwParams=array())
- * 2201:     function getRootLine($id,$pathMP='')
- * 2216:     function getFirstSysDomainRecordForPage($id)
- * 2229:     function getPathFromPageId($id,$pathMP='')
- * 2281:     function getMenu($id)
- * 2300:     function multiplePagesType($item_type)
- * 2310:     function utf8_to_currentCharset($str)
- * 2320:     function &hookRequest($functionName)
- *
- * TOTAL FUNCTIONS: 48
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 require_once(t3lib_extMgm::extPath('indexed_search').'class.indexer.php');
@@ -215,7 +146,7 @@ class tx_indexedsearch extends tslib_pibase {
 			foreach ($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers'] as $extension => $_objRef)	{
 				$this->external_parsers[$extension] = t3lib_div::getUserObj($_objRef);
 
-					// Init parser and if it returns false, unset its entry again:
+					// Init parser and if it returns FALSE, unset its entry again:
 				if (!$this->external_parsers[$extension]->softInit($extension))	{
 					unset($this->external_parsers[$extension]);
 				}
@@ -239,7 +170,7 @@ class tx_indexedsearch extends tslib_pibase {
 			$this->piVars['sword'] = trim($this->piVars['sword_prev']).' '.$this->piVars['sword'];
 		}
 
-		$this->piVars['results'] = t3lib_div::intInRange($this->piVars['results'],1,100000,$this->defaultResultNumber);
+		$this->piVars['results'] = t3lib_utility_Math::forceIntegerInRange($this->piVars['results'],1,100000,$this->defaultResultNumber);
 
 			// Selector-box values defined here:
 		$this->optValues = Array(
@@ -345,14 +276,12 @@ class tx_indexedsearch extends tslib_pibase {
 		if ($this->conf['show.']['L1sections'])	{
 			$firstLevelMenu = $this->getMenu($this->wholeSiteIdList);
 			foreach ($firstLevelMenu as $kk => $mR) {
-					// @TODO: RFC #7370: doktype 2&5 are deprecated since TYPO3 4.2-beta1
-				if ($mR['doktype'] != t3lib_pageSelect::DOKTYPE_HIDE_IN_MENU && !$mR['nav_hide']) {
+				if (!$mR['nav_hide']) {
 					$this->optValues['sections']['rl1_'.$mR['uid']] = trim($this->pi_getLL('opt_RL1').' '.$mR['title']);
 					if ($this->conf['show.']['L2sections'])	{
 						$secondLevelMenu = $this->getMenu($mR['uid']);
 						foreach ($secondLevelMenu as $kk2 => $mR2) {
-								// @TODO: RFC #7370: doktype 2&5 are deprecated since TYPO3 4.2-beta1
-							if ($mR2['doktype'] != t3lib_pageSelect::DOKTYPE_HIDE_IN_MENU && !$mR2['nav_hide']) {
+							if (!$mR2['nav_hide']) {
 								$this->optValues['sections']['rl2_'.$mR2['uid']] = trim($this->pi_getLL('opt_RL2').' '.$mR2['title']);
 							} else unset($secondLevelMenu[$kk2]);
 						}
@@ -423,7 +352,7 @@ class tx_indexedsearch extends tslib_pibase {
 	 *
 	 * $defOp is the default operator. 1=OR, 0=AND
 	 *
-	 * @param	boolean		If true, the default operator will be OR, not AND
+	 * @param	boolean		If TRUE, the default operator will be OR, not AND
 	 * @return	array		Returns array with search words if any found
 	 */
 	function getSearchWords($defOp)	{
@@ -573,7 +502,7 @@ class tx_indexedsearch extends tslib_pibase {
 		if ($res)	{
 
 			$count = $GLOBALS['TYPO3_DB']->sql_num_rows($res);	// Total search-result count
-			$pointer = t3lib_div::intInRange($this->piVars['pointer'], 0, floor($count/$this->piVars['results']));	// The pointer is set to the result page that is currently being viewed
+			$pointer = t3lib_utility_Math::forceIntegerInRange($this->piVars['pointer'], 0, floor($count/$this->piVars['results']));	// The pointer is set to the result page that is currently being viewed
 
 				// Initialize result accumulation variables:
 			$c = 0;	// Result pointer: Counts up the position in the current search-result
@@ -678,7 +607,7 @@ class tx_indexedsearch extends tslib_pibase {
 			if ($resData['count'])	{
 				$this->internal['res_count'] = $resData['count'];
 				$this->internal['results_at_a_time'] = $this->piVars['results'];
-				$this->internal['maxPages'] = t3lib_div::intInRange($this->conf['search.']['page_links'],1,100,10);
+				$this->internal['maxPages'] = t3lib_utility_Math::forceIntegerInRange($this->conf['search.']['page_links'],1,100,10);
 				$addString = ($resData['count']&&$this->piVars['group']=='sections'&&$freeIndexUid<=0 ? ' '.sprintf($this->pi_getLL(count($this->resultSections)>1?'inNsections':'inNsection'),count($this->resultSections)):'');
 				$browseBox1 = $this->pi_list_browseresults(1,$addString,$this->printResultSectionLinks(),$freeIndexUid);
 				$browseBox2 = $this->pi_list_browseresults(0,'','',$freeIndexUid);
@@ -988,17 +917,16 @@ class tx_indexedsearch extends tslib_pibase {
 
 		switch((string)$this->piVars['media'])	{
 			case '0':		// '0' => 'Kun TYPO3 sider',
-				$out = 'AND IP.item_type='.$GLOBALS['TYPO3_DB']->fullQuoteStr('0', 'index_phash');;
-			break;
+				$out = 'AND IP.item_type=' . $GLOBALS['TYPO3_DB']->fullQuoteStr('0', 'index_phash');
+				break;
 			case '-2':		// All external documents
-				$out = 'AND IP.item_type!='.$GLOBALS['TYPO3_DB']->fullQuoteStr('0', 'index_phash');;
-			break;
+				$out = 'AND IP.item_type!=' . $GLOBALS['TYPO3_DB']->fullQuoteStr('0', 'index_phash');
+				break;
 			case '-1':	// All content
-				$out='';
-			break;
+				$out = '';
+				break;
 			default:
-				$out = 'AND IP.item_type='.$GLOBALS['TYPO3_DB']->fullQuoteStr($this->piVars['media'], 'index_phash');
-			break;
+				$out = 'AND IP.item_type=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->piVars['media'], 'index_phash');
 		}
 
 		return $out;
@@ -1203,7 +1131,7 @@ class tx_indexedsearch extends tslib_pibase {
 	 * ? Should it also check for gr_list "0,-1"?
 	 *
 	 * @param	array		Result row array.
-	 * @return	boolean		Returns true if resume can safely be shown
+	 * @return	boolean		Returns TRUE if resume can safely be shown
 	 */
 	function checkResume($row)	{
 
@@ -1249,7 +1177,7 @@ class tx_indexedsearch extends tslib_pibase {
 	/**
 	 * Returns "DESC" or "" depending on the settings of the incoming highest/lowest result order (piVars['desc']
 	 *
-	 * @param	boolean		If true, inverse the order which is defined by piVars['desc']
+	 * @param	boolean		If TRUE, inverse the order which is defined by piVars['desc']
 	 * @return	string		" DESC" or ""
 	 */
 	function isDescending($inverse=FALSE)	{
@@ -1330,7 +1258,20 @@ class tx_indexedsearch extends tslib_pibase {
 		$markerArray['###FORM_SUBMIT###'] = $this->pi_getLL('submit_button_label','',1);
 
 			// Adding search field value
-		$markerArray['###SWORD_VALUE###'] = htmlspecialchars($this->piVars['sword']);
+		if (isset($this->piVars['sword']) && $this->piVars['sword'] != '') {
+			$markerArray['###SWORD_VALUE###'] = htmlspecialchars($this->piVars['sword']);
+			$markerArray['###PLACEHOLDER###'] = '';
+		} else {
+				// Add a HTML5 placeholder attribute if the configured doctype allows it
+			if ($GLOBALS['TSFE']->config['config']['doctype'] === 'html5') {
+				$markerArray['###SWORD_VALUE###'] = '';
+				$markerArray['###PLACEHOLDER###'] = 'placeholder="' . $this->pi_getLL('default_search_word_entry') . '"';
+			} else {
+				$markerArray['###SWORD_VALUE###'] = $this->pi_getLL('default_search_word_entry');
+				$markerArray['###PLACEHOLDER###'] = '';
+			}
+		}
+
 
 			// Additonal keyword => "Add to current search words"
 		if ($this->conf['show.']['clearSearchBox'] && $this->conf['show.']['clearSearchBox.']['enableSubSearchCheckBox'])	{
@@ -1639,8 +1580,8 @@ class tx_indexedsearch extends tslib_pibase {
 			// Initializing variables:
 		$pointer=$this->piVars['pointer'];
 		$count=$this->internal['res_count'];
-		$results_at_a_time = t3lib_div::intInRange($this->internal['results_at_a_time'],1,1000);
-		$maxPages = t3lib_div::intInRange($this->internal['maxPages'],1,100);
+		$results_at_a_time = t3lib_utility_Math::forceIntegerInRange($this->internal['results_at_a_time'],1,1000);
+		$maxPages = t3lib_utility_Math::forceIntegerInRange($this->internal['maxPages'],1,100);
 		$pageCount = ceil($count/$results_at_a_time);
 		$sTables = '';
 
@@ -1923,20 +1864,20 @@ class tx_indexedsearch extends tslib_pibase {
 				return $row['order_val'].' '.$this->pi_getLL('maketitle_matches');
 			break;
 			case 'rank_first':	// Close to top of page
-				return ceil(t3lib_div::intInRange(255-$row['order_val'],1,255)/255*100).'%';
+				return ceil(t3lib_utility_Math::forceIntegerInRange(255-$row['order_val'],1,255)/255*100).'%';
 			break;
 			case 'rank_flag':	// Based on priority assigned to <title> / <meta-keywords> / <meta-description> / <body>
 				if ($this->firstRow['order_val2'])	{
 					$base = $row['order_val1']*256; // (3 MSB bit, 224 is highest value of order_val1 currently)
 					$freqNumber = $row['order_val2']/$this->firstRow['order_val2']*pow(2,12);	// 15-3 MSB = 12
-					$total = t3lib_div::intInRange($base+$freqNumber,0,32767);
+					$total = t3lib_utility_Math::forceIntegerInRange($base+$freqNumber,0,32767);
 					#debug($total);
 					return ceil(log($total)/log(32767)*100).'%';
 				}
 			break;
 			case 'rank_freq':	// Based on frequency
 				$max = 10000;
-				$total = t3lib_div::intInRange($row['order_val'],0,$max);
+				$total = t3lib_utility_Math::forceIntegerInRange($row['order_val'],0,$max);
 #				debug($total);
 				return ceil(log($total)/log($max)*100).'%';
 			break;
@@ -1956,7 +1897,7 @@ class tx_indexedsearch extends tslib_pibase {
 	 * Returns the resume for the search-result.
 	 *
 	 * @param	array		Search result row
-	 * @param	boolean		If noMarkup is false, then the index_fulltext table is used to select the content of the page, split it with regex to display the search words in the text.
+	 * @param	boolean		If noMarkup is FALSE, then the index_fulltext table is used to select the content of the page, split it with regex to display the search words in the text.
 	 * @param	integer		String length
 	 * @return	string		HTML string		...
 	 */
@@ -2015,7 +1956,7 @@ class tx_indexedsearch extends tslib_pibase {
 
 		$occurencies = (count($parts)-1)/2;
 		if ($occurencies)	{
-			$postPreLgd = t3lib_div::intInRange($summaryMax/$occurencies,$postPreLgd,$summaryMax/2);
+			$postPreLgd = t3lib_utility_Math::forceIntegerInRange($summaryMax/$occurencies,$postPreLgd,$summaryMax/2);
 		}
 
 			// Variable:
@@ -2046,7 +1987,7 @@ class tx_indexedsearch extends tslib_pibase {
 										preg_replace('/^[^[:space:]]+[[:space:]]/','',$GLOBALS['TSFE']->csConvObj->crop('utf-8',$parts[$k],-($postPreLgd-$postPreLgd_offset)));
 					}
 				}
-				$summaryLgd+= $GLOBALS['TSFE']->csConvObj->strlen('utf-8', $output[$k]);;
+				$summaryLgd+= $GLOBALS['TSFE']->csConvObj->strlen('utf-8', $output[$k]);
 
 					// Protect output:
 				$output[$k] = htmlspecialchars($output[$k]);
@@ -2358,7 +2299,7 @@ class tx_indexedsearch extends tslib_pibase {
 	 * Returns if an item type is a multipage item type
 	 *
 	 * @param	string		Item type
-	 * @return	boolean		True if multipage capable
+	 * @return	boolean		TRUE if multipage capable
 	 */
 	function multiplePagesType($item_type)	{
 		return is_object($this->external_parsers[$item_type]) && $this->external_parsers[$item_type]->isMultiplePageExtension($item_type);
@@ -2378,7 +2319,7 @@ class tx_indexedsearch extends tslib_pibase {
 	 * Returns an object reference to the hook object if any
 	 *
 	 * @param	string		Name of the function you want to call / hook key
-	 * @return	object		Hook object, if any. Otherwise null.
+	 * @return	object		Hook object, if any. Otherwise NULL.
 	 */
 	function hookRequest($functionName) {
 		global $TYPO3_CONF_VARS;

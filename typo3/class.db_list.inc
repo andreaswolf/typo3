@@ -28,41 +28,10 @@
  * Include file extending t3lib_recordList
  * Shared between Web>List (db_list.php) and Web>Page (sysext/cms/layout/db_layout.php)
  *
- * $Id$
  * Revised for TYPO3 3.6 December/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   86: class recordList extends t3lib_recordList
- *  148:     function start($id,$table,$pointer,$search="",$levels="",$showLimit=0)
- *  211:     function generateList()
- *  275:     function getSearchBox($formFields=1)
- *  319:     function showSysNotesForPage()
- *
- *              SECTION: Various helper functions
- *  396:     function setDispFields()
- *  421:     function thumbCode($row,$table,$field)
- *  434:     function makeQueryArray($table, $id, $addWhere="",$fieldList='*')
- *  481:     function setTotalItems($queryParts)
- *  497:     function makeSearchString($table)
- *  536:     function linkWrapTable($table,$code)
- *  553:     function linkWrapItems($table,$uid,$code,$row)
- *  617:     function linkUrlMail($code,$testString)
- *  644:     function listURL($altId='',$table=-1,$exclList='')
- *  663:     function requestUri()
- *  674:     function makeFieldList($table,$dontCheckUser=0)
- *  721:     function getTreeObject($id,$depth,$perms_clause)
- *  739:     function localizationRedirect($justLocalized)
- *
- * TOTAL FUNCTIONS: 17
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -106,7 +75,7 @@ class recordList extends t3lib_recordList {
 		// Internal, static:
 	var $id;					// Page id
 	var $table='';					// Tablename if single-table mode
-	var $listOnlyInSingleTableMode=FALSE;		// If true, records are listed only if a specific table is selected.
+	var $listOnlyInSingleTableMode=FALSE;		// If TRUE, records are listed only if a specific table is selected.
 	var $firstElementNumber=0;			// Pointer for browsing list
 	var $searchString='';				// Search string
 	var $searchLevels='';				// Levels to search down.
@@ -118,6 +87,13 @@ class recordList extends t3lib_recordList {
 	var $modSharedTSconfig = array();		// Shared module configuration, used by localization features
 	var $pageRecord = array();		// Loaded with page record with version overlay if any.
 	var $hideTables = '';			// Tables which should not get listed
+
+	/**
+	 * Tables which should not list their translations
+	 * @var $hideTranslations string
+	 */
+	public $hideTranslations = '';
+
 	var $tableTSconfigOverTCA = array(); //TSconfig which overwrites TCA-Settings
 	var $tablesCollapsed = array(); // Array of collapsed / uncollapsed tables in multi table view
 
@@ -148,15 +124,17 @@ class recordList extends t3lib_recordList {
 	 * @return	void
 	 */
 	function start($id,$table,$pointer,$search="",$levels="",$showLimit=0)	{
-		global $TCA;
 
 			// Setting internal variables:
 		$this->id=intval($id);					// sets the parent id
-		if ($TCA[$table])	$this->table=$table;		// Setting single table mode, if table exists:
+		if ($GLOBALS['TCA'][$table]) {
+				// Setting single table mode, if table exists:
+			$this->table = $table;
+		}
 		$this->firstElementNumber=$pointer;
 		$this->searchString=trim($search);
 		$this->searchLevels=trim($levels);
-		$this->showLimit=t3lib_div::intInRange($showLimit,0,10000);
+		$this->showLimit=t3lib_utility_Math::forceIntegerInRange($showLimit,0,10000);
 
 			// Setting GPvars:
 		$this->csvOutput = t3lib_div::_GP('csv') ? TRUE : FALSE;
@@ -181,14 +159,14 @@ class recordList extends t3lib_recordList {
 
 			// limits
 		if(isset($this->modTSconfig['properties']['itemsLimitPerTable'])) {
-			$this->itemsLimitPerTable = t3lib_div::intInRange(intval($this->modTSconfig['properties']['itemsLimitPerTable']), 1, 10000);
+			$this->itemsLimitPerTable = t3lib_utility_Math::forceIntegerInRange(intval($this->modTSconfig['properties']['itemsLimitPerTable']), 1, 10000);
 		}
 		if(isset($this->modTSconfig['properties']['itemsLimitSingleTable'])) {
-			$this->itemsLimitSingleTable = t3lib_div::intInRange(intval($this->modTSconfig['properties']['itemsLimitSingleTable']), 1, 10000);
+			$this->itemsLimitSingleTable = t3lib_utility_Math::forceIntegerInRange(intval($this->modTSconfig['properties']['itemsLimitSingleTable']), 1, 10000);
 		}
 
-			// Set select levels:
-		$sL=intval($this->searchLevels);
+			// Set search levels:
+		$searchLevels = intval($this->searchLevels);
 		$this->perms_clause = $GLOBALS['BE_USER']->getPagePermsClause(1);
 
 			// this will hide records from display - it has nothing todo with user rights!!
@@ -216,12 +194,15 @@ class recordList extends t3lib_recordList {
 			}
 		}
 
-		if ($sL>0)	{
-			$tree = $this->getTreeObject($this->id, $sL, $this->perms_clause);
+		if ($searchLevels > 0) {
+			$tree = $this->getTreeObject($this->id, $searchLevels, $this->perms_clause);
 			$pidList = implode(',', $GLOBALS['TYPO3_DB']->cleanIntArray($tree->ids));
 			$this->pidSelect = 'pid IN (' . $pidList . ')';
+		} elseif ($searchLevels < 0) {
+				// Search everywhere
+			$this->pidSelect = '1=1';
 		} else {
-			$this->pidSelect = 'pid='.intval($id);
+			$this->pidSelect = 'pid=' . intval($id);
 		}
 
 			// Initialize languages:
@@ -238,13 +219,12 @@ class recordList extends t3lib_recordList {
 	 * @return	void
 	 */
 	function generateList()	{
-		global $TCA;
 
 			// Set page record in header
 		$this->pageRecord = t3lib_BEfunc::getRecordWSOL('pages',$this->id);
 
 			// Traverse the TCA table array:
-		foreach ($TCA as $tableName => $value) {
+		foreach ($GLOBALS['TCA'] as $tableName => $value) {
 
 				// Checking if the table should be rendered:
 			if ((!$this->table || $tableName==$this->table) && (!$this->tableList || t3lib_div::inList($this->tableList,$tableName)) && $GLOBALS['BE_USER']->check('tables_select',$tableName))	{		// Checks that we see only permitted/requested tables:
@@ -268,9 +248,13 @@ class recordList extends t3lib_recordList {
 
 					// iLimit is set depending on whether we're in single- or multi-table mode
 				if ($this->table)	{
-					$this->iLimit=(isset($TCA[$tableName]['interface']['maxSingleDBListItems'])?intval($TCA[$tableName]['interface']['maxSingleDBListItems']):$this->itemsLimitSingleTable);
+					$this->iLimit= (isset($GLOBALS['TCA'][$tableName]['interface']['maxSingleDBListItems'])
+						? intval($GLOBALS['TCA'][$tableName]['interface']['maxSingleDBListItems']) :
+						$this->itemsLimitSingleTable);
 				} else {
-					$this->iLimit=(isset($TCA[$tableName]['interface']['maxDBListItems'])?intval($TCA[$tableName]['interface']['maxDBListItems']):$this->itemsLimitPerTable);
+					$this->iLimit = (isset($GLOBALS['TCA'][$tableName]['interface']['maxDBListItems'])
+						? intval($GLOBALS['TCA'][$tableName]['interface']['maxDBListItems'])
+						: $this->itemsLimitPerTable);
 				}
 				if ($this->showLimit)	$this->iLimit = $this->showLimit;
 
@@ -292,13 +276,14 @@ class recordList extends t3lib_recordList {
 
 					// Find ID to use (might be different for "versioning_followPages" tables)
 				if (intval($this->searchLevels)==0)	{
-					if ($TCA[$tableName]['ctrl']['versioning_followPages'] && $this->pageRecord['_ORIG_pid']==-1 && $this->pageRecord['t3ver_swapmode']==0)	{
+					if ($GLOBALS['TCA'][$tableName]['ctrl']['versioning_followPages'] && $this->pageRecord['_ORIG_pid'] == -1
+						&& $this->pageRecord['t3ver_swapmode'] == 0) {
 						$this->pidSelect = 'pid='.intval($this->pageRecord['_ORIG_uid']);
 					} else {
 						$this->pidSelect = 'pid='.intval($this->id);
 					}
 				}
-#debug($this->pidSelect,$tableName);
+
 					// Finally, render the list:
 				$this->HTMLcode.=$this->getTable($tableName, $this->id, implode(',',$fields));
 			}
@@ -308,7 +293,7 @@ class recordList extends t3lib_recordList {
 	/**
 	 * Creates the search box
 	 *
-	 * @param	boolean		If true, the search box is wrapped in its own form-tags
+	 * @param	boolean		If TRUE, the search box is wrapped in its own form-tags
 	 * @return	string		HTML for the search box
 	 */
 	function getSearchBox($formFields=1)	{
@@ -316,7 +301,7 @@ class recordList extends t3lib_recordList {
 			// Setting form-elements, if applicable:
 		$formElements=array('','');
 		if ($formFields)	{
-			$formElements=array('<form action="'.htmlspecialchars($this->listURL()).'" method="post">','</form>');
+			$formElements = array('<form action="' . htmlspecialchars($this->listURL('', -1, 'firstElementNumber')) . '" method="post">', '</form>');
 		}
 
 			// Make level selector:
@@ -355,8 +340,6 @@ class recordList extends t3lib_recordList {
 	 * @return	string		HTML for the sys-notes (if any)
 	 */
 	function showSysNotesForPage()	{
-		global $TCA;
-
 		$out='';
 
 			// Checking if extension is loaded:
@@ -376,8 +359,9 @@ class recordList extends t3lib_recordList {
 			t3lib_div::loadTCA('sys_note');
 
 				// Traverse note-types and get labels:
-			if ($TCA['sys_note'] && $TCA['sys_note']['columns']['category'] && is_array($TCA['sys_note']['columns']['category']['config']['items']))	{
-				foreach($TCA['sys_note']['columns']['category']['config']['items'] as $el)	{
+			if ($GLOBALS['TCA']['sys_note'] && $GLOBALS['TCA']['sys_note']['columns']['category']
+				&& is_array($GLOBALS['TCA']['sys_note']['columns']['category']['config']['items'])) {
+				foreach($GLOBALS['TCA']['sys_note']['columns']['category']['config']['items'] as $el) {
 					$cat[$el[1]]=$GLOBALS['LANG']->sL($el[0]);
 				}
 			}
@@ -470,17 +454,17 @@ class recordList extends t3lib_recordList {
 	 * @return	array		Returns query array
 	 */
 	function makeQueryArray($table, $id, $addWhere='', $fieldList='*')	{
-		global $TCA, $TYPO3_CONF_VARS;
-
 		$hookObjectsArr = array();
-		if (is_array ($TYPO3_CONF_VARS['SC_OPTIONS']['typo3/class.db_list.inc']['makeQueryArray'])) {
-			foreach ($TYPO3_CONF_VARS['SC_OPTIONS']['typo3/class.db_list.inc']['makeQueryArray'] as $classRef) {
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list.inc']['makeQueryArray'])) {
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['typo3/class.db_list.inc']['makeQueryArray'] as $classRef) {
 				$hookObjectsArr[] = t3lib_div::getUserObj($classRef);
 			}
 		}
 
 			// Set ORDER BY:
-		$orderBy = ($TCA[$table]['ctrl']['sortby']) ? 'ORDER BY '.$TCA[$table]['ctrl']['sortby'] : $TCA[$table]['ctrl']['default_sortby'];
+		$orderBy = ($GLOBALS['TCA'][$table]['ctrl']['sortby']
+			? 'ORDER BY ' . $GLOBALS['TCA'][$table]['ctrl']['sortby']
+			: $GLOBALS['TCA'][$table]['ctrl']['default_sortby']);
 		if ($this->sortField)	{
 			if (in_array($this->sortField,$this->makeFieldList($table,1)))	{
 				$orderBy = 'ORDER BY '.$this->sortField;
@@ -495,7 +479,7 @@ class recordList extends t3lib_recordList {
 		$pC = ($table=='pages' && $this->perms_clause)?' AND '.$this->perms_clause:'';
 
 			// Adding search constraints:
-		$search = $this->makeSearchString($table);
+		$search = $this->makeSearchString($table, $id);
 
 			// Compiling query array:
 		$queryParts = array(
@@ -511,6 +495,12 @@ class recordList extends t3lib_recordList {
 			'ORDERBY' => $GLOBALS['TYPO3_DB']->stripOrderBy($orderBy),
 			'LIMIT' => $limit
 		);
+
+			// Filter out records that are translated, if TSconfig mod.web_list.hideTranslations is set
+		if ((in_array($table, t3lib_div::trimExplode(',', $this->hideTranslations)) || $this->hideTranslations === '*')
+			&& !empty($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'])) {
+			$queryParts['WHERE'] .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'] . '=0 ';
+		}
 
 			// Apply hook as requested in http://bugs.typo3.org/view.php?id=4361
 		foreach ($hookObjectsArr as $hookObj) {
@@ -545,40 +535,81 @@ class recordList extends t3lib_recordList {
 	}
 
 	/**
-	 * Creates part of query for searching after a word ($this->searchString) fields in input table
+	 * Creates part of query for searching after a word ($this->searchString)
+	 * fields in input table.
 	 *
-	 * @param	string		Table, in which the fields are being searched.
-	 * @return	string		Returns part of WHERE-clause for searching, if applicable.
+	 * @param string $table Table, in which the fields are being searched.
+	 * @param integer $currentPid Page id for the possible search limit. -1 only if called from an old XCLASS.
+	 * @return string Returns part of WHERE-clause for searching, if applicable.
 	 */
-	function makeSearchString($table)	{
-		global $TCA;
+	function makeSearchString($table, $currentPid = -1) {
+		$result = '';
+
+		$currentPid = intval($currentPid);
+		$tablePidField = ($table == 'pages' ? 'uid' : 'pid');
 
 			// Make query, only if table is valid and a search string is actually defined:
-		if ($TCA[$table] && $this->searchString)	{
+		if ($this->searchString) {
+			$result = ' AND 0=1';
+			if ($GLOBALS['TCA'][$table] && $GLOBALS['TCA'][$table]['ctrl']['searchFields']) {
+				$searchableFields = t3lib_div::trimExplode(',', $GLOBALS['TCA'][$table]['ctrl']['searchFields'], TRUE);
 
-				// Loading full table description - we need to traverse fields:
-			t3lib_div::loadTCA($table);
+					// Loading full table description - we need to traverse fields:
+				t3lib_div::loadTCA($table);
 
-				// Initialize field array:
-			$sfields=array();
-			$sfields[]='uid';	// Adding "uid" by default.
+				if (t3lib_utility_Math::canBeInterpretedAsInteger($this->searchString)) {
+					$whereParts = array(
+						'uid=' . $this->searchString
+					);
 
-				// Traverse the configured columns and add all columns that can be searched:
-			foreach($TCA[$table]['columns'] as $fieldName => $info)	{
-				if ($info['config']['type']=='text' || ($info['config']['type']=='input' && !preg_match('/date|time|int/',$info['config']['eval'])))	{
-					$sfields[]=$fieldName;
+					foreach($searchableFields as $fieldName)	{
+						if (isset($GLOBALS['TCA'][$table]['columns'][$fieldName])) {
+							$fieldConfig = &$GLOBALS['TCA'][$table]['columns'][$fieldName]['config'];
+							if ($fieldConfig['type'] == 'input' && $fieldConfig['eval'] && t3lib_div::inList($fieldConfig['eval'], 'int')) {
+								$condition = $fieldName . '=' . $this->searchString;
+								if (is_array($fieldConfig['search']) && in_array('pidonly', $fieldConfig['search']) && $currentPid > 0) {
+									$condition = '(' . $condition . ' AND ' . $tablePidField . '=' . $currentPid . ')';
+								}
+								$whereParts[] = $condition;
+							}
+						}
+					}
+				} else {
+					$whereParts = array();
+					$like = '\'%' .
+						$GLOBALS['TYPO3_DB']->quoteStr($GLOBALS['TYPO3_DB']->escapeStrForLike($this->searchString, $table), $table) .
+						'%\'';
+					foreach($searchableFields as $fieldName) {
+						if (isset($GLOBALS['TCA'][$table]['columns'][$fieldName])) {
+							$fieldConfig = &$GLOBALS['TCA'][$table]['columns'][$fieldName]['config'];
+							$format = 'LCASE(%s) LIKE LCASE(%s)';
+							if (is_array($fieldConfig['search'])) {
+								if (in_array('case', $fieldConfig['search'])) {
+									$format = '%s LIKE %s';
+								}
+								if (in_array('pidonly', $fieldConfig['search']) && $currentPid > 0) {
+									$format = '(' . $format . ' AND ' . $tablePidField . '=' . $currentPid . ')';
+								}
+								if ($fieldConfig['search']['andWhere']) {
+									$format = '((' . $fieldConfig['search']['andWhere'] . ') AND (' . $format . '))';
+								}
+							}
+							if ($fieldConfig['type'] == 'text' ||
+									$fieldConfig['type'] == 'flex' ||
+									($fieldConfig['type'] == 'input' && (!$fieldConfig['eval'] || !preg_match('/date|time|int/',$fieldConfig['eval'])))) {
+								$whereParts[] = sprintf($format, $fieldName, $like);
+							}
+						}
+					}
+				}
+
+					// If search-fields were defined (and there always are) we create the query:
+				if (count($whereParts)) {
+					$result = ' AND (' . implode(' OR ', $whereParts) . ')';
 				}
 			}
-
-				// If search-fields were defined (and there always are) we create the query:
-			if (count($sfields))	{
-				$like = ' LIKE \'%'.$GLOBALS['TYPO3_DB']->quoteStr($this->searchString, $table).'%\'';		// Free-text searching...
-				$queryPart = ' AND ('.implode($like.' OR ',$sfields).$like.')';
-
-					// Return query:
-				return $queryPart;
-			}
 		}
+		return $result;
 	}
 
 	/**
@@ -591,9 +622,9 @@ class recordList extends t3lib_recordList {
 	 */
 	function linkWrapTable($table,$code)	{
 		if ($this->table!=$table)	{
-			return '<a href="'.htmlspecialchars($this->listURL('',$table)).'">'.$code.'</a>';
+			return '<a href="' . htmlspecialchars($this->listURL('', $table, 'firstElementNumber')) . '">' . $code . '</a>';
 		} else {
-			return '<a href="'.htmlspecialchars($this->listURL('','','sortField,sortRev,table')).'">'.$code.'</a>';
+			return '<a href="' . htmlspecialchars($this->listURL('', '', 'sortField,sortRev,table,firstElementNumber')) . '">' . $code . '</a>';
 		}
 	}
 
@@ -607,8 +638,6 @@ class recordList extends t3lib_recordList {
 	 * @return	string		The item title. Ready for HTML output (is htmlspecialchars()'ed)
 	 */
 	function linkWrapItems($table,$uid,$code,$row)	{
-		global $TCA, $LANG;
-
 		$origCode = $code;
 
 			// If the title is blank, make a "no title" label:
@@ -634,29 +663,32 @@ class recordList extends t3lib_recordList {
 					// "Edit" link: ( Only if permissions to edit the page-record of the content of the parent page ($this->id)
 				if ($permsEdit)	{
 					$params='&edit['.$table.']['.$row['uid'].']=edit';
-					$code = '<a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::editOnClick($params,$this->backPath,-1)).'" title="'.$LANG->getLL('edit',1).'">'.
-							$code.
+					$code = '<a href="#" onclick="' . htmlspecialchars(t3lib_BEfunc::editOnClick($params, $this->backPath, -1)) .
+						'" title="' . $GLOBALS['LANG']->getLL('edit', 1) . '">' .
+							$code .
 							'</a>';
 				}
 			break;
 			case 'show':
 					// "Show" link (only pages and tt_content elements)
 				if ($table=='pages' || $table=='tt_content')	{
-					$code = '<a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::viewOnClick($table=='tt_content'?$this->id.'#'.$row['uid']:$row['uid'])).'" title="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.showPage',1).'">'.
-							$code.
-							'</a>';
+					$code = '<a href="#" onclick="'. htmlspecialchars(t3lib_BEfunc::viewOnClick(
+							$table == 'tt_content' ? $this->id . '#' . $row['uid'] : $row['uid'])
+						) . '" title="'.$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.showPage', 1) . '">'.
+						$code. '</a>';
 				}
 			break;
 			case 'info':
 				// "Info": (All records)
-				$code = '<a href="#" onclick="'.htmlspecialchars('top.launchView(\''.$table.'\', \''.$row['uid'].'\'); return false;').'" title="'.$LANG->getLL('showInfo',1).'">'.
+				$code = '<a href="#" onclick="'.htmlspecialchars('top.launchView(\'' . $table . '\', \'' . $row['uid'] .
+					'\'); return false;') . '" title="'.$GLOBALS['LANG']->getLL('showInfo', 1) . '">' .
 					$code.
 					'</a>';
 			break;
 			default:
 					// Output the label now:
 				if ($table=='pages')	{
-					$code = '<a href="'.htmlspecialchars($this->listURL($uid,'')).'" onclick="setHighlight('.$uid.')">'.$code.'</a>';
+					$code = '<a href="' . htmlspecialchars($this->listURL($uid, '', 'firstElementNumber')) . '" onclick="setHighlight(' . $uid . ')">' . $code . '</a>';
 				} else {
 					$code = $this->linkUrlMail($code,$origCode);
 				}
@@ -697,7 +729,7 @@ class recordList extends t3lib_recordList {
 	 *
 	 * @param	string		Alternative id value. Enter blank string for the current id ($this->id)
 	 * @param	string		Tablename to display. Enter "-1" for the current table.
-	 * @param	string		Commalist of fields NOT to include ("sortField" or "sortRev")
+	 * @param	string		Commalist of fields NOT to include ("sortField", "sortRev" or "firstElementNumber")
 	 * @return	string		URL
 	 */
 	function listURL($altId='',$table=-1,$exclList='')	{
@@ -727,7 +759,7 @@ class recordList extends t3lib_recordList {
 		if ($this->showLimit) {
 			$urlParameters['showLimit'] = $this->showLimit;
 		}
-		if ($this->firstElementNumber) {
+		if ((!$exclList || !t3lib_div::inList($exclList, 'firstElementNumber')) && $this->firstElementNumber) {
 			$urlParameters['pointer'] = $this->firstElementNumber;
 		}
 		if ((!$exclList || !t3lib_div::inList($exclList, 'sortField')) && $this->sortField) {
@@ -758,40 +790,48 @@ class recordList extends t3lib_recordList {
 	 * @return	array		Array, where values are fieldnames to include in query
 	 */
 	function makeFieldList($table,$dontCheckUser=0,$addDateFields=0)	{
-		global $TCA,$BE_USER;
 
 			// Init fieldlist array:
 		$fieldListArr = array();
 
 			// Check table:
-		if (is_array($TCA[$table]))	{
+		if (is_array($GLOBALS['TCA'][$table])) {
 			t3lib_div::loadTCA($table);
 
 				// Traverse configured columns and add them to field array, if available for user.
-			foreach($TCA[$table]['columns'] as $fN => $fieldValue)	{
+			foreach($GLOBALS['TCA'][$table]['columns'] as $fN => $fieldValue) {
 				if ($dontCheckUser ||
-					((!$fieldValue['exclude'] || $BE_USER->check('non_exclude_fields',$table.':'.$fN)) && $fieldValue['config']['type']!='passthrough'))	{
+					((!$fieldValue['exclude'] || $GLOBALS['BE_USER']->check('non_exclude_fields', $table . ':' . $fN))
+					&& $fieldValue['config']['type']!='passthrough')) {
 					$fieldListArr[]=$fN;
 				}
 			}
 
 				// Add special fields:
-			if ($dontCheckUser || $BE_USER->isAdmin())	{
+			if ($dontCheckUser || $GLOBALS['BE_USER']->isAdmin()) {
 				$fieldListArr[]='uid';
 				$fieldListArr[]='pid';
 			}
 
 				// Add date fields
-			if ($dontCheckUser || $BE_USER->isAdmin() || $addDateFields)	{
-				if ($TCA[$table]['ctrl']['tstamp'])	$fieldListArr[]=$TCA[$table]['ctrl']['tstamp'];
-				if ($TCA[$table]['ctrl']['crdate'])	$fieldListArr[]=$TCA[$table]['ctrl']['crdate'];
+			if ($dontCheckUser || $GLOBALS['BE_USER']->isAdmin() || $addDateFields) {
+				if ($GLOBALS['TCA'][$table]['ctrl']['tstamp']) {
+					$fieldListArr[]=$GLOBALS['TCA'][$table]['ctrl']['tstamp'];
+				}
+				if ($GLOBALS['TCA'][$table]['ctrl']['crdate']) {
+					$fieldListArr[]=$GLOBALS['TCA'][$table]['ctrl']['crdate'];
+				}
 			}
 
 				// Add more special fields:
-			if ($dontCheckUser || $BE_USER->isAdmin())	{
-				if ($TCA[$table]['ctrl']['cruser_id'])	$fieldListArr[]=$TCA[$table]['ctrl']['cruser_id'];
-				if ($TCA[$table]['ctrl']['sortby'])	$fieldListArr[]=$TCA[$table]['ctrl']['sortby'];
-				if ($TCA[$table]['ctrl']['versioningWS'])	{
+			if ($dontCheckUser || $GLOBALS['BE_USER']->isAdmin()) {
+				if ($GLOBALS['TCA'][$table]['ctrl']['cruser_id']) {
+					$fieldListArr[]=$GLOBALS['TCA'][$table]['ctrl']['cruser_id'];
+				}
+				if ($GLOBALS['TCA'][$table]['ctrl']['sortby']) {
+					$fieldListArr[]=$GLOBALS['TCA'][$table]['ctrl']['sortby'];
+				}
+				if ($GLOBALS['TCA'][$table]['ctrl']['versioningWS']) {
 					$fieldListArr[]='t3ver_id';
 					$fieldListArr[]='t3ver_state';
 					$fieldListArr[]='t3ver_wsid';
@@ -831,16 +871,15 @@ class recordList extends t3lib_recordList {
 	 * @return	void
 	 */
 	function localizationRedirect($justLocalized)	{
-		global $TCA;
-
 		list($table,$orig_uid,$language) = explode(':',$justLocalized);
 
-		if ($TCA[$table] && $TCA[$table]['ctrl']['languageField'] && $TCA[$table]['ctrl']['transOrigPointerField'])	{
+		if ($GLOBALS['TCA'][$table] && $GLOBALS['TCA'][$table]['ctrl']['languageField']
+			&& $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField']) {
 			$localizedRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
 					'uid',
 					$table,
-					$TCA[$table]['ctrl']['languageField'].'='.intval($language).' AND '.
-						$TCA[$table]['ctrl']['transOrigPointerField'].'='.intval($orig_uid).
+					$GLOBALS['TCA'][$table]['ctrl']['languageField'] . '=' . intval($language) . ' AND ' .
+						$GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'] . '=' . intval($orig_uid) .
 						t3lib_BEfunc::deleteClause($table).
 						t3lib_BEfunc::versioningPlaceholderClause($table)
 				);

@@ -28,75 +28,17 @@
  * Super Admin class has functions for the administration of multiple TYPO3 sites in folders
  * See 'misc/superadmin.php' for details on how to use!
  *
- * $Id$
  * Revised for TYPO3 3.6 February/2004 by Kasper Skårhøj
  * XHTML Compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *  120: function debug($p1,$p2='')
- *
- *
- *  134: class t3lib_superadmin
- *
- *			  SECTION: Initialize stuff
- *  180:	 function t3lib_superadmin()
- *  192:	 function init($parentDirs)
- *
- *			  SECTION: Main functions
- *  215:	 function defaultSet()
- *  271:	 function make()
- *
- *			  SECTION: Output preparation
- *  376:	 function setMenuItem($code,$label)
- *  390:	 function error($str)
- *  401:	 function headerParentDir($str)
- *  412:	 function headerSiteDir($str)
- *
- *			  SECTION: Collection information
- *  444:	 function initProcess()
- *  482:	 function processSiteDir($path,$dir)
- *  524:	 function includeLocalconf($localconf)
- *  554:	 function connectToDatabase($siteInfo)
- *  576:	 function getDBInfo($key)
- *
- *			  SECTION: Content: Installation Overview
- *  626:	 function makeTable()
- *
- *			  SECTION: Content: Local extensions
- *  729:	 function localExtensions()
- *  902:	 function getExtensionInfo($path,$extKey,$k)
- *  956:	 function getAllFilesAndFoldersInPath($fileArr,$extPath,$extList='',$regDirs=0)
- *  978:	 function findMostRecent($fileArr,$extPath)
- *  996:	 function removePrefixPathFromList($fileArr,$extPath)
- *
- *			  SECTION: Content: Other
- * 1033:	 function singleSite($exp)
- * 1064:	 function loginLog($DB)
- * 1102:	 function log_getDetails($text,$data)
- * 1116:	 function rmCachedFiles($exp)
- * 1149:	 function menuContent($exp)
- * 1221:	 function makeAdminLogin()
- * 1295:	 function changeAdminPasswordsForm()
- * 1330:	 function setNewPasswords()
- *
- * TOTAL FUNCTIONS: 28
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
 	// *******************************
 	// Set error reporting
 	// *******************************
-if (defined('E_DEPRECATED')) {
-	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-} else {
-	error_reporting(E_ALL ^ E_NOTICE);
-}
+error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
 
 define('TYPO3_mainDir', 'typo3/'); // This is the directory of the backend administration for the sites of this TYPO3 installation.
 
@@ -171,10 +113,23 @@ class t3lib_superadmin {
 	 *
 	 * @return	void
 	 */
-	function t3lib_superadmin() {
+	function __construct() {
 		$this->show = t3lib_div::_GP('show');
 		$this->type = t3lib_div::_GP('type');
 		$this->exp = t3lib_div::_GP('exp');
+	}
+
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function t3lib_superadmin() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		t3lib_superadmin::__construct();
 	}
 
 	/**
@@ -480,6 +435,7 @@ class t3lib_superadmin {
 	 * @see initProcess()
 	 */
 	function processSiteDir($path, $dir) {
+		$out = '';
 		if (@is_dir($path)) {
 			$localconf = $path . '/typo3conf/localconf.php';
 			if (@is_file($localconf)) {
@@ -1307,6 +1263,7 @@ class t3lib_superadmin {
 		$pass = trim(t3lib_div::_POST('NEWPASS'));
 		$passMD5 = t3lib_div::_POST('NEWPASS_md5');
 
+		$content = '';
 		$updatedFlag = 0;
 		if (($pass || $passMD5) && is_array($whichFields)) {
 			$pass = $passMD5 ? $passMD5 : md5($pass);

@@ -27,23 +27,9 @@
 /**
  * Example class showing how one could make XML export of page content elements in TYPO3
  *
- * $Id: xmlversionLib.inc 5634 2009-06-26 13:25:08Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   96: class user_xmlversion
- *  107:     function main_xmlversion($content,$conf)
- *  137:     function getContentResult($table)
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 /**
  * Class that creates the current page and content element records as an XML structure using the library "t3lib_xml"
@@ -109,13 +95,14 @@ class user_xmlversion {
 	/**
 	 * Selects all records from $table having the current page id as PID (records belonging to that page)
 	 *
-	 * @param	string		A tablename found in $TCA
+	 * @param	string		A tablename found in $GLOBALS['TCA']
 	 * @return	pointer		A database resource pointer
 	 */
 	function getContentResult($table) {
-		global $TCA;
-		if ($TCA[$table])	{
-			$orderBy = $TCA[$table]['ctrl']['sortby'] ? 'ORDER BY '.$TCA[$table]['ctrl']['sortby'] : $TCA[$table]['ctrl']['default_sortby'];
+		if ($GLOBALS['TCA'][$table]) {
+			$orderBy = ($GLOBALS['TCA'][$table]['ctrl']['sortby']
+				? 'ORDER BY ' . $GLOBALS['TCA'][$table]['ctrl']['sortby']
+				: $GLOBALS['TCA'][$table]['ctrl']['default_sortby']);
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $table, 'pid='.intval($GLOBALS['TSFE']->id).$this->cObj->enableFields($table), '', $GLOBALS['TYPO3_DB']->stripOrderBy($orderBy));
 			return $res;
 		}

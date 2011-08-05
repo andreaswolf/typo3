@@ -27,26 +27,10 @@
 /**
  * Generate a page-tree, non-browsable.
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	René Fritz <r.fritz@colorcube.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   78: class t3lib_pageTree extends t3lib_treeView
- *   90:	 function init($clause='')
- *  106:	 function expandNext($id)
- *  123:	 function PMicon($row,$a,$c,$nextCount,$exp)
- *  138:	 function initializePositionSaving()
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -100,7 +84,7 @@ class t3lib_pageTree extends t3lib_treeView {
 	}
 
 	/**
-	 * Returns true/false if the next level for $id should be expanded - and all levels should, so we always return 1.
+	 * Returns TRUE/FALSE if the next level for $id should be expanded - and all levels should, so we always return 1.
 	 *
 	 * @param	integer		ID (uid) to test for (see extending classes where this is checked againts session data)
 	 * @return	boolean

@@ -27,34 +27,7 @@
 /**
  * Core functions for cleaning and analysing
  *
- * $Id$
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   71: class tx_lowlevel_cleaner_core extends t3lib_cli
- *   88:     function tx_lowlevel_cleaner_core()
- *
- *              SECTION: CLI functionality
- *  134:     function cli_main($argv)
- *  193:     function cli_referenceIndexCheck()
- *  228:     function cli_noExecutionCheck($matchString)
- *  251:     function cli_printInfo($header,$res)
- *
- *              SECTION: Page tree traversal
- *  331:     function genTree($rootID,$depth=1000,$echoLevel=0,$callBack='')
- *  369:     function genTree_traverse($rootID,$depth,$echoLevel=0,$callBack='',$versionSwapmode='',$rootIsVersion=0,$accumulatedPath='')
- *
- *              SECTION: Helper functions
- *  554:     function infoStr($rec)
- *
- * TOTAL FUNCTIONS: 8
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -86,10 +59,10 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 	 *
 	 * @return	void
 	 */
-	function tx_lowlevel_cleaner_core()	{
+	function __construct()	{
 
 			// Running parent class constructor
-		parent::t3lib_cli();
+		parent::__construct();
 
 		$this->cleanerModules = (array)$GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['lowlevel']['cleanerModules'];
 
@@ -112,6 +85,18 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 		$this->cli_help['author'] = "Kasper Skaarhoej, (c) 2006";
 	}
 
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.6 and will be removed in TYPO3 4.8. Use __construct() instead.
+	 */
+	public function tx_lowlevel_cleaner_core() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		tx_lowlevel_cleaner_core::__construct();
+	}
 
 
 
@@ -251,7 +236,7 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 	 */
 	function cli_printInfo($header,$res)	{
 
-		$detailLevel = t3lib_div::intInRange($this->cli_isArg('-v') ? $this->cli_argValue('-v') : 1,0,3);
+		$detailLevel = t3lib_utility_Math::forceIntegerInRange($this->cli_isArg('-v') ? $this->cli_argValue('-v') : 1,0,3);
 		$silent = !$this->cli_echo();
 
 		$severity = array(
@@ -331,7 +316,8 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 	 */
 	function genTree($rootID,$depth=1000,$echoLevel=0,$callBack='')	{
 
-		$pt = t3lib_div::milliseconds();$this->performanceStatistics['genTree()']='';
+		$pt = t3lib_div::milliseconds();
+		$this->performanceStatistics['genTree()'] = '';
 
 			// Initialize:
 		if (t3lib_extMgm::isLoaded('workspaces')) {
@@ -354,7 +340,9 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 		);
 
 			// Start traversal:
-		$pt2 = t3lib_div::milliseconds();$this->performanceStatistics['genTree_traverse()']=''; $this->performanceStatistics['genTree_traverse():TraverseTables']='';
+		$pt2 = t3lib_div::milliseconds();
+		$this->performanceStatistics['genTree_traverse()'] = '';
+		$this->performanceStatistics['genTree_traverse():TraverseTables'] = '';
 		$this->genTree_traverse($rootID,$depth,$echoLevel,$callBack);
 		$this->performanceStatistics['genTree_traverse()'] = t3lib_div::milliseconds()-$pt2;
 
@@ -582,7 +570,7 @@ class tx_lowlevel_cleaner_core extends t3lib_cli {
 				if (is_array($versions))	{
 					foreach($versions as $verRec)	{
 						if (!$verRec['_CURRENT_VERSION'])	{
-							$this->genTree_traverse($verRec['uid'],$depth,$echoLevel,$callBack,'SWAPMODE:'.t3lib_div::intInRange($verRec['t3ver_swapmode'],-1,1),$versionSwapmode?2:1,$accumulatedPath.' [#OFFLINE VERSION: WS#'.$verRec['t3ver_wsid'].'/Cnt:'.$verRec['t3ver_count'].']');
+							$this->genTree_traverse($verRec['uid'],$depth,$echoLevel,$callBack,'SWAPMODE:'.t3lib_utility_Math::forceIntegerInRange($verRec['t3ver_swapmode'],-1,1),$versionSwapmode?2:1,$accumulatedPath.' [#OFFLINE VERSION: WS#'.$verRec['t3ver_wsid'].'/Cnt:'.$verRec['t3ver_count'].']');
 						}
 					}
 				}

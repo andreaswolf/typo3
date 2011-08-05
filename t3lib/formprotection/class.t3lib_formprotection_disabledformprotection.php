@@ -28,8 +28,6 @@
  * This class is a dummy implementation of the form protection,
  * which is used when no authentication is used.
  *
- * $Id$
- *
  * @package TYPO3
  * @subpackage t3lib
  *
@@ -55,7 +53,7 @@ class t3lib_formprotection_DisabledFormProtection extends t3lib_formprotection_A
 
 	/**
 	 * Disable parent method.
-	 * Always return true.
+	 * Always return TRUE.
 	 *
 	 * @return boolean
 	 */
@@ -75,15 +73,25 @@ class t3lib_formprotection_DisabledFormProtection extends t3lib_formprotection_A
 	/**
 	 * Dummy implementation
 	 */
-	protected function retrieveTokens() {
+	protected function retrieveSessionToken() {
 		// Do nothing.
 	}
 
 	/**
 	 * Dummy implementation
 	 */
-	public function persistTokens() {
+	public function persistSessionToken() {
 		// Do nothing.
+	}
+
+	/**
+	 * This method was once used for persisting all tokens.
+	 *
+	 * @deprecated since TYPO3 4.5.3, will be removed in TYPO3 4.7
+	 * @return void
+	 */
+	public function persistTokens() {
+		t3lib_div::logDeprecatedFunction();
 	}
 }
 

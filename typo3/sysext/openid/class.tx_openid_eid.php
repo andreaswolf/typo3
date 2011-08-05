@@ -21,23 +21,9 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   44: class tx_openid_eID
- *   50:     public function main()
- *
- * TOTAL FUNCTIONS: 1
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 /**
  * This class is the OpenID return script for the TYPO3 Frontend.
- *
- * $Id$
  *
  * @author	Dmitry Dulepov <dmitry@typo3.org>
  */
@@ -53,7 +39,7 @@ class tx_openid_eID {
 		// our service is called even if there is no login data in the request.
 		// Inside the service we will process OpenID response and authenticate
 		// the user.
-		$GLOBALS['TYPO3_CONF_VARS']['SVCONF']['auth']['FE_fetchUserIfNoSession'] = true;
+		$GLOBALS['TYPO3_CONF_VARS']['SVCONF']['auth']['FE_fetchUserIfNoSession'] = TRUE;
 
 		// Initialize Frontend user
 		tslib_eidtools::connectDB();

@@ -29,8 +29,6 @@
  * @author		Ingo Renner <ingo@typo3.org>
  * @package		TYPO3
  * @subpackage	reports
- *
- * $Id$
  */
 class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvider {
 
@@ -130,7 +128,10 @@ class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvi
 		$message  = '';
 		$severity = tx_reports_reports_status_Status::OK;
 
-		if ($GLOBALS['TYPO3_CONF_VARS']['BE']['fileDenyPattern'] != FILE_DENY_PATTERN_DEFAULT) {
+		$defaultParts = t3lib_div::trimExplode('|', FILE_DENY_PATTERN_DEFAULT, TRUE);
+		$givenParts = t3lib_div::trimExplode('|', $GLOBALS['TYPO3_CONF_VARS']['BE']['fileDenyPattern'], TRUE);
+		$result = array_intersect($defaultParts, $givenParts);
+		if ($defaultParts !== $result) {
 			$value    = $GLOBALS['LANG']->getLL('status_insecure');
 			$severity = tx_reports_reports_status_Status::ERROR;
 
@@ -138,7 +139,7 @@ class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvi
 				. urlencode('?TYPO3_INSTALL[type]=config#set_encryptionKey');
 
 			$message = sprintf(
-				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.file_deny_pattern'),
+				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:warning.file_deny_pattern_partsNotPresent'),
 				'<br /><pre>'
 				. htmlspecialchars(FILE_DENY_PATTERN_DEFAULT)
 				. '</pre><br />'
@@ -175,7 +176,7 @@ class tx_reports_reports_status_SecurityStatus implements tx_reports_StatusProvi
 	/**
 	 * Checks whether memcached is configured, if that's the case we asume it's also used.
 	 *
-	 * @return	boolean	True if memcached is used, false otherwise.
+	 * @return	boolean	TRUE if memcached is used, FALSE otherwise.
 	 */
 	protected function isMemcachedUsed() {
 		$memcachedUsed = FALSE;

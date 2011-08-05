@@ -28,7 +28,6 @@
  * @author Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage extension manager
- * @version $Id: $
  */
 Ext.ns('TYPO3.EM', 'TYPO3.EMSOAP.ExtDirect');
 
@@ -65,7 +64,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			extkeysSm,
 			{
 				id: 'extensionkey',
-				header: TYPO3.lang.tab_mod_key,
+				header: TYPO3.l10n.localize('tab_mod_key'),
 				width: .2,
 				sortable: true,
 				menuDisabled: true,
@@ -74,7 +73,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			},
 			{
 				id: 'extensiontitle',
-				header: TYPO3.lang.extInfoArray_title,
+				header: TYPO3.l10n.localize('extInfoArray_title'),
 				width: .2,
 				sortable: true,
 				menuDisabled: true,
@@ -83,7 +82,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			},
 			{
 				id: 'extensiondescription',
-				header: TYPO3.lang.extInfoArray_description,
+				header: TYPO3.l10n.localize('extInfoArray_description'),
 				width: .5,
 				sortable: true,
 				menuDisabled: true,
@@ -92,7 +91,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			},
 			{
 				id: 'extensionuploads',
-				header: TYPO3.lang.extInfoArray_uploads,
+				header: TYPO3.l10n.localize('extInfoArray_uploads'),
 				width: .1,
 				sortable: true,
 				menuDisabled: true,
@@ -144,11 +143,11 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 					var error;
 
 					if (!ExtDirectParams.result.raw) {
-						error = TYPO3.lang.soap_error;
+						error = TYPO3.l10n.localize('soap_error');
 					} else {
 						error = ExtDirectParams.result.raw.error;
 					}
-					TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.lang.msg_invalid, error, 15);
+					TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.l10n.localize('msg_invalid'), error, 15);
 					Ext.getCmp('extvalidformbutton').disable();
 				},
 				scope: this
@@ -186,12 +185,12 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 							items: [
 								{
 									xtype:'fieldset',
-									title: TYPO3.lang.registerkeys_check_validity_extkey,
+									title: TYPO3.l10n.localize('registerkeys_check_validity_extkey'),
 									defaults: {},
 									defaultType: 'textfield',
 									items :[
 										{
-											fieldLabel: TYPO3.lang.tab_mod_key,
+											fieldLabel: TYPO3.l10n.localize('tab_mod_key'),
 											name: 'extkey',
 											width: 170,
 											allowBlank: false,
@@ -211,12 +210,12 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 									buttons: [
 										{
 											id: 'extvalidformbutton',
-											text: TYPO3.lang.registerkeys_check_validity,
+											text: TYPO3.l10n.localize('registerkeys_check_validity'),
 											handler: function() {
 												this.validityCheckForm.getForm().submit({
-													waitMsg : TYPO3.lang.registerkeys_check_validity,
+													waitMsg : TYPO3.l10n.localize('registerkeys_check_validity'),
 													success: function(form, action) {
-														TYPO3.Flashmessage.display(TYPO3.Severity.information, TYPO3.lang.registerkeys_check_validity_extkey_isvalid, '', 5);
+														TYPO3.Flashmessage.display(TYPO3.Severity.information, TYPO3.l10n.localize('registerkeys_check_validity_extkey_isvalid'), '', 5);
 
 														this.registerForm.getForm().setValues({
 															extkey: form.getValues().extkey,
@@ -229,13 +228,13 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 
 													failure: function(form, action) {
 														if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.lang.msg_error,
-																	TYPO3.lang.msg_status + ': ' + action.response.status + ': ' +
+															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.l10n.localize('msg_error'),
+																	TYPO3.l10n.localize('msg_status') + ': ' + action.response.status + ': ' +
 																			action.response.statusText, 15);
 														}
 														if (action.failureType === Ext.form.Action.SERVER_INVALID) {
 															// server responded with success = false
-															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.lang.msg_invalid, action.result.message, 5);
+															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.l10n.localize('msg_invalid'), action.result.message, 5);
 														}
 													},
 													scope: this
@@ -256,7 +255,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 							items: [
 								{
 									xtype:'fieldset',
-									title: TYPO3.lang.registerkeys_registerkey,
+									title: TYPO3.l10n.localize('registerkeys_registerkey'),
 									defaults: {},
 									defaultType: 'textfield',
 									items :[
@@ -269,16 +268,16 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 											html: '',
 											xtype: 'displayfield',
 											name: 'extkeydisplay',
-											fieldLabel: TYPO3.lang.tab_mod_key
+											fieldLabel: TYPO3.l10n.localize('tab_mod_key')
 										},
 										{
-											fieldLabel: TYPO3.lang.extInfoArray_title,
+											fieldLabel: TYPO3.l10n.localize('extInfoArray_title'),
 											name: 'title',
 											width: 170,
 											allowBlank: false
 										},
 										{
-											fieldLabel: TYPO3.lang.extInfoArray_description,
+											fieldLabel: TYPO3.l10n.localize('extInfoArray_description'),
 											xtype: 'textarea',
 											name: 'description',
 											width: 170,
@@ -288,12 +287,12 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 									buttons: [
 										{
 											id: 'extregisterformbutton',
-											text: TYPO3.lang.cmd_register,
+											text: TYPO3.l10n.localize('cmd_register'),
 											handler: function() {
 												this.registerForm.getForm().submit({
-													waitMsg : TYPO3.lang.registerkeys_register_extkey,
+													waitMsg : TYPO3.l10n.localize('registerkeys_register_extkey'),
 													success: function(form, action) {
-														var msg = String.format(TYPO3.lang.registerkeys_register_extkey_success, this.registerForm.getForm().getValues().extkey);
+														var msg = String.format(TYPO3.l10n.localize('registerkeys_register_extkey_success'), this.registerForm.getForm().getValues().extkey);
 														TYPO3.Flashmessage.display(TYPO3.Severity.information, msg, '', 5);
 														form.reset();
 														this.registerForm.hide();
@@ -302,13 +301,13 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 													},
 													failure: function(form, action) {
 														if (action.failureType === Ext.form.Action.CONNECT_FAILURE) {
-															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.lang.msg_error,
-																TYPO3.lang.list_order_state + ':' + action.response.status + ': ' +
+															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.l10n.localize('msg_error'),
+																TYPO3.l10n.localize('list_order_state') + ':' + action.response.status + ': ' +
 																action.response.statusText, 15);
 														}
 														if (action.failureType === Ext.form.Action.SERVER_INVALID) {
 															// server responded with success = false
-															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.lang.msg_invalid, action.result.message, 5);
+															TYPO3.Flashmessage.display(TYPO3.Severity.error, TYPO3.l10n.localize('msg_invalid'), action.result.message, 5);
 														}
 													},
 													scope: this
@@ -318,7 +317,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 
 										},
 										{
-											text: TYPO3.lang.registerkeys_cancel_register,
+											text: TYPO3.l10n.localize('registerkeys_cancel_register'),
 											handler: function() {
 												this.registerForm.hide();
 												this.validityCheckForm.show()
@@ -338,14 +337,14 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 					items: [
 						{
 							xtype: 'fieldset',
-							title: TYPO3.lang.myExtensions,
+							title: TYPO3.l10n.localize('myExtensions'),
 							items : [
 								{
 									xtype: 'grid',
 									id: 'em-userextgrid',
 									stripeRows: true,
 									store: userExtStore,
-									loadMask: {msg: TYPO3.lang.action_loading_extlist},
+									loadMask: {msg: TYPO3.l10n.localize('action_loading_extlist')},
 									cm: extkeysCm,
 									sm: extkeysSm,
 									viewConfig: {
@@ -360,20 +359,20 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 									tbar: [
 										{
 											xtype: 'tbtext',
-											text: TYPO3.lang.cmd_filter + ':'
+											text: TYPO3.l10n.localize('cmd_filter') + ':'
 										},
 										searchField,
 										'->',
 										{
 											xtype: 'tbtext',
-											text: TYPO3.lang.cmd_action + ':'
+											text: TYPO3.l10n.localize('cmd_action') + ':'
 										},
 										' ',
 										{
 											xtype: 'tbbutton',
 											disabled: true,
 											id: 'transferkeybutton',
-											text: TYPO3.lang.cmd_transferkey,
+											text: TYPO3.l10n.localize('cmd_transferkey'),
 											handler: this.transferkey,
 											scope: this
 										},
@@ -382,7 +381,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 											xtype: 'tbbutton',
 											disabled: true,
 											id: 'deletekeybutton',
-											text: TYPO3.lang.cmd_deletekey,
+											text: TYPO3.l10n.localize('cmd_deletekey'),
 											handler: this.deletekey,
 											scope: this
 										}
@@ -426,7 +425,7 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			width: 300,
 			height: 170,
 			modal: true,
-			title: TYPO3.lang.cmd_transferkey + ' "' + extkey + '"',
+			title: TYPO3.l10n.localize('cmd_transferkey') + ' "' + extkey + '"',
 			layout: 'form',
 			items: [
 				{
@@ -435,13 +434,13 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 					items: [
 						new Ext.Container({
 							xtype: 'displayfield',
-							html: TYPO3.lang.transferkeys_info,
+							html: TYPO3.l10n.localize('transferkeys_info'),
 							labelWidth: 1,
 							style: 'margin: 10px 5px;'
 						}),
 						{
 							xtype: 'textfield',
-							fieldLabel: TYPO3.lang.cmd_transferkey_to_user,
+							fieldLabel: TYPO3.l10n.localize('cmd_transferkey_to_user'),
 							ref: '../transfertouser',
 							allowBlank: false
 						}
@@ -450,17 +449,17 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			],
 			buttons: [
 				{
-					text: TYPO3.lang.cmd_transferkey_do,
+					text: TYPO3.l10n.localize('cmd_transferkey_do'),
 					handler: function(button) {
 						var toUser = this.transferWindow.transfertouser.getRawValue();
 						button.disable();
-						this.transferWindow.body.mask(TYPO3.lang.cmd_transferkey);
+						this.transferWindow.body.mask(TYPO3.l10n.localize('cmd_transferkey'));
 						TYPO3.EMSOAP.ExtDirect.transferExtensionKey(extkey, toUser, function(response) {
 							if (response.success) {
-								TYPO3.Flashmessage.display(TYPO3.Severity.ok, String.format(TYPO3.lang.transferkeys_success, response.key, response.user), '', 5);
+								TYPO3.Flashmessage.display(TYPO3.Severity.ok, String.format(TYPO3.l10n.localize('transferkeys_success'), response.key, response.user), '', 5);
 								Ext.getCmp('em-userextgrid').store.load();
 							} else {
-								TYPO3.Flashmessage.display(TYPO3.Severity.error, String.format(TYPO3.lang.transferkeys_fail, response.key, response.user),response.message, 15);
+								TYPO3.Flashmessage.display(TYPO3.Severity.error, String.format(TYPO3.l10n.localize('transferkeys_fail'), response.key, response.user),response.message, 15);
 							}
 							this.transferWindow.close();
 						}, this)
@@ -479,13 +478,13 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 			width: 300,
 			height: 130,
 			modal: true,
-			title: TYPO3.lang.cmd_deletekey + ' "' + extkey + '"',
+			title: TYPO3.l10n.localize('cmd_deletekey') + ' "' + extkey + '"',
 			items: [
 				{
 					items: [
 						new Ext.Container({
 							xtype: 'displayfield',
-							html: TYPO3.lang.deletekey_info,
+							html: TYPO3.l10n.localize('deletekey_info'),
 							labelWidth: 1,
 							style: 'margin: 10px 5px;'
 						})
@@ -497,13 +496,13 @@ TYPO3.EM.UserTools = Ext.extend(Ext.Panel, {
 					text: 'delete',
 					handler: function(button) {
 						button.disable();
-						this.deleteWindow.body.mask(TYPO3.lang.cmd_deletekey);
+						this.deleteWindow.body.mask(TYPO3.l10n.localize('cmd_deletekey'));
 						TYPO3.EMSOAP.ExtDirect.deleteExtensionKey(extkey, function(response) {
 							if (response.success) {
-								TYPO3.Flashmessage.display(TYPO3.Severity.ok, String.format(TYPO3.lang.deletekey_success, response.key), '', 5);
+								TYPO3.Flashmessage.display(TYPO3.Severity.ok, String.format(TYPO3.l10n.localize('deletekey_success'), response.key), '', 5);
 								Ext.getCmp('em-userextgrid').store.load();
 							} else {
-								TYPO3.Flashmessage.display(TYPO3.Severity.error, String.format(TYPO3.lang.deletekey_fail, response.key), response.message, 15);
+								TYPO3.Flashmessage.display(TYPO3.Severity.error, String.format(TYPO3.l10n.localize('deletekey_fail'), response.key), response.message, 15);
 							}
 							this.deleteWindow.close();
 						}, this)

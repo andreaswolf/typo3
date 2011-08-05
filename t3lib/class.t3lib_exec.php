@@ -24,35 +24,13 @@
 /**
  * t3lib_exec finds executables (programs) on Unix and Windows without knowing where they are
  *
- * $Id$
- *
  * @author	René Fritz <r.fritz@colorcube.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   85: class t3lib_exec
- *   95:	 function checkCommand($cmd, $handler='')
- *  166:	 function getCommand($cmd, $handler='', $handlerOpt='')
- *  199:	 function addPaths($paths)
- *  211:	 function getPaths($addInvalid=false)
- *  237:	 function _init()
- *  259:	 function _initPaths($paths='')
- *  312:	 function _getConfiguredApps()
- *  339:	 function _getPaths()
- *  400:	 function _fixPath($path)
- *
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
 /**
  * returns exec command for a program
- * or false
+ * or FALSE
  *
  * This class is meant to be used without instance:
  * $cmd = t3lib_exec::getCommand ('awstats','perl');
@@ -64,7 +42,7 @@
  *
  * addPaths() could be used to extend the search paths
  * getCommand() get a command string
- * checkCommand() returns true if a command is available
+ * checkCommand() returns TRUE if a command is available
  *
  * Search paths that are included:
  * $TYPO3_CONF_VARS['GFX']['im_path_lzw'] or $TYPO3_CONF_VARS['GFX']['im_path']
@@ -88,7 +66,7 @@ class t3lib_exec {
 	 * Contains application list. This is an array with the following structure:
 	 * - app => file name to the application (like 'tar' or 'bzip2')
 	 * - path => full path to the application without application name (like '/usr/bin/' for '/usr/bin/tar')
-	 * - valid => true or false
+	 * - valid => TRUE or FALSE
 	 * Array key is identical to 'app'.
 	 *
 	 * @var	array
@@ -107,7 +85,7 @@ class t3lib_exec {
 	 *
 	 * @param	string		the command that should be executed. eg: "convert"
 	 * @param	string		executer for the command. eg: "perl"
-	 * @return	boolean		false if cmd is not found, or -1 if the handler is not found
+	 * @return	boolean		FALSE if cmd is not found, or -1 if the handler is not found
 	 */
 	public static function checkCommand($cmd, $handler = '') {
 		if (!self::init()) {
@@ -121,13 +99,13 @@ class t3lib_exec {
 		if (self::$applications[$cmd]['valid']) {
 			return TRUE;
 		}
-			// Is set but was (above) not true
+			// Is set but was (above) not TRUE
 		if (isset(self::$applications[$cmd]['valid'])) {
 			return FALSE;
 		}
 
 		foreach (self::$paths as $path => $validPath) {
-				// Ignore invalid (false) paths
+				// Ignore invalid (FALSE) paths
 			if ($validPath) {
 				if (TYPO3_OS == 'WIN') {
 						// Windows OS
@@ -179,7 +157,7 @@ class t3lib_exec {
 	 * @param	string		the command that should be executed. eg: "convert"
 	 * @param	string		handler (executor) for the command. eg: "perl"
 	 * @param	string		options for the handler, like '-w' for "perl"
-	 * @return	mixed		returns command string, or false if cmd is not found, or -1 if the handler is not found
+	 * @return	mixed		returns command string, or FALSE if cmd is not found, or -1 if the handler is not found
 	 */
 	public static function getCommand($cmd, $handler = '', $handlerOpt = '') {
 		if (!self::init()) {
@@ -295,7 +273,7 @@ class t3lib_exec {
 			// check if new paths are invalid
 		if ($doCheck) {
 			foreach (self::$paths as $path => $valid) {
-					// ignore invalid (false) paths
+					// ignore invalid (FALSE) paths
 				if ($valid AND !@is_dir($path)) {
 					self::$paths[$path] = FALSE;
 				}

@@ -62,7 +62,7 @@ class t3lib_SpriteManager {
 	/**
 	 * Check if the icon cache has to be rebuild, instantiate and call the handler class if so.
 	 *
-	 * @param boolean Suppress regeneration if false (useful for feediting)
+	 * @param boolean Suppress regeneration if FALSE (useful for feediting)
 	 * @return void
 	 */
 	function __construct($allowRegeneration = TRUE) {
@@ -92,9 +92,11 @@ class t3lib_SpriteManager {
 
 					// Throw exception if handler class does not implement required interface
 				if (!$this->handler || !($this->handler instanceof t3lib_spritemanager_SpriteIconGenerator)) {
-					throw new Exception(
-						"class in TYPO3_CONF_VARS[BE][spriteIconGenerator_handler] does not exist,
-						or does not implement t3lib_spritemanager_SpriteIconGenerator"
+					throw new RuntimeException(
+						'Class in $TYPO3_CONF_VARS[BE][spriteIconGenerator_handler] (' .
+						$GLOBALS['TYPO3_CONF_VARS']['BE']['spriteIconGenerator_handler'] .
+						') does not exist or does not implement t3lib_spritemanager_SpriteIconGenerator.',
+						1294586333
 					);
 				}
 
@@ -145,9 +147,9 @@ class t3lib_SpriteManager {
 
 	/**
 	 * Backwards compatibility methods, log usage to deprecation log.
-	 * Will be removed in 4.7
 	 *
 	 * @return void
+	 * @deprecated since TYPO3 4.4: Will be removed in 4.7
 	 */
 	private function compatibilityCalls() {
 			// Fallback for $TYPE_ICONS "contains-module" icons

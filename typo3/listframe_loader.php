@@ -27,23 +27,10 @@
 /**
  * Redirects to real module if shortcut pressed
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML-trans compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   68: class SC_listframe_loader
- *   75:     function main()
- *
- * TOTAL FUNCTIONS: 1
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 require ('init.php');
@@ -73,16 +60,14 @@ class SC_listframe_loader {
 	 * @return	void
 	 */
 	function main()	{
-		global $TBE_TEMPLATE;
-
-		$TBE_TEMPLATE->divClass='';
-		$this->content.=$TBE_TEMPLATE->startPage('List Frame Loader');
-		$this->content.=$TBE_TEMPLATE->wrapScriptTags('
+		$GLOBALS['TBE_TEMPLATE']->divClass='';
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->startPage('List Frame Loader');
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->wrapScriptTags('
 			var theUrl = top.getModuleUrl("");
 			if (theUrl)	window.location.href=theUrl;
 		');
 			// End page:
-		$this->content.=$TBE_TEMPLATE->endPage();
+		$this->content.=$GLOBALS['TBE_TEMPLATE']->endPage();
 
 			// Output:
 		echo $this->content;

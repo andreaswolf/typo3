@@ -22,7 +22,6 @@
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
-
 /**
  * A "Class Already Loaded" exception
  *
@@ -31,15 +30,7 @@
  * @package TYPO3
  * @subpackage t3lib_cache
  * @api
- * @version $Id$
  */
 class t3lib_cache_exception_ClassAlreadyLoaded extends t3lib_cache_Exception {
-
 }
-
-
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/cache/exception/class.t3lib_cache_exception_classalreadyloaded.php'])) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/cache/exception/class.t3lib_cache_exception_classalreadyloaded.php']);
-}
-
 ?>

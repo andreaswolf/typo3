@@ -27,26 +27,10 @@
 /**
  * Contains the GMENU_FOLDOUT extension class, tslib_gmenu_foldout
  *
- * $Id: gmenu_foldout.php 5165 2009-03-09 18:28:59Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   80: class tslib_gmenu_foldout extends tslib_gmenu
- *   96:     function extProc_init()
- *  117:     function extProc_beforeLinking($key)
- *  134:     function extProc_afterLinking($key)
- *  160:     function extProc_finish()
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -158,12 +142,12 @@ class tslib_gmenu_foldout extends tslib_gmenu {
 	 * @return	string		Empty string! (Since $GLOBALS['TSFE']->divSection is set with the <div>-sections used in the menu)
 	 */
 	function extProc_finish()	{
-		$bHeight = t3lib_div::intInRange(($this->mconf['bottomHeight']?$this->mconf['bottomHeight']:100) ,0,3000);
+		$bHeight = t3lib_utility_Math::forceIntegerInRange(($this->mconf['bottomHeight']?$this->mconf['bottomHeight']:100) ,0,3000);
 		$bottomContent = $this->mconf['bottomContent'] ? $GLOBALS['TSFE']->cObj->cObjGetSingle($this->mconf['bottomContent'],$this->mconf['bottomContent.'], '/GMENU_FOLDOUT/.bottomContent') : '';
 		$adjustTopHeights = intval($this->mconf['adjustItemsH']);
 		$adjustSubHeights = intval($this->mconf['adjustSubItemsH']);
-		$mWidth = t3lib_div::intInRange(($this->mconf['menuWidth']?$this->mconf['menuWidth']:170) ,0,3000);
-		$mHeight = t3lib_div::intInRange(($this->mconf['menuHeight']?$this->mconf['menuHeight']:400) ,0,3000);
+		$mWidth = t3lib_utility_Math::forceIntegerInRange(($this->mconf['menuWidth']?$this->mconf['menuWidth']:170) ,0,3000);
+		$mHeight = t3lib_utility_Math::forceIntegerInRange(($this->mconf['menuHeight']?$this->mconf['menuHeight']:400) ,0,3000);
 		$insertmColor= $this->mconf['menuBackColor'] ? 'BACKGROUND-COLOR: '.$this->mconf['menuBackColor'].'; layer-background-color: '.$this->mconf['menuBackColor'] : '';
 		$insertBottomColor= $this->mconf['bottomBackColor'] ? 'BACKGROUND-COLOR: '.$this->mconf['bottomBackColor'].'; layer-background-color: '.$this->mconf['bottomBackColor'] : '';
 		$menuOffset = t3lib_div::intExplode(',',$this->mconf['menuOffset'].',');
@@ -194,8 +178,8 @@ class tslib_gmenu_foldout extends tslib_gmenu {
 /*<![CDATA[*/
 <!--
 GFV_foldNumber='.$this->WMmenuItems.';          //How many toplinks do you have?
-GFV_foldTimer='.t3lib_div::intInRange(($this->mconf['foldTimer']?$this->mconf['foldTimer']:40) ,1,3000).';          //The timeout in the animation, these are milliseconds.
-GFV_foldSpeed='.t3lib_div::intInRange($this->mconf['foldSpeed'],1,100).';           //How many steps in an animation?
+GFV_foldTimer='.t3lib_utility_Math::forceIntegerInRange(($this->mconf['foldTimer']?$this->mconf['foldTimer']:40) ,1,3000).';          //The timeout in the animation, these are milliseconds.
+GFV_foldSpeed='.t3lib_utility_Math::forceIntegerInRange($this->mconf['foldSpeed'],1,100).';           //How many steps in an animation?
 GFV_stayFolded='.($this->mconf['stayFolded'] ? 'true' : 'false').';      //Stay open when you click a new toplink?
 GFV_foldImg='.$this->WMimagesFlag.';             //Do you want images (if not set to 0 and remove the images from the body)?
 GFV_currentFold=null;

@@ -27,52 +27,18 @@
 /**
  * Wizard for inserting TSconfig in form fields. (page,user or TS)
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   98: class ext_TSparser extends t3lib_tsparser_ext
- *  106:     function makeHtmlspecialchars($P)
- *
- *
- *  127: class SC_wizard_tsconfig
- *  149:     function init()
- *  202:     function setValue(field,value)
- *  232:     function mixerField(cmd,objString)
- *  258:     function str_replace(match,replace,string)
- *  280:     function jump(show,objString)
- *  295:     function main()
- *  320:     function printContent()
- *  333:     function browseTSprop($mode,$show)
- *
- *              SECTION: Module functions
- *  419:     function getObjTree()
- *  449:     function setObj(&$objTree,$strArr,$params)
- *  469:     function revertFromSpecialChars($str)
- *  482:     function doLink($params)
- *  495:     function removePointerObjects($objArray)
- *  514:     function linkToObj($str,$uid,$objString='')
- *  527:     function printTable($table,$objString,$objTree)
- *  608:     function linkProperty($str,$propertyName,$prefix,$datatype)
- *
- * TOTAL FUNCTIONS: 17
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 
-$BACK_PATH='';
+$GLOBALS['BACK_PATH']='';
 require ('init.php');
 require ('template.php');
-$LANG->includeLLFile('EXT:lang/locallang_wizards.xml');
+$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_wizards.xml');
 
 
 
@@ -144,8 +110,6 @@ class SC_wizard_tsconfig {
 	 * @return	void
 	 */
 	function init()	{
-		global $LANG,$BACK_PATH;
-
 			// Check if the tsconfig_help extension is loaded - which is mandatory for this wizard to work.
 		t3lib_extMgm::isLoaded('tsconfig_help',1);
 
@@ -168,7 +132,7 @@ class SC_wizard_tsconfig {
 
 			// Init the document table object:
 		$this->doc = t3lib_div::makeInstance('template');
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->form='<form action="" name="editform">';
 
 			// Adding Styles (should go into stylesheet?)
@@ -286,7 +250,7 @@ class SC_wizard_tsconfig {
 
 
 			// Start the page:
-		$this->content.=$this->doc->startPage($LANG->getLL('tsprop'));
+		$this->content.=$this->doc->startPage($GLOBALS['LANG']->getLL('tsprop'));
 	}
 
 	/**
@@ -295,21 +259,19 @@ class SC_wizard_tsconfig {
 	 * @return	void
 	 */
 	function main()	{
-		global $LANG;
-
 			// Adding module content:
-		$this->content.=$this->doc->section($LANG->getLL('tsprop'),$this->browseTSprop($this->mode,$this->show),0,1);
+		$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('tsprop'),$this->browseTSprop($this->mode,$this->show),0,1);
 
 			// Adding link to TSref:
 		if ($this->mode=='tsref')	{
-			$this->content.=$this->doc->section($LANG->getLL('tsprop_TSref'),'
-			<a href="'. TYPO3_URL_DOCUMENTATION_TSREF.'" target="_blank">'.$LANG->getLL('tsprop_TSref',1).'</a>
+			$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('tsprop_TSref'),'
+			<a href="'. TYPO3_URL_DOCUMENTATION_TSREF.'" target="_blank">'.$GLOBALS['LANG']->getLL('tsprop_TSref',1).'</a>
 			',0,1);
 		}
 			// Adding link to admin guides etc:
 		if ($this->mode=='page' || $this->mode=='beuser')	{
-			$this->content.=$this->doc->section($LANG->getLL('tsprop_tsconfig'),'
-			<a href="' . TYPO3_URL_DOCUMENTATION_TSCONFIG . '" target="_blank">' . $LANG->getLL('tsprop_tsconfig',1) . '</a>
+			$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('tsprop_tsconfig'),'
+			<a href="' . TYPO3_URL_DOCUMENTATION_TSCONFIG . '" target="_blank">' . $GLOBALS['LANG']->getLL('tsprop_tsconfig',1) . '</a>
 			',0,1);
 		}
 	}
@@ -333,8 +295,6 @@ class SC_wizard_tsconfig {
 	 * @return	string		HTML
 	 */
 	function browseTSprop($mode,$show)	{
-		global $LANG;
-
 			// Get object tree:
 		$objTree = $this->getObjTree();
 
@@ -362,10 +322,10 @@ class SC_wizard_tsconfig {
 				// Printing the "mixer-field":
 			if (!$this->onlyProperty)	{
 				$links=array();
-				$links[]='<a href="#" onclick="mixerField(\'Indent\');return false;">'.$LANG->getLL('tsprop_mixer_indent',1).'</a>';
-				$links[]='<a href="#" onclick="mixerField(\'Outdent\');return false;">'.$LANG->getLL('tsprop_mixer_outdent',1).'</a>';
-				$links[]='<a href="#" onclick="mixerField(\'Wrap\',unescape(\''.rawurlencode($obj_string).'\'));return false;">'.$LANG->getLL('tsprop_mixer_wrap',1).'</a>';
-				$links[]='<a href="#" onclick="mixerField(\'Transfer\');return false;">'.$LANG->getLL('tsprop_mixer_transfer',1).'</a>';
+				$links[]='<a href="#" onclick="mixerField(\'Indent\');return false;">'.$GLOBALS['LANG']->getLL('tsprop_mixer_indent',1).'</a>';
+				$links[]='<a href="#" onclick="mixerField(\'Outdent\');return false;">'.$GLOBALS['LANG']->getLL('tsprop_mixer_outdent',1).'</a>';
+				$links[]='<a href="#" onclick="mixerField(\'Wrap\',unescape(\''.rawurlencode($obj_string).'\'));return false;">'.$GLOBALS['LANG']->getLL('tsprop_mixer_wrap',1).'</a>';
+				$links[]='<a href="#" onclick="mixerField(\'Transfer\');return false;">'.$GLOBALS['LANG']->getLL('tsprop_mixer_transfer',1).'</a>';
 				$out.='<textarea rows="5" name="mixer" wrap="off"'.$this->doc->formWidthText(48,'','off').' class="fixed-font enable-tab"></textarea>';
 				$out.='<br /><strong>'.implode('&nbsp; | &nbsp;',$links).'</strong>';
 				$out.='<hr />';
@@ -633,7 +593,7 @@ class SC_wizard_tsconfig {
 	protected function areFieldChangeFunctionsValid() {
 		return (
 			isset($this->P['fieldChangeFunc']) && is_array($this->P['fieldChangeFunc']) && isset($this->P['fieldChangeFuncHash'])
-			&& $this->P['fieldChangeFuncHash'] == t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
+			&& $this->P['fieldChangeFuncHash'] === t3lib_div::hmac(serialize($this->P['fieldChangeFunc']))
 		);
 	}
 }

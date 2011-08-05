@@ -31,102 +31,6 @@
  * Originally Christian Jul Jensen <christian@jul.net> helped as well.
  */
 /**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  141: class tx_indexedsearch_indexer
- *  207:     function hook_indexContent(&$pObj)
- *
- *              SECTION: Backend API
- *  308:     function backend_initIndexer($id, $type, $sys_language_uid, $MP, $uidRL, $cHash_array=array(), $createCHash=FALSE)
- *  347:     function backend_setFreeIndexUid($freeIndexUid, $freeIndexSetId=0)
- *  365:     function backend_indexAsTYPO3Page($title, $keywords, $description, $content, $charset, $mtime, $crdate=0, $recordUid=0)
- *
- *              SECTION: Initialization
- *  416:     function init()
- *  468:     function initializeExternalParsers()
- *
- *              SECTION: Indexing; TYPO3 pages (HTML content)
- *  509:     function indexTypo3PageContent()
- *  596:     function splitHTMLContent($content)
- *  642:     function getHTMLcharset($content)
- *  657:     function convertHTMLToUtf8($content,$charset='')
- *  685:     function embracingTags($string,$tagName,&$tagContent,&$stringAfter,&$paramList)
- *  712:     function typoSearchTags(&$body)
- *  741:     function extractLinks($content)
- *  812:     function extractHyperLinks($string)
- *
- *              SECTION: Indexing; external URL
- *  871:     function indexExternalUrl($externalUrl)
- *  902:     function getUrlHeaders($url)
- *
- *              SECTION: Indexing; external files (PDF, DOC, etc)
- *  948:     function indexRegularDocument($file, $force=FALSE, $contentTmpFile='', $altExtension='')
- * 1054:     function readFileContent($ext,$absFile,$cPKey)
- * 1071:     function fileContentParts($ext,$absFile)
- * 1089:     function splitRegularContent($content)
- *
- *              SECTION: Analysing content, Extracting words
- * 1122:     function charsetEntity2utf8(&$contentArr, $charset)
- * 1145:     function processWordsInArrays($contentArr)
- * 1170:     function procesWordsInArrays($contentArr)
- * 1180:     function bodyDescription($contentArr)
- * 1202:     function indexAnalyze($content)
- * 1223:     function analyzeHeaderinfo(&$retArr,$content,$key,$offset)
- * 1242:     function analyzeBody(&$retArr,$content)
- * 1262:     function metaphone($word,$retRaw=FALSE)
- *
- *              SECTION: SQL; TYPO3 Pages
- * 1304:     function submitPage()
- * 1378:     function submit_grlist($hash,$phash_x)
- * 1398:     function submit_section($hash,$hash_t3)
- * 1416:     function removeOldIndexedPages($phash)
- *
- *              SECTION: SQL; External media
- * 1459:     function submitFilePage($hash,$file,$subinfo,$ext,$mtime,$ctime,$size,$content_md5h,$contentParts)
- * 1525:     function submitFile_grlist($hash)
- * 1539:     function submitFile_section($hash)
- * 1553:     function removeOldIndexedFiles($phash)
- *
- *              SECTION: SQL Helper functions
- * 1589:     function checkMtimeTstamp($mtime,$phash)
- * 1625:     function checkContentHash()
- * 1642:     function checkExternalDocContentHash($hashGr,$content_md5h)
- * 1656:     function is_grlist_set($phash_x)
- * 1669:     function update_grlist($phash,$phash_x)
- * 1684:     function updateTstamp($phash,$mtime=0)
- * 1699:     function updateSetId($phash)
- * 1714:     function updateParsetime($phash,$parsetime)
- * 1727:     function updateRootline()
- * 1742:     function getRootLineFields(&$fieldArr)
- * 1761:     function removeLoginpagesWithContentHash()
- * 1778:     function includeCrawlerClass()
- *
- *              SECTION: SQL; Submitting words
- * 1805:     function checkWordList($wl)
- * 1842:     function submitWords($wl,$phash)
- * 1866:     function freqMap($freq)
- *
- *              SECTION: Hashing
- * 1899:     function setT3Hashes()
- * 1925:     function setExtHashes($file,$subinfo=array())
- * 1949:     function md5inthash($str)
- * 1959:     function makeCHash($paramArray)
- *
- *              SECTION: Internal logging functions
- * 1991:     function log_push($msg,$key)
- * 2000:     function log_pull()
- * 2011:     function log_setTSlogMessage($msg, $errorNum=0)
- *
- *              SECTION: tslib_fe hooks:
- * 2036:     function fe_headerNoCache(&$params, $ref)
- *
- * TOTAL FUNCTIONS: 59
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
-/**
  * Indexing class for TYPO3 frontend
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -159,7 +63,7 @@ class tx_indexedsearch_indexer {
 	var $tstamp_minAge = 0;		// If set, this tells a minimum limit before a document can be indexed again. This is regardless of mtime.
 	var $maxExternalFiles = 0;	// Max number of external files to index.
 
-	var $forceIndexing = FALSE;		// If true, indexing is forced despite of hashes etc.
+	var $forceIndexing = FALSE;		// If TRUE, indexing is forced despite of hashes etc.
 	var $crawlerActive = FALSE;		// Set when crawler is detected (internal)
 
 		// INTERNALS:
@@ -275,7 +179,7 @@ class tx_indexedsearch_indexer {
 								// Configuration of behavior:
 							$this->conf['index_externals'] = $pObj->config['config']['index_externals'];	// Whether to index external documents like PDF, DOC etc. (if possible)
 							$this->conf['index_descrLgd'] = $pObj->config['config']['index_descrLgd'];		// Length of description text (max 250, default 200)
-							$this->conf['index_metatags'] = isset($pObj->config['config']['index_metatags']) ? $pObj->config['config']['index_metatags'] : true;
+							$this->conf['index_metatags'] = isset($pObj->config['config']['index_metatags']) ? $pObj->config['config']['index_metatags'] : TRUE;
 
 								// Set to zero:
 							$this->conf['recordUid'] = 0;
@@ -345,7 +249,7 @@ class tx_indexedsearch_indexer {
 			// Configuration of behavior:
 		$this->conf['index_externals'] = 1;	// Whether to index external documents like PDF, DOC etc. (if possible)
 		$this->conf['index_descrLgd'] = 200;		// Length of description text (max 250, default 200)
-		$this->conf['index_metatags'] = true;	// Whether to index document keywords and description (if present)
+		$this->conf['index_metatags'] = TRUE;	// Whether to index document keywords and description (if present)
 
 			// Init and start indexing:
 		$this->init();
@@ -442,10 +346,10 @@ class tx_indexedsearch_indexer {
 
 			// Indexer configuration from Extension Manager interface:
 		$this->indexerConfig = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf']['indexed_search']);
-		$this->tstamp_minAge = t3lib_div::intInRange($this->indexerConfig['minAge']*3600,0);
-		$this->tstamp_maxAge = t3lib_div::intInRange($this->indexerConfig['maxAge']*3600,0);
-		$this->maxExternalFiles = t3lib_div::intInRange($this->indexerConfig['maxExternalFiles'],0,1000,5);
-		$this->flagBitMask = t3lib_div::intInRange($this->indexerConfig['flagBitMask'],0,255);
+		$this->tstamp_minAge = t3lib_utility_Math::forceIntegerInRange($this->indexerConfig['minAge']*3600,0);
+		$this->tstamp_maxAge = t3lib_utility_Math::forceIntegerInRange($this->indexerConfig['maxAge']*3600,0);
+		$this->maxExternalFiles = t3lib_utility_Math::forceIntegerInRange($this->indexerConfig['maxExternalFiles'],0,1000,5);
+		$this->flagBitMask = t3lib_utility_Math::forceIntegerInRange($this->indexerConfig['flagBitMask'],0,255);
 
 			// Initialize external document parsers:
 			// Example configuration, see ext_localconf.php of this file!
@@ -487,7 +391,7 @@ class tx_indexedsearch_indexer {
 				$this->external_parsers[$extension] = t3lib_div::getUserObj($_objRef);
 				$this->external_parsers[$extension]->pObj = $this;
 
-					// Init parser and if it returns false, unset its entry again:
+					// Init parser and if it returns FALSE, unset its entry again:
 				if (!$this->external_parsers[$extension]->initParser($extension))	{
 					unset($this->external_parsers[$extension]);
 				}
@@ -692,7 +596,7 @@ class tx_indexedsearch_indexer {
 
 	/**
 	 * Finds first occurence of embracing tags and returns the embraced content and the original string with
-	 * the tag removed in the two passed variables. Returns false if no match found. ie. useful for finding
+	 * the tag removed in the two passed variables. Returns FALSE if no match found. ie. useful for finding
 	 * <title> of document or removing <script>-sections
 	 *
 	 * @param	string		String to search in
@@ -700,14 +604,14 @@ class tx_indexedsearch_indexer {
 	 * @param	string		Passed by reference: Content inside found tag
 	 * @param	string		Passed by reference: Content after found tag
 	 * @param	string		Passed by reference: Attributes of the found tag.
-	 * @return	boolean		Returns false if tag was not found, otherwise true.
+	 * @return	boolean		Returns FALSE if tag was not found, otherwise TRUE.
 	 */
 	function embracingTags($string,$tagName,&$tagContent,&$stringAfter,&$paramList) {
 		$endTag = '</'.$tagName.'>';
 		$startTag = '<'.$tagName;
 
 		$isTagInText = stristr($string,$startTag);		// stristr used because we want a case-insensitive search for the tag.
-		if(!$isTagInText) return false;	// if the tag was not found, return false
+		if(!$isTagInText) return FALSE;	// if the tag was not found, return FALSE
 
 		list($paramList,$isTagInText) = explode('>',substr($isTagInText,strlen($startTag)),2);
 		$afterTagInText = stristr($isTagInText,$endTag);
@@ -720,14 +624,14 @@ class tx_indexedsearch_indexer {
 			$stringAfter = $isTagInText;
 		}
 
-		return true;
+		return TRUE;
 	}
 
 	/**
 	 * Removes content that shouldn't be indexed according to TYPO3SEARCH-tags.
 	 *
 	 * @param	string		HTML Content, passed by reference
-	 * @return	boolean		Returns true if a TYPOSEARCH_ tag was found, otherwise false.
+	 * @return	boolean		Returns TRUE if a TYPOSEARCH_ tag was found, otherwise FALSE.
 	 */
 	function typoSearchTags(&$body) {
 		$expBody = preg_split('/\<\!\-\-[\s]?TYPO3SEARCH_/',$body);
@@ -746,9 +650,9 @@ class tx_indexedsearch_indexer {
 					$prev = $val;
 				}
 			}
-			return true;
+			return TRUE;
 		} else {
-			return false;
+			return FALSE;
 		}
 	}
 
@@ -818,7 +722,7 @@ class tx_indexedsearch_indexer {
 							$crawler->addQueueEntry_callBack(0,$params,'EXT:indexed_search/class.crawler.php:&tx_indexedsearch_files',$this->conf['id']);
 							$this->log_setTSlogMessage('media "'.$params['document'].'" added to "crawler" queue.',1);
 						} else {
-							$this->indexRegularDocument($linkInfo['href'], false, $linkSource, $ext);
+							$this->indexRegularDocument($linkInfo['href'], FALSE, $linkSource, $ext);
 						}
 					} else {
 						if (is_object($crawler))	{
@@ -881,7 +785,7 @@ class tx_indexedsearch_indexer {
 		$htmlParts = $htmlParser->splitTags('base', $html);
 		foreach ($htmlParts as $index => $tagData) {
 			if (($index % 2) !== 0) {
-				$tagAttributes = $htmlParser->get_tag_attributes($tagData, true);
+				$tagAttributes = $htmlParser->get_tag_attributes($tagData, TRUE);
 				$firstTagName = $htmlParser->getFirstTagName($tagData);
 				if (strtolower($firstTagName) == 'base') {
 					$href = $tagAttributes[0]['href'];
@@ -939,10 +843,10 @@ class tx_indexedsearch_indexer {
 	 *
 	 * @param	string		The URL
 	 * @param	integer		Timeout (seconds?)
-	 * @return	mixed		If no answer, returns false. Otherwise an array where HTTP headers are keys
+	 * @return	mixed		If no answer, returns FALSE. Otherwise an array where HTTP headers are keys
 	 */
 	function getUrlHeaders($url)	{
-		$content = t3lib_div::getURL($url,2);	// Try to get the headers only
+		$content = t3lib_div::getUrl($url,2);	// Try to get the headers only
 
 		if (strlen($content))	{
 				// Compile headers:
@@ -1348,7 +1252,7 @@ class tx_indexedsearch_indexer {
 	function bodyDescription($contentArr)	{
 
 			// Setting description
-		$maxL = t3lib_div::intInRange($this->conf['index_descrLgd'],0,255,200);
+		$maxL = t3lib_utility_Math::forceIntegerInRange($this->conf['index_descrLgd'],0,255,200);
 		if ($maxL)	{
 				// Takes the quadruple lenght first, because whitespace and entities may be removed and thus shorten the string more yet.
 	#		$bodyDescription = implode(' ',split('[[:space:],]+',substr(trim($contentArr['body']),0,$maxL*4)));
@@ -1438,7 +1342,11 @@ class tx_indexedsearch_indexer {
 		if ($retRaw)	return $tmp;
 
 			// Otherwise create hash and return integer
-		if($tmp=='') $ret=0; else $ret=hexdec(substr(md5($tmp),0,7));
+		if ($tmp == '') {
+			$ret = 0;
+		} else {
+			$ret = hexdec(substr(md5($tmp), 0, 7));
+		}
 		return $ret;
 	}
 
@@ -1793,7 +1701,7 @@ class tx_indexedsearch_indexer {
 	/**
 	 * Check content hash in phash table
 	 *
-	 * @return	mixed		Returns true if the page needs to be indexed (that is, there was no result), otherwise the phash value (in an array) of the phash record to which the grlist_record should be related!
+	 * @return	mixed		Returns TRUE if the page needs to be indexed (that is, there was no result), otherwise the phash value (in an array) of the phash record to which the grlist_record should be related!
 	 */
 	function checkContentHash()	{
 			// With this query the page will only be indexed if it's content is different from the same "phash_grouping" -page.
@@ -1806,11 +1714,11 @@ class tx_indexedsearch_indexer {
 
 	/**
 	 * Check content hash for external documents
-	 * Returns true if the document needs to be indexed (that is, there was no result)
+	 * Returns TRUE if the document needs to be indexed (that is, there was no result)
 	 *
 	 * @param	integer		phash value to check (phash_grouping)
 	 * @param	integer		Content hash to check
-	 * @return	boolean		Returns true if the document needs to be indexed (that is, there was no result)
+	 * @return	boolean		Returns TRUE if the document needs to be indexed (that is, there was no result)
 	 */
 	function checkExternalDocContentHash($hashGr,$content_md5h)	{
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'index_phash A', 'A.phash_grouping='.intval($hashGr).' AND A.contentHash='.intval($content_md5h));

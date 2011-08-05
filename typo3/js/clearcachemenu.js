@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010 Ingo Renner <ingo@typo3.org>
+*  (c) 2007-2011 Ingo Renner <ingo@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -26,8 +26,6 @@
 
 /**
  * class to handle the clear cache menu
- *
- * $Id$
  */
 var ClearCacheMenu = Class.create({
 
@@ -98,10 +96,6 @@ var ClearCacheMenu = Class.create({
 				'method': 'get',
 				'onComplete': function(result) {
 					spinner.replace(oldIcon);
-						// replace used token with new one
-					if (result.responseText.length > 0) {
-						link.href = link.href.substr(0, link.href.length - result.responseText.length) + result.responseText
-					}
 				}.bind(this)
 			});
 		}

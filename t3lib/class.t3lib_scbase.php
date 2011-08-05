@@ -27,30 +27,9 @@
 /**
  * Contains the parent class for 'ScriptClasses' in backend modules.
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  133: class t3lib_SCbase
- *  249:	 function init()
- *  269:	 function menuConfig()
- *  292:	 function mergeExternalItems($modName,$menuKey,$menuArr)
- *  317:	 function handleExternalFunctionValue($MM_key='function', $MS_value=NULL)
- *  335:	 function getExternalItemConfig($modName,$menuKey,$value='')
- *  349:	 function checkExtObj()
- *  363:	 function checkSubExtObj()
- *  375:	 function extObjHeader()
- *  384:	 function extObjContent()
- *
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -66,8 +45,8 @@
  *		 require ('conf.php');
  *		 require ($BACK_PATH.'init.php');
  *		 require ($BACK_PATH.'template.php');
- *		 $LANG->includeLLFile('EXT:prototype/locallang.php');
- *		 $BE_USER->modAccess($MCONF,1);
+ *		 $GLOBALS['LANG']->includeLLFile('EXT:prototype/locallang.php');
+ *		 $GLOBALS['BE_USER']->modAccess($MCONF,1);
  *
  *			 // SC_mod_prototype EXTENDS THE CLASS t3lib_SCbase with a main() and printContent() function:
  *		 class SC_mod_prototype extends t3lib_SCbase {

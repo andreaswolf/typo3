@@ -25,7 +25,6 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/* $Id: class.tx_em_extensions_list.php 2084 2010-03-22 01:46:37Z steffenk $ */
 
 /**
  * This class handles extension listings
@@ -763,7 +762,7 @@ EXTENSION KEYS:
 				$comment = '<table cellpadding="0" cellspacing="0" width="100%">';
 				foreach ($versions as $vk) {
 					$va = & $v[$vk];
-					if (t3lib_div::int_from_ver($vk) <= t3lib_div::int_from_ver($data['EM_CONF']['version'])) {
+					if (t3lib_utility_VersionNumber::convertVersionNumberToInteger($vk) <= t3lib_utility_VersionNumber::convertVersionNumberToInteger($data['EM_CONF']['version'])) {
 						continue;
 					}
 					$comment .= '<tr><td valign="top" style="padding-right:2px;border-bottom:1px dotted gray">' . $vk . '</td>' . '<td valign="top" style="border-bottom:1px dotted gray">' . nl2br($va[uploadcomment]) . '</td></tr>';
@@ -814,7 +813,7 @@ EXTENSION KEYS:
 	 * @param	boolean		If set the info in the internal extensionsXML array will be unset before returning the result.
 	 * @return	array		List array and category index as key 0 / 1 in an array.
 	 */
-	function prepareImportExtList($unsetProc = false) {
+	function prepareImportExtList($unsetProc = FALSE) {
 		$list = array();
 		$cat = tx_em_Tools::getDefaultCategory();
 		$filepath = $this->parentObject->getMirrorURL();

@@ -28,31 +28,10 @@
  * Front End session user. Login and session data
  * Included from index_ts.php
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @author	René Fritz <r.fritz@colorcube.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   79: class tslib_feUserAuth extends t3lib_userAuth
- *  143:     function fetchGroupData()
- *  233:     function getUserTSconf()
- *
- *              SECTION: Session data management functions
- *  278:     function fetchSessionData()
- *  300:     function storeSessionData()
- *  326:     function getKey($type,$key)
- *  351:     function setKey($type,$key,$data)
- *  377:     function record_registration($recs,$maxSizeOfSessionData=0)
- *
- * TOTAL FUNCTIONS: 7
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -77,36 +56,9 @@
  * @subpackage tslib
  */
 class tslib_feUserAuth extends t3lib_userAuth {
-	var $session_table = 'fe_sessions'; 		// Table to use for session data.
-	var $name = 'fe_typo_user';                 // Session/Cookie name
-	var $get_name = 'ftu';		                	 // Session/GET-var name
-
-	var $user_table = 'fe_users'; 					// Table in database with userdata
-	var $username_column = 'username'; 				// Column for login-name
-	var $userident_column = 'password'; 			// Column for password
-	var $userid_column = 'uid'; 					// Column for user-id
-	var $lastLogin_column = 'lastlogin';
-
-	var $enablecolumns = Array (
-		'deleted' => 'deleted',
-		'disabled' => 'disable',
-		'starttime' => 'starttime',
-		'endtime' => 'endtime'
-	);
-	var $formfield_uname = 'user'; 				// formfield with login-name
-	var $formfield_uident = 'pass'; 			// formfield with password
-	var $formfield_chalvalue = 'challenge';		// formfield with a unique value which is used to encrypt the password and username
-	var $formfield_status = 'logintype'; 		// formfield with status: *'login', 'logout'
 	var $formfield_permanent = 'permalogin';	// formfield with 0 or 1 // 1 = permanent login enabled // 0 = session is valid for a browser session only
-	var $security_level = '';					// sets the level of security. *'normal' = clear-text. 'challenged' = hashed password/username from form in $formfield_uident. 'superchallenged' = hashed password hashed again with username.
 
-	var $auth_timeout_field = 6000;				// Server session lifetime. If > 0: session-timeout in seconds. If false or <0: no timeout. If string: The string is a fieldname from the usertable where the timeout can be found.
-
-	var $lifetime = 0;				// Client session lifetime. 0 = Session-cookies. If session-cookies, the browser will stop the session when the browser is closed. Otherwise this specifies the lifetime of a cookie that keeps the session.
 	protected $sessionDataLifetime = 86400;		// Lifetime of session data in seconds.
-	var $sendNoCacheHeaders = 0;
-	var $getFallBack = 1;						// If this is set, authentication is also accepted by the _GET. Notice that the identification is NOT 128bit MD5 hash but reduced. This is done in order to minimize the size for mobile-devices, such as WAP-phones
-	var $getMethodEnabled = 1;					// Login may be supplied by url.
 
 	var $usergroup_column = 'usergroup';
 	var $usergroup_table = 'fe_groups';
@@ -131,7 +83,56 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	var $sesData = Array();
 	var $sesData_change = 0;
 	var $userData_change = 0;
-	protected $sessionDataTimestamp;
+	protected $sessionDataTimestamp = NULL;
+
+	/**
+	 * Default constructor.
+	 */
+	public function __construct() {
+		$this->session_table = 'fe_sessions';
+		$this->name = self::getCookieName();
+		$this->get_name = 'ftu';
+		$this->loginType = 'FE';
+
+		$this->user_table = 'fe_users';
+		$this->username_column = 'username';
+		$this->userident_column = 'password';
+		$this->userid_column = 'uid';
+		$this->lastLogin_column = 'lastlogin';
+
+		$this->enablecolumns = array(
+			'deleted' => 'deleted',
+			'disabled' => 'disable',
+			'starttime' => 'starttime',
+			'endtime' => 'endtime',
+		);
+
+		$this->formfield_uname = 'user';
+		$this->formfield_uident = 'pass';
+		$this->formfield_chalvalue = 'challenge';
+		$this->formfield_status = 'logintype';
+		$this->security_level = '';
+
+		$this->auth_timeout_field = 6000;
+		$this->sendNoCacheHeaders = FALSE;
+		$this->getFallBack = TRUE;
+		$this->getMethodEnabled = TRUE;
+	}
+
+
+	/**
+	 * @static
+	 * @return string
+	 *
+	 * returns the configured cookie name
+	 */
+	public static function getCookieName() {
+		$configuredCookieName = trim($GLOBALS['TYPO3_CONF_VARS']['FE']['cookieName']);
+		if (empty($configuredCookieName)) {
+			$configuredCookieName = 'fe_typo_user';
+		}
+		return $configuredCookieName;
+	}
 
 
 	/**
@@ -204,7 +205,7 @@ class tslib_feUserAuth extends t3lib_userAuth {
 			if(strlen($isPermanent) != 1) {
 				$isPermanent = $GLOBALS['TYPO3_CONF_VARS']['FE']['permalogin'];
 			} elseif(!$isPermanent) {
-				$this->forceSetCookie = true; // To make sure the user gets a session cookie and doesn't keep a possibly existing time based cookie, we need to force seeting the session cookie here
+				$this->forceSetCookie = TRUE; // To make sure the user gets a session cookie and doesn't keep a possibly existing time based cookie, we need to force seeting the session cookie here
 			}
 			$isPermanent = $isPermanent?1:0;
 		} elseif($GLOBALS['TYPO3_CONF_VARS']['FE']['permalogin'] == 2) {
@@ -385,7 +386,8 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	/**
 	 * Will write UC and session data.
 	 * If the flag $this->userData_change has been set, the function ->writeUC is called (which will save persistent user session data)
-	 * If the flag $this->sesData_change has been set, the fe_session_data table is updated with the content of $this->sesData (deleting any old record, inserting new)
+	 * If the flag $this->sesData_change has been set, the fe_session_data table is updated with the content of $this->sesData
+	 * If the $this->sessionDataTimestamp is NULL there was no session record yet, so we need to insert it into the database
 	 *
 	 * @return	void
 	 * @see fetchSessionData(), getKey(), setKey()
@@ -395,15 +397,25 @@ class tslib_feUserAuth extends t3lib_userAuth {
 		if ($this->userData_change)	{
 			$this->writeUC('');
 		}
-		if ($this->sesData_change)	{
-			if ($this->id)	{
-				$insertFields = array (
+
+		if ($this->sesData_change && $this->id)	{
+			if ($this->sessionDataTimestamp === NULL) {
+					// Write new session-data
+				$insertFields = array(
 					'hash' => $this->id,
+					'content' => serialize($this->sesData),
+					'tstamp' => $GLOBALS['EXEC_TIME']
+				);
+				$this->sessionDataTimestamp = $GLOBALS['EXEC_TIME'];
+				$GLOBALS['TYPO3_DB']->exec_INSERTquery('fe_session_data', $insertFields);
+			} else {
+					// Update session data
+				$updateFields = array(
 					'content' => serialize($this->sesData),
 					'tstamp' => $GLOBALS['EXEC_TIME'],
 				);
-				$this->removeSessionData();
-				$GLOBALS['TYPO3_DB']->exec_INSERTquery('fe_session_data', $insertFields);
+				$this->sessionDataTimestamp = $GLOBALS['EXEC_TIME'];
+				$GLOBALS['TYPO3_DB']->exec_UPDATEquery('fe_session_data', 'hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'fe_session_data'), $updateFields);
 			}
 		}
 	}
@@ -551,44 +563,27 @@ class tslib_feUserAuth extends t3lib_userAuth {
 	 * This calls the parent function but additionally tries to look up the session ID in the "fe_session_data" table.
 	 *
 	 * @param	integer		Claimed Session ID
-	 * @return	boolean		Returns true if a corresponding session was found in the database
+	 * @return	boolean		Returns TRUE if a corresponding session was found in the database
 	 */
 	function isExistingSessionRecord($id) {
 			// Perform check in parent function
 		$count = parent::isExistingSessionRecord($id);
 
 			// Check if there are any fe_session_data records for the session ID the client claims to have
-		if ($count == false) {
+		if ($count == FALSE) {
 			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery(
-				'content',
+				'content,tstamp',
 				'fe_session_data',
 				'hash = :hash'
 			);
 			$res = $statement->execute(array(':hash' => $id));
 			if ($res !== FALSE) {
 				if ($sesDataRow = $statement->fetch()) {
-					$count = true;
+					$count = TRUE;
 					$this->sesData = unserialize($sesDataRow['content']);
+					$this->sessionDataTimestamp = $sesDataRow['tstamp'];
 				}
 				$statement->free();
-			}
-		}
-
-			// @deprecated: Check for commerce basket records. The following lines should be removed once a fixed commerce version is released.
-			// Extensions like commerce which have their own session table should just put some small bit of data into fe_session_data using $GLOBALS['TSFE']->fe_user->setKey('ses', ...) to make the session stable.
-		if ($count == false && t3lib_extMgm::isLoaded('commerce')) {
-			t3lib_div::deprecationLog("EXT:commerce specific code in tslib_feuserauth::isExistingSessionRecord() is deprecated. Will be removed in 4.6");
-
-			$dbres = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
-							'*',
-							'tx_commerce_baskets',
-							'sid=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($id, 'tx_commerce_baskets')
-						);
-			if ($dbres !== false) {
-				if ($sesDataRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($dbres)) {
-					$count = true;
-				}
-				$GLOBALS['TYPO3_DB']->sql_free_result($dbres);
 			}
 		}
 

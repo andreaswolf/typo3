@@ -31,8 +31,6 @@
  *
  * @package		TYPO3
  * @subpackage	tx_scheduler
- *
- * $Id$
  */
 
 class tx_scheduler implements t3lib_Singleton {
@@ -44,7 +42,7 @@ class tx_scheduler implements t3lib_Singleton {
 	/**
 	 * Constructor, makes sure all derived client classes are included
 	 *
-	 * @return	void
+	 * @return tx_scheduler
 	 */
 	public function __construct() {
 			// Get configuration from the extension manager
@@ -60,9 +58,8 @@ class tx_scheduler implements t3lib_Singleton {
 	/**
 	 * Adds a task to the pool
  	 *
-	 * @param	tx_scheduler_Task	$task: the object representing the task to add
-	 * @param	string				$identifier: the identified of the task
-	 * @return	boolean				True if the task was successfully added, false otherwise
+	 * @param tx_scheduler_Task $task The object representing the task to add
+	 * @return boolean TRUE if the task was successfully added, FALSE otherwise
 	 */
 	public function addTask(tx_scheduler_Task $task) {
 		$taskUid = $task->getTaskUid();
@@ -77,12 +74,12 @@ class tx_scheduler implements t3lib_Singleton {
 			if ($result) {
 				$task->setTaskUid($GLOBALS['TYPO3_DB']->sql_insert_id());
 				$task->save();
-				$result = true;
+				$result = TRUE;
 			} else {
-				$result = false;
+				$result = FALSE;
 			}
 		} else {
-			$result = false;
+			$result = FALSE;
 		}
 		return $result;
 	}
@@ -91,7 +88,7 @@ class tx_scheduler implements t3lib_Singleton {
 	 * Cleans the execution lists of the scheduled tasks, executions older than 24h are removed
 	 * TODO: find a way to actually kill the job
 	 *
-	 * @return	void
+	 * @return void
 	 */
 	protected function cleanExecutionArrays() {
 		$tstamp = $GLOBALS['EXEC_TIME'];
@@ -138,10 +135,10 @@ class tx_scheduler implements t3lib_Singleton {
 
 	/**
      * This method executes the given task and properly marks and records that execution
-	 * It is expected to return false if the task was barred from running or if it was not saved properly
+	 * It is expected to return FALSE if the task was barred from running or if it was not saved properly
 	 *
-	 * @param	tx_scheduler_Task	$task: the task to execute
-	 * @return	boolean				Whether the task was saved succesfully to the database or not
+	 * @param tx_scheduler_Task $task The task to execute
+	 * @return boolean Whether the task was saved successfully to the database or not
 	 */
 	public function executeTask(tx_scheduler_Task $task) {
 			// Trigger the saving of the task, as this will calculate its next execution time
@@ -151,7 +148,7 @@ class tx_scheduler implements t3lib_Singleton {
 			// Set a scheduler object for the task again,
 			// as it was removed during the save operation
 		$task->setScheduler();
-		$result = true;
+		$result = TRUE;
 
 			// Task is already running and multiple executions are not allowed
 		if (!$task->areMultipleExecutionsAllowed() && $task->isExecutionRunning()) {
@@ -159,7 +156,7 @@ class tx_scheduler implements t3lib_Singleton {
 			$logMessage = 'Task is already running and multiple executions are not allowed, skipping! Class: ' . get_class($task) . ', UID: ' . $task->getTaskUid();
 			$this->log($logMessage);
 
-			$result = false;
+			$result = FALSE;
 
 			// Task isn't running or multiple executions are allowed
 		} else {
@@ -170,7 +167,7 @@ class tx_scheduler implements t3lib_Singleton {
 				// Register execution
 			$executionID = $task->markExecution();
 
-			$failure = null;
+			$failure = NULL;
 			try {
 					// Execute task
 				$successfullyExecuted = $task->execute();
@@ -186,7 +183,7 @@ class tx_scheduler implements t3lib_Singleton {
 				$failure = $e;
 			}
 
-				// Unregister excution
+				// Un-register execution
 			$task->unmarkExecution($executionID, $failure);
 
 				// Log completion of execution
@@ -206,8 +203,8 @@ class tx_scheduler implements t3lib_Singleton {
 	/**
 	 * This method stores information about the last run of the Scheduler into the system registry
 	 *
-	 * @param	string	$type: Type of run (manual or command-line (assumed to be cron))
-	 * @return	void
+	 * @param string $type Type of run (manual or command-line (assumed to be cron))
+	 * @return void
 	 */
 	public function recordLastRun($type = 'cron') {
 			// Validate input value
@@ -215,9 +212,7 @@ class tx_scheduler implements t3lib_Singleton {
 			$type = 'cron';
 		}
 
-		/**
-		 * @var	t3lib_Registry
-		 */
+			/** @var t3lib_Registry $registry */
 		$registry = t3lib_div::makeInstance('t3lib_Registry');
 		$runInformation = array('start' => $GLOBALS['EXEC_TIME'], 'end' => time(), 'type' => $type);
 		$registry->set('tx_scheduler', 'lastRun', $runInformation);
@@ -227,23 +222,23 @@ class tx_scheduler implements t3lib_Singleton {
 	 * Removes a task completely from the system.
 	 * TODO: find a way to actually kill the existing jobs
 	 *
-	 * @param	tx_scheduler_Task	$task: the object representing the task to delete
-	 * @return	boolean				True if task was successfully deleted, false otherwise
+	 * @param tx_scheduler_Task $task The object representing the task to delete
+	 * @return boolean TRUE if task was successfully deleted, FALSE otherwise
 	 */
 	public function removeTask(tx_scheduler_Task $task) {
 		$taskUid = $task->getTaskUid();
 		if (!empty($taskUid)) {
 			return $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_scheduler_task', 'uid = ' . $taskUid);
 		} else {
-			return false;
+			return FALSE;
 		}
 	}
 
 	/**
 	 * Updates a task in the pool
  	 *
-	 * @param	tx_scheduler_Task	$task: Scheduler task object
-	 * @return	boolean				False if submitted task was not of proper class
+	 * @param tx_scheduler_Task $task Scheduler task object
+	 * @return boolean False if submitted task was not of proper class
 	 */
 	public function saveTask(tx_scheduler_Task $task) {
 		$taskUid = $task->getTaskUid();
@@ -253,7 +248,7 @@ class tx_scheduler implements t3lib_Singleton {
 				$task->setExecutionTime($executionTime);
 			}
 			catch (Exception $e) {
-				$task->setDisabled(true);
+				$task->setDisabled(TRUE);
 				$executionTime = 0;
 			}
 			$task->unsetScheduler();
@@ -265,7 +260,7 @@ class tx_scheduler implements t3lib_Singleton {
 			);
 			return $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_scheduler_task', "uid = '" . $taskUid . "'", $fields);
 		} else {
-			return false;
+			return FALSE;
 		}
 	}
 
@@ -274,8 +269,8 @@ class tx_scheduler implements t3lib_Singleton {
 	 * with the uid is returned, else the object representing the next due task is returned.
 	 * If there are no due tasks the method throws an exception.
 	 *
-	 * @param	integer				$uid: primary key of a task
-	 * @return	tx_scheduler_Task	The fetched task object
+	 * @param integer $uid Primary key of a task
+	 * @return tx_scheduler_Task The fetched task object
 	 */
 	public function fetchTask($uid = 0) {
 		$whereClause = '';
@@ -326,9 +321,9 @@ class tx_scheduler implements t3lib_Singleton {
 	  * This method is used to get the database record for a given task
 	  * It returns the database record and not the task object
 	  *
-	  * @param	integer	$uid: primary key of the task to get
-	  * @return	array	Database record for the task
-	  * @see	tx_scheduler::fetchTask()
+	  * @param integer $uid Primary key of the task to get
+	  * @return array Database record for the task
+	  * @see tx_scheduler::fetchTask()
 	  */
 	 public function fetchTaskRecord($uid) {
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tx_scheduler_task', "uid = '" . intval($uid) . "'");
@@ -349,11 +344,11 @@ class tx_scheduler implements t3lib_Singleton {
 	 * Fetches and unserializes task objects selected with some (SQL) condition
 	 * Objects are returned as an array
 	 *
-	 * @param	string		$where: part of a SQL where clause (without the "WHERE" keyword)
-	 * @param	boolean		$includeDisabledTasks: true if disabled tasks should be fetched too, false otherwise
-	 * @return	array		List of task objects
+	 * @param string $where Part of a SQL where clause (without the "WHERE" keyword)
+	 * @param boolean $includeDisabledTasks TRUE if disabled tasks should be fetched too, FALSE otherwise
+	 * @return array List of task objects
 	 */
-	public function fetchTasksWithCondition($where, $includeDisabledTasks = false) {
+	public function fetchTasksWithCondition($where, $includeDisabledTasks = FALSE) {
 		$tasks = array();
 		if (!empty($where)) {
 			$whereClause = $where;
@@ -388,8 +383,8 @@ class tx_scheduler implements t3lib_Singleton {
 	 * the unserialization will produce an incomplete object.
 	 * This test checks whether the unserialized object is of the right (parent) class or not.
 	 *
-	 * @param	object		The object to test
-	 * @return	boolean		True if object is a task, false otherwise
+	 * @param object $task The object to test
+	 * @return boolean TRUE if object is a task, FALSE otherwise
 	 */
 	public function isValidTaskObject($task) {
 		return $task instanceof tx_scheduler_Task;
@@ -399,10 +394,10 @@ class tx_scheduler implements t3lib_Singleton {
 	 * This is a utility method that writes some message to the BE Log
 	 * It could be expanded to write to some other log
 	 *
-	 * @param	string		The message to write to the log
-	 * @param	integer		Status (0 = message, 1 = error)
-	 * @param	mixed		Key for the message
-	 * @return	void
+	 * @param string $message The message to write to the log
+	 * @param integer $status Status (0 = message, 1 = error)
+	 * @param mixed $code Key for the message
+	 * @return void
 	 */
 	public function log($message, $status = 0, $code = 'scheduler') {
 			// Log only if enabled

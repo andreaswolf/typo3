@@ -30,30 +30,6 @@
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	Olivier Simah <noname_paris@yahoo.fr>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   75: class tx_indexed_search_extparse
- *   94:     function initParser($extension)
- *  214:     function softInit($extension)
- *  247:     function searchTypeMediaTitle($extension)
- *  323:     function isMultiplePageExtension($extension)
- *
- *              SECTION: Reading documents (for parsing)
- *  354:     function readFileContent($ext,$absFile,$cPKey)
- *  521:     function fileContentParts($ext,$absFile)
- *  560:     function splitPdfInfo($pdfInfoArray)
- *  579:     function removeEndJunk($string)
- *
- *              SECTION: Backend analyzer
- *  606:     function getIcon($extension)
- *
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 
@@ -97,7 +73,7 @@ class tx_indexed_search_extparse {
 	 * Initialize external parser for parsing content.
 	 *
 	 * @param	string		File extension
-	 * @return	boolean		Returns true if extension is supported/enabled, otherwise false.
+	 * @return	boolean		Returns TRUE if extension is supported/enabled, otherwise FALSE.
 	 */
 	function initParser($extension)	{
 
@@ -116,19 +92,17 @@ class tx_indexed_search_extparse {
 			return FALSE;
 		}
 
-		$safeModeEnabled = t3lib_utility_PhpOptions::isSafeModeEnabled();
-
 			// Switch on file extension:
 		switch($extension)	{
 			case 'pdf':
 					// PDF
 				if ($indexerConfig['pdftools'])	{
 					$pdfPath = rtrim($indexerConfig['pdftools'], '/').'/';
-					if ($safeModeEnabled || (@is_file($pdfPath . 'pdftotext' . $exe) && @is_file($pdfPath . 'pdfinfo' . $exe))) {
+					if (@is_file($pdfPath . 'pdftotext' . $exe) && @is_file($pdfPath . 'pdfinfo' . $exe)) {
 						$this->app['pdfinfo'] = $pdfPath.'pdfinfo'.$exe;
 						$this->app['pdftotext'] = $pdfPath.'pdftotext'.$exe;
 							// PDF mode:
-						$this->pdf_mode = t3lib_div::intInRange($indexerConfig['pdf_mode'],-100,100);
+						$this->pdf_mode = t3lib_utility_Math::forceIntegerInRange($indexerConfig['pdf_mode'],-100,100);
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:pdfToolsNotFound'), $pdfPath), 3);
 				} else $this->pObj->log_setTSlogMessage($this->sL('LLL:EXT:indexed_search/locallang.xml:pdfToolsDisabled'), 1);
@@ -137,7 +111,7 @@ class tx_indexed_search_extparse {
 					// Catdoc
 				if ($indexerConfig['catdoc'])	{
 					$catdocPath = rtrim($indexerConfig['catdoc'], '/').'/';
-					if ($safeModeEnabled || @is_file($catdocPath . 'catdoc' . $exe)) {
+					if (@is_file($catdocPath . 'catdoc' . $exe)) {
 						$this->app['catdoc'] = $catdocPath.'catdoc'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:catdocNotFound'), $catdocPath), 3);
@@ -148,7 +122,7 @@ class tx_indexed_search_extparse {
 					// ppthtml
 				if ($indexerConfig['ppthtml'])	{
 					$ppthtmlPath = rtrim($indexerConfig['ppthtml'], '/').'/';
-					if ($safeModeEnabled || @is_file($ppthtmlPath . 'ppthtml' . $exe)) {
+					if (@is_file($ppthtmlPath . 'ppthtml' . $exe)) {
 						$this->app['ppthtml'] = $ppthtmlPath.'ppthtml'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:ppthtmlNotFound'), $ppthtmlPath), 3);
@@ -158,7 +132,7 @@ class tx_indexed_search_extparse {
 					// Xlhtml
 				if ($indexerConfig['xlhtml'])	{
 					$xlhtmlPath = rtrim($indexerConfig['xlhtml'], '/').'/';
-					if ($safeModeEnabled || @is_file($xlhtmlPath . 'xlhtml' . $exe)) {
+					if (@is_file($xlhtmlPath . 'xlhtml' . $exe)) {
 						$this->app['xlhtml'] = $xlhtmlPath.'xlhtml'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:xlhtmlNotFound'), $xlhtmlPath), 3);
@@ -172,7 +146,7 @@ class tx_indexed_search_extparse {
 			case 'odt':		// Oasis OpenDocument Text
 				if ($indexerConfig['unzip'])	{
 					$unzipPath = rtrim($indexerConfig['unzip'], '/').'/';
-					if ($safeModeEnabled || @is_file($unzipPath . 'unzip' . $exe)) {
+					if (@is_file($unzipPath . 'unzip' . $exe)) {
 						$this->app['unzip'] = $unzipPath.'unzip'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:unzipNotFound'), $unzipPath), 3);
@@ -182,7 +156,7 @@ class tx_indexed_search_extparse {
 					// Catdoc
 				if ($indexerConfig['unrtf'])	{
 					$unrtfPath = rtrim($indexerConfig['unrtf'], '/').'/';
-					if ($safeModeEnabled || @is_file($unrtfPath . 'unrtf' . $exe)) {
+					if (@is_file($unrtfPath . 'unrtf' . $exe)) {
 						$this->app['unrtf'] = $unrtfPath.'unrtf'.$exe;
 						$extOK = TRUE;
 					} else $this->pObj->log_setTSlogMessage(sprintf($this->sL('LLL:EXT:indexed_search/locallang.xml:unrtfNotFound'), $unrtfPath), 3);
@@ -219,7 +193,7 @@ class tx_indexed_search_extparse {
 	 * Doesn't evaluate if parser is configured right - more like returning POSSIBLE supported extensions (for showing icons etc) in backend and frontend plugin
 	 *
 	 * @param	string		File extension to initialize for.
-	 * @return	boolean		Returns true if the extension is supported and enabled, otherwise false.
+	 * @return	boolean		Returns TRUE if the extension is supported and enabled, otherwise FALSE.
 	 */
 	function softInit($extension)	{
 		switch($extension)	{
@@ -353,10 +327,10 @@ class tx_indexed_search_extparse {
 	}
 
 	/**
-	 * Returns true if the input extension (item_type) is a potentially a multi-page extension
+	 * Returns TRUE if the input extension (item_type) is a potentially a multi-page extension
 	 *
 	 * @param	string		Extension / item_type string
-	 * @return	boolean		Return true if multi-page
+	 * @return	boolean		Return TRUE if multi-page
 	 */
 	function isMultiplePageExtension($extension)	{
 			// Switch on file extension:
@@ -371,10 +345,10 @@ class tx_indexed_search_extparse {
 	 * Wraps the "splitLabel function" of the language object.
 	 *
 	 * @param	string		$reference: Reference/key of the label
-	 * @param	boolean		$useHtmlSpecialChar: Convert special chars to HTML entities (default: false)
+	 * @param	boolean		$useHtmlSpecialChar: Convert special chars to HTML entities (default: FALSE)
 	 * @return	string		The label of the reference/key to be fetched
 	 */
-	protected function sL($reference, $useHtmlSpecialChar = false) {
+	protected function sL($reference, $useHtmlSpecialChar = FALSE) {
 		return $this->langObject->sL($reference, $useHtmlSpecialChar);
 	}
 
@@ -560,7 +534,7 @@ class tx_indexed_search_extparse {
 				$contentArr['title'] = basename($absFile);	// Make sure the title doesn't expose the absolute path!
 			break;
 			default:
-				return false;
+				return FALSE;
 			break;
 		}
 			// If no title (and why should there be...) then the file-name is set as title. This will raise the hits considerably if the search matches the document name.
@@ -596,7 +570,7 @@ class tx_indexed_search_extparse {
 					if ($this->pdf_mode>0)	{
 						$iter = ceil($pdfInfo['pages']/$this->pdf_mode);
 					} else {
-						$iter = t3lib_div::intInRange(abs($this->pdf_mode),1,$pdfInfo['pages']);
+						$iter = t3lib_utility_Math::forceIntegerInRange(abs($this->pdf_mode),1,$pdfInfo['pages']);
 					}
 
 						// Traverse and create intervals.

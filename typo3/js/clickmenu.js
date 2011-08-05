@@ -2,7 +2,7 @@
  * Javascript functions regarding the clickmenu
  * relies on the javascript library "prototype"
  *
- * (c) 2007-2010 Benjamin Mack <www.xnos.org>
+ * (c) 2007-2011 Benjamin Mack <www.xnos.org>
  * All rights reserved
  *
  * This script is part of TYPO3 by
@@ -222,11 +222,15 @@ var Clickmenu = {
 Event.observe(document, 'mousemove', Clickmenu.calcMousePosEvent.bindAsEventListener(Clickmenu), true);
 
 
-// deprecated functions since 4.2, here for compatibility, remove in 4.4
+// @deprecated: Deprecated functions since 4.2, here for compatibility, remove in 4.4+
+// ## BEGIN ##
+
+// Still used in Core: typo3/template.php::wrapClickMenuOnIcon()
 function showClickmenu(table, uid, listFr, enDisItems, backPath, addParams)	{
 	Clickmenu.show(table, uid, listFr, enDisItems, backPath, addParams);
 }
 
+// Still used in Core: typo3/alt_clickmenu.php::linkItem()
 function showClickmenu_raw(url) {
 	var parts = url.split('?');
 	if (parts.length === 2) {
@@ -254,3 +258,4 @@ function hideSpecific(level) {
 function showHideSelectorBoxes(action) {
 	toggleSelectorBoxes(action);
 }
+// ## END ##

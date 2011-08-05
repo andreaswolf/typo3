@@ -29,7 +29,6 @@
 /**
  * Contains TEXT class object.
  *
- * $Id: class.tslib_content.php 7905 2010-06-13 14:42:33Z ohader $
  * @author Xavier Perseguers <typo3@perseguers.ch>
  * @author Steffen Kamper <steffen@typo3.org>
  */
@@ -46,7 +45,7 @@ class tslib_content_HorizontalRuler extends tslib_content_Abstract {
 		$lineThickness = isset($conf['lineThickness.'])
 			? $this->cObj->stdWrap($conf['lineThickness'], $conf['lineThickness.'])
 			: $conf['lineThickness'];
-		$lineThickness = t3lib_div::intInRange($lineThickness, 1, 50);
+		$lineThickness = t3lib_utility_Math::forceIntegerInRange($lineThickness, 1, 50);
 
 		$lineColor = isset($conf['lineColor.'])
 			? $this->cObj->stdWrap($conf['lineColor'], $conf['lineColor.'])

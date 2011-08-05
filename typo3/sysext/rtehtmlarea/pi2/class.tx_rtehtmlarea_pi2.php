@@ -28,8 +28,6 @@
  * Front end RTE based on htmlArea
  *
  * @author Stanislas Rolland <typo3(arobas)sjbr.ca>
- *
- * $Id$  *
  */
 class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
@@ -75,7 +73,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
 		$this->TCEform = $parentObject;
 		$this->client = $this->clientInfo();
-		$this->typoVersion = t3lib_div::int_from_ver(TYPO3_version);
+		$this->typoVersion = t3lib_utility_VersionNumber::convertVersionNumberToInteger(TYPO3_version);
 
 		/* =======================================
 		 * INIT THE EDITOR-SETTINGS
@@ -105,7 +103,7 @@ class tx_rtehtmlarea_pi2 extends tx_rtehtmlarea_base {
 
 		if (is_array($thisConfig) && !empty($thisConfig)) {
 			$this->thisConfig = $thisConfig;
-		} else if (is_array($this->RTEsetup['default.']) && is_array($this->RTEsetup['default.']['FE.'])) {
+		} elseif (is_array($this->RTEsetup['default.']) && is_array($this->RTEsetup['default.']['FE.'])) {
 			$this->thisConfig = $this->RTEsetup['default.']['FE.'];
 		}
 

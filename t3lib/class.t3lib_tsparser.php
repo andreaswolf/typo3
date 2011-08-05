@@ -27,35 +27,9 @@
 /**
  * Contains the TypoScript parser class
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   80: class t3lib_TSparser
- *  133:	 function parse($string,$matchObj='')
- *  169:	 function nextDivider()
- *  185:	 function parseSub(&$setup)
- *  389:	 function rollParseSub($string,&$setup)
- *  413:	 function getVal($string,$setup)
- *  439:	 function setVal($string,&$setup,$value,$wipeOut=0)
- *  485:	 function error($err,$num=2)
- *  497:	 function checkIncludeLines($string, $cycle_counter=1, $returnFiles=false)
- *  541:	 function checkIncludeLines_array($array)
- *
- *			  SECTION: Syntax highlighting
- *  584:	 function doSyntaxHighlight($string,$lineNum='',$highlightBlockMode=0)
- *  605:	 function regHighLight($code,$pointer,$strlen=-1)
- *  623:	 function syntaxHighlight_print($lineNumDat,$highlightBlockMode)
- *
- * TOTAL FUNCTIONS: 12
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -80,7 +54,7 @@ class t3lib_TSparser {
 	var $multiLineObject = ''; // Internally set, when multiline value is accumulated
 	var $multiLineValue = array(); // Internally set, when multiline value is accumulated
 	var $inBrace = 0; // Internally set, when in brace. Counter.
-	var $lastConditionTrue = 1; // For each condition this flag is set, if the condition is true, else it's cleared. Then it's used by the [ELSE] condition to determine if the next part should be parsed.
+	var $lastConditionTrue = 1; // For each condition this flag is set, if the condition is TRUE, else it's cleared. Then it's used by the [ELSE] condition to determine if the next part should be parsed.
 	var $sections = array(); // Tracking all conditions found
 	var $sectionsMatch = array(); // Tracking all matching conditions found
 	var $syntaxHighLight = 0; // If set, then syntax highlight mode is on; Call the function syntaxHighlight() to use this function
@@ -182,8 +156,6 @@ class t3lib_TSparser {
 	 * @return	string		Returns the string of the condition found, the exit signal or possible nothing (if it completed parsing with no interruptions)
 	 */
 	function parseSub(&$setup) {
-		global $TYPO3_CONF_VARS;
-
 		while (isset($this->raw[$this->rawP])) {
 			$line = ltrim($this->raw[$this->rawP]);
 			$lineP = $this->rawP;
@@ -202,7 +174,7 @@ class t3lib_TSparser {
 				$this->commentSet = 1;
 			}
 
-			if (!$this->commentSet && ($line || $this->multiLineEnabled)) { // If $this->multiLineEnabled we will go and get the line values here because we know, the first if() will be true.
+			if (!$this->commentSet && ($line || $this->multiLineEnabled)) { // If $this->multiLineEnabled we will go and get the line values here because we know, the first if() will be TRUE.
 				if ($this->multiLineEnabled) { // If multiline is enabled. Escape by ')'
 					if (substr($line, 0, 1) == ')') { // Multiline ends...
 						if ($this->syntaxHighLight) {
@@ -298,8 +270,8 @@ class t3lib_TSparser {
 											}
 										break;
 										default:
-											if (isset($TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tsparser.php']['preParseFunc'][$tsFunc])) {
-												$hookMethod = $TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tsparser.php']['preParseFunc'][$tsFunc];
+											if (isset($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tsparser.php']['preParseFunc'][$tsFunc])) {
+												$hookMethod = $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tsparser.php']['preParseFunc'][$tsFunc];
 												$params = array('currentValue' => $currentValue, 'functionArgument' => $tsFuncArg);
 												$fakeThis = FALSE;
 												$newValue = t3lib_div::callUserFunction($hookMethod, $params, $fakeThis);
@@ -590,7 +562,7 @@ class t3lib_TSparser {
 									$filename = t3lib_div::getFileAbsFileName(trim($sourceParts[1]));
 									if (strcmp($filename, '')) { // Must exist and must not contain '..' and must be relative
 										if (t3lib_div::verifyFilenameAgainstDenyPattern($filename)) { // Check for allowed files
-											if (@is_file($filename) && filesize($filename) < 100000) { // Max. 100 KB include files!
+											if (@is_file($filename)) {
 													// check for includes in included text
 												$includedFiles[] = $filename;
 												$included_text = self::checkIncludeLines(t3lib_div::getUrl($filename), $cycle_counter + 1, $returnFiles);
@@ -601,8 +573,12 @@ class t3lib_TSparser {
 													$included_text = $included_text['typoscript'];
 												}
 												$newString .= $included_text . LF;
+											} else {
+												$newString .= "\n###\n### ERROR: File \"" . $filename . "\" was not was not found.\n###\n\n";
+												t3lib_div::sysLog('File "' . $filename . '" was not found.', 'Core', 2);
 											}
 										} else {
+											$newString .= "\n###\n### ERROR: File \"" . $filename . "\" was not included since it is not allowed due to fileDenyPattern\n###\n\n";
 											t3lib_div::sysLog('File "' . $filename . '" was not included since it is not allowed due to fileDenyPattern', 'Core', 2);
 										}
 									}
@@ -713,23 +689,23 @@ class t3lib_TSparser {
 
 						// some file checks
 					if (empty($realFileName)) {
-						throw new Exception(sprintf('"%s" is not a valid file location.', $fileName));
+						throw new UnexpectedValueException(sprintf('"%s" is not a valid file location.', $fileName), 1294586441);
 					}
 
 					if (!is_writable($realFileName)) {
-						throw new Exception(sprintf('"%s" is not writable.', $fileName));
+						throw new RuntimeException(sprintf('"%s" is not writable.', $fileName), 1294586442);
 					}
 
 					if (in_array($realFileName, $extractedFileNames)) {
-						throw new Exception(sprintf('Recursive/multiple inclusion of file "%s"', $realFileName));
+						throw new RuntimeException(sprintf('Recursive/multiple inclusion of file "%s"', $realFileName), 1294586443);
 					}
 					$extractedFileNames[] = $realFileName;
 
 						// recursive call to detected nested commented include statements
-					$fileContentString = self::extractIncludes($fileContentString, ++$cycle_counter, $extractedFileNames);
+					$fileContentString = self::extractIncludes($fileContentString, $cycle_counter + 1, $extractedFileNames);
 
 					if (!t3lib_div::writeFile($realFileName, $fileContentString)) {
-						throw new Exception(sprintf('Could not write file "%s"', $realFileName));
+						throw new RuntimeException(sprintf('Could not write file "%s"', $realFileName), 1294586444);
 					}
 
 						// insert reference to the file in the rest content

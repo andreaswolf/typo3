@@ -27,30 +27,10 @@
 /**
  * Contains the GMENU_LAYERS extension class, tslib_gmenu_layers
  *
- * $Id: gmenu_layers.php 5165 2009-03-09 18:28:59Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   84: class tslib_gmenu_layers extends tslib_gmenu
- *  116:     function extProc_init()
- *  134:     function extProc_RO($key)
- *  150:     function extProc_beforeLinking($key)
- *  205:     function extProc_afterLinking($key)
- *  240:     function extProc_beforeAllWrap($item,$key)
- *  253:     function isSetIntval($in)
- *  262:     function extProc_finish ()
- *  444:     function extCalcBorderWithin($kind,$integer)
- *
- * TOTAL FUNCTIONS: 8
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -180,7 +160,7 @@ GLV_restoreMenu["'.$this->WMid.'"] = "'.$this->WMactiveKey.'";
 				if ($this->mconf['ieSelectFix']) $this->I['linkHREF']['onMouseover']=$this->I['linkHREF']['onMouseover'].'GL_iframer(\''.$this->WMid.'\',\'Menu'.$this->WMid.$key.'\',true);';
 					// Added 120802; This means that everytime leaving a menuitem the layer should be shut down (and if the layer is hit in the meantime it is not though).
 					// This should happen only for items that are auto-hidden when not over and possibly only when a hide-timer is set. Problem is if the hide-timer is not set and we leave the main element, then the layer will be hidden unless we reach the layer before the timeout will happen and the menu hidden.
-				if (t3lib_div::intInRange($this->mconf['hideMenuWhenNotOver'],0,600) && $this->mconf['hideMenuTimer'])	{
+				if (t3lib_utility_Math::forceIntegerInRange($this->mconf['hideMenuWhenNotOver'],0,600) && $this->mconf['hideMenuTimer'])	{
 					$event.='GL_resetAll("'.$this->WMid.'");';
 				}
 				$this->I['linkHREF']['onMouseout'].=$event;
@@ -245,10 +225,10 @@ GLV_restoreMenu["'.$this->WMid.'"] = "'.$this->WMactiveKey.'";
 	}
 
 	/**
-	 * Returns true if different from ''  OR if intval()!=0
+	 * Returns TRUE if different from ''  OR if intval()!=0
 	 *
 	 * @param	string		Value to evaluate
-	 * @return	boolean		true if $in is different from ''  OR if intval()!=0
+	 * @return	boolean		TRUE if $in is different from ''  OR if intval()!=0
 	 */
 	function isSetIntval($in)	{
 		return $this->mconf['blankStrEqFalse'] ? strcmp($in,'') : intval($in);
@@ -361,7 +341,7 @@ GLV_curLayerHeight["'.$this->WMid.'"]=0;
 GLV_curLayerX["'.$this->WMid.'"]=0;
 GLV_curLayerY["'.$this->WMid.'"]=0;
 GLV_menuOn["'.$this->WMid.'"] = null;
-GLV_gap["'.$this->WMid.'"]='.t3lib_div::intInRange($this->mconf['hideMenuWhenNotOver'],0,600).';
+GLV_gap["'.$this->WMid.'"]='.t3lib_utility_Math::forceIntegerInRange($this->mconf['hideMenuWhenNotOver'],0,600).';
 GLV_currentLayer["'.$this->WMid.'"] = null;
 GLV_currentROitem["'.$this->WMid.'"] = null;
 GLV_hasBeenOver["'.$this->WMid.'"]=0;
@@ -372,7 +352,7 @@ GLV_dontHideOnMouseUp["'.$this->WMid.'"] = '.($this->mconf['dontHideOnMouseUp']?
 GLV_dontFollowMouse["'.$this->WMid.'"] = '.($this->mconf['dontFollowMouse']?1:0).';
 GLV_date = new Date();
 GLV_timeout["'.$this->WMid.'"] = GLV_date.getTime();
-GLV_timeoutRef["'.$this->WMid.'"] = '.t3lib_div::intInRange($this->mconf['hideMenuTimer'],0,20000).';
+GLV_timeoutRef["'.$this->WMid.'"] = '.t3lib_utility_Math::forceIntegerInRange($this->mconf['hideMenuTimer'],0,20000).';
 GLV_menuXY["'.$this->WMid.'"] = new Array();
 '.implode(LF,$this->WMxyArray).'
 '.$this->WMrestoreVars;
@@ -446,8 +426,14 @@ GLV_timeout_count++;
 				case 'right':
 				case 'bottom':
 					$add='';
-					if ($kind=='right')		{$add='GL_getObj(id).width'; $key = 'left';}
-					if ($kind=='bottom')	{$add='GL_getObj(id).height'; $key = 'top';}
+					if ($kind == 'right') {
+						$add = 'GL_getObj(id).width';
+						$key = 'left';
+					}
+					if ($kind == 'bottom') {
+						$add = 'GL_getObj(id).height';
+						$key = 'top';
+					}
 					$str = 'if (parseInt(GLV_menuOn["'.$this->WMid.'"].'.$key.')+'.$add.'>'.$integer.') GLV_menuOn["'.$this->WMid.'"].'.$key.'='.$integer.'-'.$add.';';
 				break;
 				default:

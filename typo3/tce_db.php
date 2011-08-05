@@ -29,25 +29,9 @@
  * This script is a gateway for POST forms to class.t3lib_TCEmain that manipulates all information in the database!!
  * For syntax and API information, see the document 'TYPO3 Core APIs'
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   78: class SC_tce_db
- *  106:     function init()
- *  162:     function initClipboard()
- *  182:     function main()
- *  218:     function finish()
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -109,7 +93,6 @@ class SC_tce_db {
 	 * @return	void
 	 */
 	function init()	{
-		global $BE_USER;
 
 			// GPvars:
 		$this->flags = t3lib_div::_GP('flags');
@@ -131,17 +114,18 @@ class SC_tce_db {
 		$this->tce->generalComment = $this->generalComment;
 
 			// Configuring based on user prefs.
-		if ($BE_USER->uc['recursiveDelete'])	{
-			$this->tce->deleteTree = 1;	// True if the delete Recursive flag is set.
+		if ($GLOBALS['BE_USER']->uc['recursiveDelete']) {
+			$this->tce->deleteTree = 1;	// TRUE if the delete Recursive flag is set.
 		}
-		if ($BE_USER->uc['copyLevels'])	{
-			$this->tce->copyTree = t3lib_div::intInRange($BE_USER->uc['copyLevels'],0,100);	// Set to number of page-levels to copy.
+		if ($GLOBALS['BE_USER']->uc['copyLevels']) {
+				// Set to number of page-levels to copy.
+			$this->tce->copyTree = t3lib_utility_Math::forceIntegerInRange($GLOBALS['BE_USER']->uc['copyLevels'], 0, 100);
 		}
-		if ($BE_USER->uc['neverHideAtCopy'])	{
+		if ($GLOBALS['BE_USER']->uc['neverHideAtCopy']) {
 			$this->tce->neverHideAtCopy = 1;
 		}
 
-		$TCAdefaultOverride = $BE_USER->getTSConfigProp('TCAdefaults');
+		$TCAdefaultOverride = $GLOBALS['BE_USER']->getTSConfigProp('TCAdefaults');
 		if (is_array($TCAdefaultOverride))	{
 			$this->tce->setDefaultsFromUserTS($TCAdefaultOverride);
 		}
@@ -185,7 +169,6 @@ class SC_tce_db {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$TYPO3_CONF_VARS;
 
 			// LOAD TCEmain with data and cmd arrays:
 		$this->tce->start($this->data,$this->cmd);
@@ -194,7 +177,7 @@ class SC_tce_db {
 			// Checking referer / executing
 		$refInfo=parse_url(t3lib_div::getIndpEnv('HTTP_REFERER'));
 		$httpHost = t3lib_div::getIndpEnv('TYPO3_HOST_ONLY');
-		if ($httpHost!=$refInfo['host'] && $this->vC!=$BE_USER->veriCode() && !$TYPO3_CONF_VARS['SYS']['doNotCheckReferer'])	{
+		if ($httpHost != $refInfo['host'] && $this->vC != $GLOBALS['BE_USER']->veriCode() && !$GLOBALS['TYPO3_CONF_VARS']['SYS']['doNotCheckReferer']) {
 			$this->tce->log('',0,0,0,1,'Referer host "%s" and server host "%s" did not match and veriCode was not valid either!',1,array($refInfo['host'],$httpHost));
 		} else {
 				// Register uploaded files
@@ -251,18 +234,7 @@ $formprotection = t3lib_formprotection_Factory::get();
 if ($formprotection->validateToken(t3lib_div::_GP('formToken'), 'tceAction')) {
 	$SOBE->initClipboard();
 	$SOBE->main();
-
-		// This is done for the clear cache menu, so that it gets a new token
-		// making it possible to clear cache several times.
-	if (t3lib_div::_GP('ajaxCall')) {
-		$token = array();
-		$token['value'] = $formprotection->generateToken('tceAction');
-		$token['name'] = 'formToken';
-			// This will be used by clearcachemenu.js to replace the token for the next call
-		echo t3lib_BEfunc::getUrlToken('tceAction');
-	}
 }
-$formprotection->persistTokens();
 $SOBE->finish();
 
 ?>

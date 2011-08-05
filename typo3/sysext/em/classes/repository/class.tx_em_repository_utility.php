@@ -27,8 +27,6 @@
  *
  * Module: Extension manager - Central repository utility functions
  *
- * $Id: class.tx_em_repository_utility.php 2082 2010-03-21 17:19:42Z steffenk $
- *
  * @author  Marcus Krause <marcus#exp2010@t3sec.info>
  * @author  Steffen Kamper <info@sk-typo3.de>
  */
@@ -157,14 +155,14 @@ class tx_em_Repository_Utility implements t3lib_Singleton {
 	 * @param   string  $remoteRessource  remote ressource to read contents from
 	 * @param   string  $localRessource   local ressource (absolute file path) to store retrieved contents to
 	 * @return  void
-	 * @see	 t3lib_div::getURL(), t3lib_div::writeFile()
+	 * @see	 t3lib_div::getUrl(), t3lib_div::writeFile()
 	 * @throws  tx_em_ConnectionException
 	 */
 	protected function fetchFile($remoteRessource, $localRessource) {
 		if (is_string($remoteRessource) && is_string($localRessource)
 				&& !empty($remoteRessource) && !empty($localRessource)) {
-			$fileContent = t3lib_div::getURL($remoteRessource, 0, array(TYPO3_user_agent));
-			if ($fileContent !== false) {
+			$fileContent = t3lib_div::getUrl($remoteRessource, 0, array(TYPO3_user_agent));
+			if ($fileContent !== FALSE) {
 				t3lib_div::writeFile($localRessource, $fileContent) || $this->throwConnectionException(sprintf('Could not write to file %s.', htmlspecialchars($localRessource)));
 			} else {
 				$this->throwConnectionException(sprintf('Could not access remote ressource %s.', htmlspecialchars($remoteRessource)));
@@ -248,7 +246,7 @@ class tx_em_Repository_Utility implements t3lib_Singleton {
 	 * server.
 	 *
 	 * @access  public
-	 * @param   boolean  $forcedUpdateFromRemote  if boolean true, mirror configuration will always retrieved from remote server
+	 * @param   boolean  $forcedUpdateFromRemote  if boolean TRUE, mirror configuration will always retrieved from remote server
 	 * @return  em_repository_mirrors  instance of repository mirrors class
 	 */
 	public function getMirrors($forcedUpdateFromRemote = TRUE) {
@@ -284,9 +282,9 @@ class tx_em_Repository_Utility implements t3lib_Singleton {
 		if (!is_file($this->getLocalExtListFile())) {
 			$updateNecessity |= self::PROBLEM_EXTENSION_FILE_NOT_EXISTING;
 		} else {
-			$remotemd5 = t3lib_div::getURL($this->getRemoteExtHashFile(), 0, array(TYPO3_user_agent));
+			$remotemd5 = t3lib_div::getUrl($this->getRemoteExtHashFile(), 0, array(TYPO3_user_agent));
 
-			if ($remotemd5 !== false) {
+			if ($remotemd5 !== FALSE) {
 				$localmd5 = md5_file($this->getLocalExtListFile());
 				if ($remotemd5 !== $localmd5) {
 					$updateNecessity |= self::PROBLEM_EXTENSION_HASH_CHANGED;

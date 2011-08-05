@@ -27,33 +27,16 @@
 /**
  * Module: Web>List
  *
- * Listing database records from the tables configured in $TCA as they are related to the current page or root.
+ * Listing database records from the tables configured in $GLOBALS['TCA'] as they are related to the current page or root.
  *
  * Notice: This module and Web>Page (db_layout.php) module has a special status since they
  * are NOT located in their actual module directories (fx. mod/web/list/) but in the
  * backend root directory. This has some historical and practical causes.
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   89: class SC_db_list
- *  125:     function init()
- *  160:     function menuConfig()
- *  181:     function clearCache()
- *  195:     function main()
- *  451:     function printContent()
- *
- * TOTAL FUNCTIONS: 5
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -121,11 +104,10 @@ class SC_db_list {
 	 * @return	void
 	 */
 	function init()	{
-		global $BE_USER;
 
 			// Setting module configuration / page select clause
 		$this->MCONF = $GLOBALS['MCONF'];
-		$this->perms_clause = $BE_USER->getPagePermsClause(1);
+		$this->perms_clause = $GLOBALS['BE_USER']->getPagePermsClause(1);
 
 			// GPvars:
 		$this->id = t3lib_div::_GP('id');
@@ -191,11 +173,9 @@ class SC_db_list {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$BACK_PATH,$CLIENT;
-
 			// Start document template object:
 		$this->doc = t3lib_div::makeInstance('template');
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->setModuleTemplate('templates/db_list.html');
 
 			// Loading current page record and checking access:
@@ -226,10 +206,10 @@ class SC_db_list {
 
 			// Initialize the dblist object:
 		$dblist = t3lib_div::makeInstance('localRecordList');
-		$dblist->backPath = $BACK_PATH;
+		$dblist->backPath = $GLOBALS['BACK_PATH'];
 		$dblist->script = t3lib_BEfunc::getModuleUrl('web_list', array(), '');
-		$dblist->calcPerms = $BE_USER->calcPerms($this->pageinfo);
-		$dblist->thumbs = $BE_USER->uc['thumbnailsByDefault'];
+		$dblist->calcPerms = $GLOBALS['BE_USER']->calcPerms($this->pageinfo);
+		$dblist->thumbs = $GLOBALS['BE_USER']->uc['thumbnailsByDefault'];
 		$dblist->returnUrl=$this->returnUrl;
 		$dblist->allFields = ($this->MOD_SETTINGS['bigControlPanel'] || $this->table) ? 1 : 0;
 		$dblist->localizationView = $this->MOD_SETTINGS['localization'];
@@ -237,6 +217,7 @@ class SC_db_list {
 		$dblist->disableSingleTableView = $this->modTSconfig['properties']['disableSingleTableView'];
 		$dblist->listOnlyInSingleTableMode = $this->modTSconfig['properties']['listOnlyInSingleTableView'];
 		$dblist->hideTables = $this->modTSconfig['properties']['hideTables'];
+		$dblist->hideTranslations = $this->modTSconfig['properties']['hideTranslations'];
 		$dblist->tableTSconfigOverTCA = $this->modTSconfig['properties']['table.'];
 		$dblist->clickTitleMode = $this->modTSconfig['properties']['clickTitleMode'];
 		$dblist->alternateBgColors=$this->modTSconfig['properties']['alternateBgColors']?1:0;
@@ -266,7 +247,9 @@ class SC_db_list {
 
 			// This flag will prevent the clipboard panel in being shown.
 			// It is set, if the clickmenu-layer is active AND the extended view is not enabled.
-		$dblist->dontShowClipControlPanels = $CLIENT['FORMSTYLE'] && !$this->MOD_SETTINGS['bigControlPanel'] && $dblist->clipObj->current=='normal' && !$BE_USER->uc['disableCMlayers'] && !$this->modTSconfig['properties']['showClipControlPanelsDespiteOfCMlayers'];
+		$dblist->dontShowClipControlPanels = $GLOBALS['CLIENT']['FORMSTYLE'] && !$this->MOD_SETTINGS['bigControlPanel']
+			&& $dblist->clipObj->current=='normal' && !$GLOBALS['BE_USER']->uc['disableCMlayers']
+			&& !$this->modTSconfig['properties']['showClipControlPanelsDespiteOfCMlayers'];
 
 
 
@@ -297,7 +280,7 @@ class SC_db_list {
 			}
 
 				// Initialize the listing object, dblist, for rendering the list:
-			$this->pointer = t3lib_div::intInRange($this->pointer,0,100000);
+			$this->pointer = t3lib_utility_Math::forceIntegerInRange($this->pointer,0,100000);
 			$dblist->start($this->id,$this->table,$this->pointer,$this->search_field,$this->search_levels,$this->showLimit);
 			$dblist->setDispFields();
 
@@ -339,7 +322,7 @@ class SC_db_list {
 				' . $this->doc->redirectUrls($listUrl) . '
 				'.$dblist->CBfunctions().'
 				function editRecords(table,idList,addParams,CBflag)	{	//
-					window.location.href="'.$BACK_PATH.'alt_doc.php?returnUrl='.rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')).
+					window.location.href="' . $GLOBALS['BACK_PATH'] . 'alt_doc.php?returnUrl=' . rawurlencode(t3lib_div::getIndpEnv('REQUEST_URI')) .
 						'&edit["+table+"]["+idList+"]=edit"+addParams;
 				}
 				function editList(table,idList)	{	//
@@ -458,12 +441,14 @@ class SC_db_list {
 			}
 
 				// Search box:
-			$sectionTitle = t3lib_BEfunc::wrapInHelp('xMOD_csh_corebe', 'list_searchbox', $LANG->sL('LLL:EXT:lang/locallang_core.php:labels.search', TRUE));
-			$this->body .= $this->doc->section(
-				$sectionTitle,
-				$dblist->getSearchBox(),
-				FALSE, TRUE, FALSE, TRUE
-			);
+			if (!$this->modTSconfig['properties']['disableSearchBox']) {
+				$sectionTitle = t3lib_BEfunc::wrapInHelp('xMOD_csh_corebe', 'list_searchbox', $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.search', TRUE));
+				$this->body .= $this->doc->section(
+					$sectionTitle,
+					$dblist->getSearchBox(),
+					FALSE, TRUE, FALSE, TRUE
+				);
+			}
 
 				// Display sys-notes, if any are found:
 			$this->body.=$dblist->showSysNotesForPage();

@@ -28,33 +28,10 @@
  * Libraries for pagegen.php
  * The script "pagegen.php" is included by "index_ts.php" when a page is not cached but needs to be rendered.
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   88: class TSpagegen
- *   95:     function pagegenInit()
- *  271:     function getIncFiles()
- *  304:     function JSeventFunctions()
- *  338:     function renderContent()
- *  365:     function renderContentWithHeader($pageContent)
- *
- *              SECTION: Helper functions
- *  827:     function inline2TempFile($str,$ext)
- *
- *
- *  881: class FE_loadDBGroup extends t3lib_loadDBGroup
- *
- * TOTAL FUNCTIONS: 6
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -118,14 +95,14 @@ class TSpagegen {
 			// Base url:
 		if ($GLOBALS['TSFE']->config['config']['baseURL'])	{
 			if ($GLOBALS['TSFE']->config['config']['baseURL']==='1')	{
-					// Deprecated property, going to be dropped in TYPO3 4.7.
+					// @deprecated: Deprecated property, going to be dropped in TYPO3 4.7.
 				$error = 'Unsupported TypoScript property was found in this template: "config.baseURL="1"
 
 This setting has been deprecated in TYPO 3.8.1 due to security concerns.
 You need to change this value to the URL of your website root, otherwise TYPO3 will not work!
 
 See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.typo3.org/index.php/TYPO3_3.8.1</a> for more information.';
-				throw new RuntimeException(nl2br($error));
+				throw new RuntimeException(nl2br($error), 1294587219);
 			} else {
 				$GLOBALS['TSFE']->baseUrl = $GLOBALS['TSFE']->config['config']['baseURL'];
 			}
@@ -139,7 +116,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if ($GLOBALS['TSFE']->config['config']['spamProtectEmailAddresses'] === 'ascii') {
 			$GLOBALS['TSFE']->spamProtectEmailAddresses = 'ascii';
 		} else {
-			$GLOBALS['TSFE']->spamProtectEmailAddresses = t3lib_div::intInRange($GLOBALS['TSFE']->config['config']['spamProtectEmailAddresses'],-10,10,0);
+			$GLOBALS['TSFE']->spamProtectEmailAddresses = t3lib_utility_Math::forceIntegerInRange($GLOBALS['TSFE']->config['config']['spamProtectEmailAddresses'],-10,10,0);
 		}
 
 		$GLOBALS['TSFE']->absRefPrefix = ($GLOBALS['TSFE']->config['config']['absRefPrefix'] ? trim($GLOBALS['TSFE']->config['config']['absRefPrefix']) : '');
@@ -215,7 +192,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.doctype = html_5', 'It will be removed in TYPO3 4.7. Use html5 instead.');
 			$GLOBALS['TSFE']->config['config']['doctype'] = 'html5';
 		}
-		
+
 			// Setting XHTML-doctype from doctype
 		if (!$GLOBALS['TSFE']->config['config']['xhtmlDoctype'])	{
 			$GLOBALS['TSFE']->config['config']['xhtmlDoctype'] = $GLOBALS['TSFE']->config['config']['doctype'];
@@ -267,8 +244,15 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			}
 		}
 
-		if (is_array($GLOBALS['TSFE']->pSetup['includeLibs.']))	{$incLibs=$GLOBALS['TSFE']->pSetup['includeLibs.'];} else {$incLibs=array();}
-		if (is_array($GLOBALS['TSFE']->tmpl->setup['includeLibs.']))	{$incLibs+=$GLOBALS['TSFE']->tmpl->setup['includeLibs.'];}	// toplevel 'includeLibs' is added to the PAGE.includeLibs. In that way, PAGE-libs get first priority, because if the key already exist, it's not altered. (Due to investigation by me)
+		if (is_array($GLOBALS['TSFE']->pSetup['includeLibs.'])) {
+			$incLibs = $GLOBALS['TSFE']->pSetup['includeLibs.'];
+		} else {
+			$incLibs = array();
+		}
+		if (is_array($GLOBALS['TSFE']->tmpl->setup['includeLibs.'])) {
+				// toplevel 'includeLibs' is added to the PAGE.includeLibs. In that way, PAGE-libs get first priority, because if the key already exist, it's not altered. (Due to investigation by me)
+			$incLibs += $GLOBALS['TSFE']->tmpl->setup['includeLibs.'];
+		}
 		if (count($incLibs))	{
 			foreach ($incLibs as $theLib) {
 				if (!is_array($theLib) && $incFile=$GLOBALS['TSFE']->tmpl->getFileName($theLib))	{
@@ -435,6 +419,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 					break;
 				case 'html5' :
 					$docTypeParts[] = '<!DOCTYPE html>';
+					$pageRenderer->setMetaCharsetTag('<meta charset="|" />');
 					break;
 				case 'none' :
 					break;
@@ -511,7 +496,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		}
 
 			// Including CSS files
-		if (is_array($GLOBALS['TSFE']->tmpl->setup['plugin.'])) {
+		if (is_array($GLOBALS['TSFE']->tmpl->setup['plugin.']) && empty($GLOBALS['TSFE']->config['config']['removeDefaultCss'])) {
 			$temp_styleLines = array ();
 			foreach ($GLOBALS['TSFE']->tmpl->setup['plugin.'] as $key => $iCSScode) {
 				if (is_array($iCSScode) && $iCSScode['_CSS_DEFAULT_STYLE']) {
@@ -553,7 +538,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$pageRenderer->addCssInlineBlock(
 								'import_' . $key,
 								'@import url("' . htmlspecialchars($ss) . '") ' . htmlspecialchars($GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media']) . ';',
-								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['compress'] ? TRUE : FALSE,
+								empty($GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['disableCompression']),
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
 								''
 							);
@@ -563,10 +548,11 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['alternate'] ? 'alternate stylesheet' : 'stylesheet',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['media'] : 'all',
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] ? $GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['title'] : '',
-								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['compress'] ? TRUE : FALSE,
+								empty($GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['disableCompression']),
 								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
-								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['allWrap']);
-
+								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['allWrap'],
+								$GLOBALS['TSFE']->pSetup['includeCSS.'][$key . '.']['excludeFromConcatenation'] ? TRUE : FALSE
+							);
 						}
 					}
 				}
@@ -708,9 +694,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$key,
 							$ss,
 							$type,
-							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['compress'] ? TRUE : FALSE,
+							empty($GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['disableCompression']),
 							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
-							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['allWrap']
+							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['allWrap'],
+							$GLOBALS['TSFE']->pSetup['includeJSlibs.'][$key . '.']['excludeFromConcatenation'] ? TRUE : FALSE
 						);
 					}
 				}
@@ -730,9 +717,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 							$key,
 							$ss,
 							$type,
-							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['compress'] ? TRUE : FALSE,
+							empty($GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['disableCompression']),
 							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
-							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['allWrap']
+							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['allWrap'],
+							$GLOBALS['TSFE']->pSetup['includeJSFooterlibs.'][$key . '.']['excludeFromConcatenation'] ? TRUE : FALSE
 						);
 					}
 				}
@@ -752,9 +740,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 						$pageRenderer->addJsFile(
 							$ss,
 							$type,
-							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['compress'] ? TRUE : FALSE,
+							empty($GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['disableCompression']),
 							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
-							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['allWrap']
+							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['allWrap'],
+							$GLOBALS['TSFE']->pSetup['includeJS.'][$key . '.']['excludeFromConcatenation'] ? TRUE : FALSE
 						);
 					}
 				}
@@ -773,9 +762,10 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 						$pageRenderer->addJsFooterFile(
 							$ss,
 							$type,
-							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['compress'] ? TRUE : FALSE,
+							empty($GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['disableCompression']),
 							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['forceOnTop'] ? TRUE : FALSE,
-							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['allWrap']
+							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['allWrap'],
+							$GLOBALS['TSFE']->pSetup['includeJSFooter.'][$key . '.']['excludeFromConcatenation'] ? TRUE : FALSE
 						);
 					}
 				}
@@ -920,7 +910,7 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		$inlineFooterJs = $GLOBALS['TSFE']->cObj->cObjGet($GLOBALS['TSFE']->pSetup['jsFooterInline.'], 'jsFooterInline.');
 
 			// Should minify?
-		if ($GLOBALS['TSFE']->config['config']['minifyJS']) {
+		if ($GLOBALS['TSFE']->config['config']['compressJs']) {
 			$pageRenderer->enableCompressJavascript();
 			$minifyErrorScript = $minifyErrorInline = '';
 			$scriptJsCode = t3lib_div::minifyJavaScript($scriptJsCode, $minifyErrorScript);
@@ -945,13 +935,13 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		if (! $GLOBALS['TSFE']->config['config']['removeDefaultJS']) {
 				// inlude default and inlineJS
 			if ($scriptJsCode) {
-				$pageRenderer->addJsInlineCode('_scriptCode', $scriptJsCode, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsInlineCode('_scriptCode', $scriptJsCode, $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
 			if ($inlineJS) {
-				$pageRenderer->addJsInlineCode('TS_inlineJS', $inlineJS, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsInlineCode('TS_inlineJS', $inlineJS, $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
 			if ($inlineFooterJs) {
-				$pageRenderer->addJsFooterInlineCode('TS_inlineFooter', $inlineFooterJs, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsFooterInlineCode('TS_inlineFooter', $inlineFooterJs, $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
 		} elseif ($GLOBALS['TSFE']->config['config']['removeDefaultJS'] === 'external') {
 			/*
@@ -966,25 +956,25 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 			$inlineJSint = '';
 			self::stripIntObjectPlaceholder($inlineJS, $inlineJSint);
 			if ($inlineJSint) {
-				$pageRenderer->addJsInlineCode('TS_inlineJSint', $inlineJSint, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsInlineCode('TS_inlineJSint', $inlineJSint, $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
-			$pageRenderer->addJsFile(TSpagegen::inline2TempFile($scriptJsCode . $inlineJS, 'js'), 'text/javascript', $GLOBALS['TSFE']->config['config']['minifyJS']);
+			$pageRenderer->addJsFile(TSpagegen::inline2TempFile($scriptJsCode . $inlineJS, 'js'), 'text/javascript', $GLOBALS['TSFE']->config['config']['compressJs']);
 
 			if ($inlineFooterJs) {
 				$inlineFooterJSint = '';
 				self::stripIntObjectPlaceholder($inlineFooterJs, $inlineFooterJSint);
 				if ($inlineFooterJSint) {
-					$pageRenderer->addJsFooterInlineCode('TS_inlineFooterJSint', $inlineFooterJSint, $GLOBALS['TSFE']->config['config']['minifyJS']);
+					$pageRenderer->addJsFooterInlineCode('TS_inlineFooterJSint', $inlineFooterJSint, $GLOBALS['TSFE']->config['config']['compressJs']);
 				}
-				$pageRenderer->addJsFooterFile(TSpagegen::inline2TempFile($inlineFooterJs, 'js'), 'text/javascript', $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsFooterFile(TSpagegen::inline2TempFile($inlineFooterJs, 'js'), 'text/javascript', $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
 		} else {
 				// include only inlineJS
 			if ($inlineJS) {
-				$pageRenderer->addJsInlineCode('TS_inlineJS', $inlineJS, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsInlineCode('TS_inlineJS', $inlineJS, $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
 			if ($inlineFooterJs) {
-				$pageRenderer->addJsFooterInlineCode('TS_inlineFooter', $inlineFooterJs, $GLOBALS['TSFE']->config['config']['minifyJS']);
+				$pageRenderer->addJsFooterInlineCode('TS_inlineFooter', $inlineFooterJs, $GLOBALS['TSFE']->config['config']['compressJs']);
 			}
 		}
 
@@ -1002,12 +992,31 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 		}
 
 			// compression and concatenate settings
+		if (isset($GLOBALS['TSFE']->config['config']['minifyCSS'])) {
+			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.minifyCSS = 1', 'It will be removed in TYPO3 4.8. Use config.compressCss instead.');
+			if (!isset($GLOBALS['TSFE']->config['config']['compressCss'])) {
+				$GLOBALS['TSFE']->config['config']['compressCss'] = $GLOBALS['TSFE']->config['config']['minifyCSS'];
+			}
+		}
 		if ($GLOBALS['TSFE']->config['config']['minifyCSS']) {
 			$pageRenderer->enableCompressCss();
 		}
-		if ($GLOBALS['TSFE']->config['config']['minifyJS']) {
+		if (isset($GLOBALS['TSFE']->config['config']['minifyJS'])) {
+			$GLOBALS['TSFE']->logDeprecatedTyposcript('config.minifyJS = 1', 'It will be removed in TYPO3 4.8. Use config.compressJs instead.');
+			if (!isset($GLOBALS['TSFE']->config['config']['compressJs'])) {
+				$GLOBALS['TSFE']->config['config']['compressJs'] = $GLOBALS['TSFE']->config['config']['minifyJS'];
+			}
+		}
+		if ($GLOBALS['TSFE']->config['config']['compressJs']) {
 			$pageRenderer->enableCompressJavascript();
 		}
+		if ($GLOBALS['TSFE']->config['config']['concatenateCss']) {
+			$pageRenderer->enableConcatenateCss();
+		}
+		if ($GLOBALS['TSFE']->config['config']['concatenateJs']) {
+			$pageRenderer->enableConcatenateJavascript();
+		}
+			// backward compatibility for old configuration
 		if ($GLOBALS['TSFE']->config['config']['concatenateJsAndCss']) {
 			$pageRenderer->enableConcatenateFiles();
 		}
@@ -1142,33 +1151,33 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 	}
 
 	/**
-	 * Checks if the value defined in "config.linkVars" contains an allowed value. Otherwise, return false which means the value will not be added to any links.
+	 * Checks if the value defined in "config.linkVars" contains an allowed value. Otherwise, return FALSE which means the value will not be added to any links.
 	 *
 	 * @param	string		The string in which to find $needle
 	 * @param	string		The string to find in $haystack
-	 * @return	boolean		Returns true if $needle matches or is found in $haystack
+	 * @return	boolean		Returns TRUE if $needle matches or is found in $haystack
 	 */
 	public static function isAllowedLinkVarValue($haystack,$needle) {
-		$OK = false;
+		$OK = FALSE;
 
 		if ($needle=='int' || $needle=='integer')	{	// Integer
 
-			if (t3lib_div::testInt($haystack))	{
-				$OK = true;
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($haystack))	{
+				$OK = TRUE;
 			}
 
 		} elseif (preg_match('/^\/.+\/[imsxeADSUXu]*$/', $needle))	{	// Regular expression, only "//" is allowed as delimiter
 
 			if (@preg_match($needle, $haystack))	{
-				$OK = true;
+				$OK = TRUE;
 			}
 
 		} elseif (strstr($needle,'-'))	{	// Range
 
-			if (t3lib_div::testInt($haystack))	{
+			if (t3lib_utility_Math::canBeInterpretedAsInteger($haystack))	{
 				$range = explode('-',$needle);
 				if ($range[0] <= $haystack && $range[1] >= $haystack)	{
-					$OK = true;
+					$OK = TRUE;
 				}
 			}
 
@@ -1176,11 +1185,11 @@ See <a href="http://wiki.typo3.org/index.php/TYPO3_3.8.1" target="_blank">wiki.t
 
 			$haystack = str_replace(' ','',$haystack);	// Trim the input
 			if (strstr('|'.$needle.'|', '|'.$haystack.'|'))	{
-				$OK = true;
+				$OK = TRUE;
 			}
 
 		} elseif (!strcmp($needle,$haystack))	{	// String comparison
-			$OK = true;
+			$OK = TRUE;
 		}
 
 		return $OK;

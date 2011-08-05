@@ -27,75 +27,7 @@
 /**
  * HTML mail class
  *
- * $Id$
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  193: class t3lib_htmlmail
- *  261:	 function t3lib_htmlmail ()
- *  268:	 function start ()
- *  305:	 function useQuotedPrintable()
- *  315:	 function useBase64()
- *  326:	 function use8Bit()
- *  338:	 function encodeMsg($content)
- *  348:	 function addPlain ($content)
- *  360:	 function addAttachment($file)
- *  378:	 function addHTML ($file)
- *  401:	 function extractHtmlInit($html,$url)
- *  412:	 function send($recipient)
- *
- *			  SECTION: Main functions
- *  441:	 function setHeaders()
- *  500:	 function setRecipient ($recip)
- *  518:	 function getHTMLContentType()
- *  527:	 function setContent()
- *  554:	 function constructMixed ($boundary)
- *  593:	 function constructHTML ($boundary)
- *  617:	 function constructAlternative($boundary)
- *  638:	 function constructHTML_media ($boundary)
- *  691:	 function sendTheMail ()
- *  757:	 function getBoundary()
- *  769:	 function setPlain ($content)
- *  780:	 function setHtml ($content)
- *  791:	 function add_header($header)
- *  812:	 function add_message($string)
- *  823:	 function getContent($type)
- *  832:	 function preview()
- *
- *			  SECTION: Functions for acquiring attachments, HTML, analyzing and so on  **
- *  860:	 function fetchHTML($file)
- *  878:	 function fetchHTMLMedia()
- *  899:	 function extractMediaLinks()
- *  976:	 function extractHyperLinks()
- * 1025:	 function extractFramesInfo()
- * 1051:	 function substMediaNamesInHTML($absolute)
- * 1078:	 function substHREFsInHTML()
- * 1106:	 function substHTTPurlsInPlainText($content)
- * 1142:	 function fixRollOvers()
- *
- *			  SECTION: File and URL-functions
- * 1189:	 function makeBase64($inputstr)
- * 1200:	 function getExtendedURL($url)
- * 1222:	 function addUserPass($url)
- * 1238:	 function getURL($url)
- * 1250:	 function getStrippedURL($url)
- * 1271:	 function getMimeType($url)
- * 1300:	 function absRef($ref)
- * 1320:	 function split_fileref($fileref)
- * 1347:	 function extParseUrl($path)
- * 1362:	 function tag_regex($tagArray)
- * 1384:	 function get_tag_attributes($tag)
- * 1426:	 function quoted_printable($string)
- * 1437:	 function convertName($name)
- *
- * TOTAL FUNCTIONS: 49
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 /**
  * NOTES on MIME mail structures:
@@ -179,6 +111,8 @@
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @package	TYPO3
  * @subpackage	t3lib
+ *
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. Please use t3lib_mail instead (SwiftMail based).
  */
 class t3lib_htmlmail {
 		// Headerinfo:
@@ -243,14 +177,27 @@ class t3lib_htmlmail {
 	 * See function sendTheMail for more info
 	 *
 	 * @return	void
+	 * @deprecated since TYPO3 4.5, this method will be removed in TYPO3 4.7. Use t3lib_mail instead.
 	 */
-	public function t3lib_htmlmail() {
+	public function __construct() {
 		t3lib_div::logDeprecatedFunction();
 		$this->forceReturnPath = $GLOBALS['TYPO3_CONF_VARS']['SYS']['forceReturnPath'];
 
 		$this->mailer = 'TYPO3';
 	}
 
+	/**
+	 * Compatibility constructor.
+	 *
+	 * @deprecated since TYPO3 4.5 and will be removed in TYPO3 4.7. Use __construct() instead.
+	 */
+	public function t3lib_htmlmail() {
+		t3lib_div::logDeprecatedFunction();
+			// Note: we cannot call $this->__construct() here because it would call the derived class constructor and cause recursion
+			// This code uses official PHP behavior (http://www.php.net/manual/en/language.oop5.basic.php) when $this in the
+			// statically called non-static method inherits $this from the caller's scope.
+		t3lib_htmlmail::__construct();
+	}
 
 	/**
 	 * start action that sets the message ID and the charset
@@ -258,12 +205,10 @@ class t3lib_htmlmail {
 	 * @return	void
 	 */
 	public function start() {
-		global $TYPO3_CONF_VARS;
-
 			// Sets the message id
 		$host = t3lib_div::getHostname();
 		if (!$host || $host == '127.0.0.1' || $host == 'localhost' || $host == 'localhost.localdomain') {
-			$host = ($TYPO3_CONF_VARS['SYS']['sitename'] ? preg_replace('/[^A-Za-z0-9_\-]/', '_', $TYPO3_CONF_VARS['SYS']['sitename']) : 'localhost') . '.TYPO3';
+			$host = ($GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename'] ? preg_replace('/[^A-Za-z0-9_\-]/', '_', $GLOBALS['TYPO3_CONF_VARS']['SYS']['sitename']) : 'localhost') . '.TYPO3';
 		}
 
 		$idLeft = time() . '.' . uniqid();
@@ -722,9 +667,7 @@ class t3lib_htmlmail {
 		}
 		$recipient = t3lib_div::normalizeMailAddress($this->recipient);
 
-			// If safe mode is on, the fifth parameter to mail is not allowed, so the fix wont work on unix with safe_mode=On
-		$returnPathPossible = (!t3lib_utility_PhpOptions::isSafeModeEnabled() && $this->forceReturnPath);
-		if ($returnPathPossible) {
+		if ($this->forceReturnPath) {
 			$mailWasSent = t3lib_utility_Mail::mail(
 				$recipient,
 				$this->subject,
@@ -747,7 +690,7 @@ class t3lib_htmlmail {
 			$theParts[0] = str_replace('###SUBJECT###', $this->subject, $theParts[0]);
 			$theParts[1] = str_replace("/", LF, $theParts[1]);
 			$theParts[1] = str_replace("###MESSAGE###", $this->getContent('plain'), $theParts[1]);
-			if ($returnPathPossible) {
+			if ($this->forceReturnPath) {
 				$mailWasSent = t3lib_utility_Mail::mail(
 					$this->from_email,
 					$theParts[0],
@@ -874,7 +817,7 @@ class t3lib_htmlmail {
 	 */
 	public function fetchHTML($file) {
 			// Fetches the content of the page
-		$this->theParts['html']['content'] = $this->getURL($file);
+		$this->theParts['html']['content'] = $this->getUrl($file);
 		if ($this->theParts['html']['content']) {
 			$addr = $this->extParseUrl($file);
 			$path = ($addr['scheme']) ? $addr['scheme'] . '://' . $addr['host'] . (($addr['port']) ? ':' . $addr['port'] : '') . (($addr['filepath']) ? $addr['filepath'] : '/') : $addr['filepath'];
@@ -1082,7 +1025,7 @@ class t3lib_htmlmail {
 	/**
 	 * This function substitutes the media-references in $this->theParts["html"]["content"]
 	 *
-	 * @param	boolean		$absolute: If true, then the refs are substituted with http:// ref's indstead of Content-ID's (cid).
+	 * @param	boolean		$absolute: If TRUE, then the refs are substituted with http:// ref's indstead of Content-ID's (cid).
 	 * @return	void
 	 */
 	public function substMediaNamesInHTML($absolute) {
@@ -1233,11 +1176,11 @@ class t3lib_htmlmail {
 	 * reads the URL or file and determines the Content-type by either guessing or opening a connection to the host
 	 *
 	 * @param	string		$url: the URL to get information of
-	 * @return	mixed		either false or the array with information
+	 * @return	mixed		either FALSE or the array with information
 	 */
 	public function getExtendedURL($url) {
 		$res = array();
-		$res['content'] = $this->getURL($url);
+		$res['content'] = $this->getUrl($url);
 		if (!$res['content']) {
 			return FALSE;
 		}
@@ -1292,9 +1235,9 @@ class t3lib_htmlmail {
 	 * @param	string		$url: the URL to fetch
 	 * @return	string		the content of the URL
 	 */
-	public function getURL($url) {
+	public function getUrl($url) {
 		$url = $this->addUserPass($url);
-		return t3lib_div::getURL($url);
+		return t3lib_div::getUrl($url);
 	}
 
 
@@ -1328,7 +1271,7 @@ class t3lib_htmlmail {
 	 */
 	public function getMimeType($url) {
 		$mimeType = '';
-		$headers = trim(t3lib_div::getURL($url, 2));
+		$headers = trim(t3lib_div::getUrl($url, 2));
 		if ($headers) {
 			$matches = array();
 			if (preg_match('/(Content-Type:[\s]*)([a-zA-Z_0-9\/\-\.\+]*)([\s]|$)/', $headers, $matches)) {

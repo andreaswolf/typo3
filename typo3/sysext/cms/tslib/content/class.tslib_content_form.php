@@ -29,7 +29,6 @@
 /**
  * Contains FORM class object.
  *
- * $Id: class.tslib_content.php 7905 2010-06-13 14:42:33Z ohader $
  * @author Xavier Perseguers <typo3@perseguers.ch>
  * @author Steffen Kamper <steffen@typo3.org>
  */
@@ -264,9 +263,9 @@ class tslib_content_Form extends tslib_content_Abstract {
 										: $GLOBALS['TSFE']->compensateFieldWidth
 									);
 						$compWidth = $compWidth ? $compWidth : 1;
-						$cols = t3lib_div::intInRange($cols * $compWidth, 1, 120);
+						$cols = t3lib_utility_Math::forceIntegerInRange($cols * $compWidth, 1, 120);
 
-						$rows = trim($fParts[2]) ? t3lib_div::intInRange($fParts[2], 1, 30) : 5;
+						$rows = trim($fParts[2]) ? t3lib_utility_Math::forceIntegerInRange($fParts[2], 1, 30) : 5;
 						$wrap = trim($fParts[3]);
 						$noWrapAttr = isset($conf['noWrapAttr.'])
 							? $this->cObj->stdWrap($conf['noWrapAttr'], $conf['noWrapAttr.'])
@@ -306,7 +305,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 										: $GLOBALS['TSFE']->compensateFieldWidth
 									);
 						$compWidth = $compWidth ? $compWidth : 1;
-						$size = t3lib_div::intInRange($size * $compWidth, 1, 120);
+						$size = t3lib_utility_Math::forceIntegerInRange($size * $compWidth, 1, 120);
 						$noValueInsert = isset($conf['noValueInsert.'])
 							? $this->cObj->stdWrap($conf['noValueInsert'], $conf['noValueInsert.'])
 							: $conf['noValueInsert'];
@@ -320,7 +319,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 							$default = '';
 						}
 
-						$max = trim($fParts[2]) ? ' maxlength="' . t3lib_div::intInRange($fParts[2], 1, 1000) . '"' : "";
+						$max = trim($fParts[2]) ? ' maxlength="' . t3lib_utility_Math::forceIntegerInRange($fParts[2], 1, 1000) . '"' : "";
 						$theType = $confData['type'] == 'input' ? 'text' : 'password';
 
 						$fieldCode = sprintf(
@@ -336,7 +335,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 
 					break;
 					case 'file' :
-						$size = trim($fParts[1]) ? t3lib_div::intInRange($fParts[1], 1, 60) : 20;
+						$size = trim($fParts[1]) ? t3lib_utility_Math::forceIntegerInRange($fParts[1], 1, 60) : 20;
 						$fieldCode = sprintf(
 							'<input type="file" name="%s"%s size="%s"%s />',
 							$confData['fieldname'],
@@ -372,7 +371,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 						if (strtolower(trim($fParts[1])) == 'auto') {
 							$fParts[1] = count($valueParts);
 						} // Auto size set here. Max 20
-						$size = trim($fParts[1]) ? t3lib_div::intInRange($fParts[1], 1, 20) : 1;
+						$size = trim($fParts[1]) ? t3lib_utility_Math::forceIntegerInRange($fParts[1], 1, 20) : 1;
 							// multiple
 						$multiple = strtolower(trim($fParts[2])) == 'm' ? ' multiple="multiple"' : '';
 
@@ -684,7 +683,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 					if ($confData['type'] == 'label') {
 						$labelLayout = isset($conf['LABEL.']['layout.'])
 							? $this->cObj->stdWrap($conf['LABEL.']['layout'], $conf['LABEL.']['layout.'])
-							: $conf['CHECK.']['layout'];
+							: $conf['LABEL.']['layout'];
 						if ($labelLayout) {
 							$result = $labelLayout;
 						}
@@ -721,7 +720,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 				'',
 				$this->cObj->getClosestMPvalueForPage($page['uid'])
 			);
-		} elseif (t3lib_div::testInt($theRedirect)) { // Internal: Submit to page with ID $theRedirect
+		} elseif (t3lib_utility_Math::canBeInterpretedAsInteger($theRedirect)) { // Internal: Submit to page with ID $theRedirect
 			$page = $GLOBALS['TSFE']->sys_page->getPage_noCheck($theRedirect);
 			$LD = $GLOBALS['TSFE']->tmpl->linkData(
 				$page,
@@ -752,7 +751,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 				? $this->cObj->stdWrap($conf['type'], $conf['type.'])
 				: $conf['type'];
 		}
-		if (t3lib_div::testInt($formtype)) { // Submit to a specific page
+		if (t3lib_utility_Math::canBeInterpretedAsInteger($formtype)) { // Submit to a specific page
 			$page = $GLOBALS['TSFE']->sys_page->getPage_noCheck($formtype);
 			$LD_A = $GLOBALS['TSFE']->tmpl->linkData(
 				$page,
@@ -766,7 +765,7 @@ class tslib_content_Form extends tslib_content_Abstract {
 		} elseif ($formtype) { // Submit to external script
 			$LD_A = $LD;
 			$action = $formtype;
-		} elseif (t3lib_div::testInt($theRedirect)) {
+		} elseif (t3lib_utility_Math::canBeInterpretedAsInteger($theRedirect)) {
 			$LD_A = $LD;
 			$action = $LD_A['totalURL'];
 		} else { // Submit to "nothing" - which is current page

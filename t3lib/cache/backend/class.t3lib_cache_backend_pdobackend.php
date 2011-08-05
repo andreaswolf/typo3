@@ -27,10 +27,10 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
+ * @author Christian Kuhn <lolli@schwarzbu.ch>
+ * @author Karsten Dambekalns <karsten@typo3.org>
  * @api
  * @scope prototype
- * @author Christian Kuhn <lolli@schwarzbu.ch>
- * @version $Id$
  */
 class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend {
 
@@ -50,12 +50,6 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	protected $password;
 
 	/**
-	 * Used to seperate stored data by user, SAPI, context, ...
-	 * @var string
-	 */
-	protected $scope;
-
-	/**
 	 * @var PDO
 	 */
 	protected $databaseHandle;
@@ -66,23 +60,10 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	protected $pdoDriver;
 
 	/**
-	 * Constructs this backend
-	 *
-	 * @param array $options Configuration options - depends on the actual backend
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 */
-	public function __construct(array $options = array()) {
-		parent::__construct($options);
-
-		$this->connect();
-	}
-
-	/**
 	 * Sets the DSN to use
 	 *
 	 * @param string $DSN The DSN to use for connecting to the DB
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function setDataSourceName($DSN) {
@@ -94,7 +75,6 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $username The username to use for connecting to the DB
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function setUsername($username) {
@@ -106,7 +86,6 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $password The password to use for connecting to the DB
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function setPassword($password) {
@@ -114,17 +93,12 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	}
 
 	/**
-	 * Initializes the identifier prefix when setting the cache.
+	 * Initialize the cache backend.
 	 *
-	 * @param t3lib_cache_frontend_Frontend $cache
 	 * @return void
-	 * @author Robert Lemke <robert@typo3.org>
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 */
-	public function setCache(t3lib_cache_frontend_Frontend $cache) {
-		parent::setCache($cache);
-		$processUser = extension_loaded('posix') ? posix_getpwuid(posix_geteuid()) : array('name' => 'default');
-		$this->scope = t3lib_div::shortMD5(PATH_site . $processUser['name'], 12);
+	public function initializeObject() {
+		$this->connect();
 	}
 
 	/**
@@ -136,8 +110,8 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 * @param integer $lifetime Lifetime of this cache entry in seconds. If NULL is specified, the default lifetime is used. "0" means unlimited liftime.
 	 * @return void
 	 * @throws t3lib_cache_Exception if no cache frontend has been set.
+	 * @throws \InvalidArgumentException if the identifier is not valid
 	 * @throws t3lib_cache_exception_InvalidData if $data is not a string
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function set($entryIdentifier, $data, array $tags = array(), $lifetime = NULL) {
@@ -162,10 +136,10 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 		$lifetime = ($lifetime === NULL) ? $this->defaultLifetime : $lifetime;
 
 		$statementHandle = $this->databaseHandle->prepare(
-			'INSERT INTO "cache" ("identifier", "scope", "cache", "created", "lifetime", "content") VALUES (?, ?, ?, ?, ?, ?)'
+			'INSERT INTO "cache" ("identifier", "context", "cache", "created", "lifetime", "content") VALUES (?, ?, ?, ?, ?, ?)'
 		);
 		$result = $statementHandle->execute(
-			array($entryIdentifier, $this->scope, $this->cacheIdentifier, $GLOBALS['EXEC_TIME'], $lifetime, $data)
+			array($entryIdentifier, $this->context, $this->cacheIdentifier, $GLOBALS['EXEC_TIME'], $lifetime, $data)
 		);
 
 		if ($result === FALSE) {
@@ -176,12 +150,12 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 		}
 
 		$statementHandle = $this->databaseHandle->prepare(
-			'INSERT INTO "tags" ("identifier", "scope", "cache", "tag") VALUES (?, ?, ?, ?)'
+			'INSERT INTO "tags" ("identifier", "context", "cache", "tag") VALUES (?, ?, ?, ?)'
 		);
 
 		foreach ($tags as $tag) {
 			$result = $statementHandle->execute(
-				array($entryIdentifier, $this->scope, $this->cacheIdentifier, $tag)
+				array($entryIdentifier, $this->context, $this->cacheIdentifier, $tag)
 			);
 			if ($result === FALSE) {
 				throw new t3lib_cache_Exception(
@@ -197,15 +171,14 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $entryIdentifier An identifier which describes the cache entry to load
 	 * @return mixed The cache entry's content as a string or FALSE if the cache entry could not be loaded
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function get($entryIdentifier) {
 		$statementHandle = $this->databaseHandle->prepare(
-			'SELECT "content" FROM "cache" WHERE "identifier"=? AND "scope"=? AND "cache"=?' . $this->getNotExpiredStatement()
+			'SELECT "content" FROM "cache" WHERE "identifier"=? AND "context"=? AND "cache"=?' . $this->getNotExpiredStatement()
 		);
 		$statementHandle->execute(
-			array($entryIdentifier, $this->scope, $this->cacheIdentifier)
+			array($entryIdentifier, $this->context, $this->cacheIdentifier)
 		);
 		return $statementHandle->fetchColumn();
 	}
@@ -215,15 +188,14 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $entryIdentifier An identifier specifying the cache entry
 	 * @return boolean TRUE if such an entry exists, FALSE if not
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function has($entryIdentifier) {
 		$statementHandle = $this->databaseHandle->prepare(
-			'SELECT COUNT("identifier") FROM "cache" WHERE "identifier"=? AND "scope"=? AND "cache"=?' . $this->getNotExpiredStatement()
+			'SELECT COUNT("identifier") FROM "cache" WHERE "identifier"=? AND "context"=? AND "cache"=?' . $this->getNotExpiredStatement()
 		);
 		$statementHandle->execute(
-			array($entryIdentifier, $this->scope, $this->cacheIdentifier)
+			array($entryIdentifier, $this->context, $this->cacheIdentifier)
 		);
 		return ($statementHandle->fetchColumn() > 0);
 	}
@@ -235,22 +207,21 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $entryIdentifier Specifies the cache entry to remove
 	 * @return boolean TRUE if (at least) an entry could be removed or FALSE if no entry was found
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function remove($entryIdentifier) {
 		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "tags" WHERE "identifier"=? AND "scope"=? AND "cache"=?'
+			'DELETE FROM "tags" WHERE "identifier"=? AND "context"=? AND "cache"=?'
 		);
 		$statementHandle->execute(
-			array($entryIdentifier, $this->scope, $this->cacheIdentifier)
+			array($entryIdentifier, $this->context, $this->cacheIdentifier)
 		);
 
 		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "cache" WHERE "identifier"=? AND "scope"=? AND "cache"=?'
+			'DELETE FROM "cache" WHERE "identifier"=? AND "context"=? AND "cache"=?'
 		);
 		$statementHandle->execute(
-			array($entryIdentifier, $this->scope, $this->cacheIdentifier)
+			array($entryIdentifier, $this->context, $this->cacheIdentifier)
 		);
 
 		return ($statementHandle->rowCount() > 0);
@@ -260,23 +231,14 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 * Removes all cache entries of this cache.
 	 *
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function flush() {
-		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "tags" WHERE "scope"=? AND "cache"=?'
-		);
-		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier)
-		);
+		$statementHandle = $this->databaseHandle->prepare('DELETE FROM "tags" WHERE "context"=? AND "cache"=?');
+		$statementHandle->execute(array($this->context, $this->cacheIdentifier));
 
-		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "cache" WHERE "scope"=? AND "cache"=?'
-		);
-		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier)
-		);
+		$statementHandle = $this->databaseHandle->prepare('DELETE FROM "cache" WHERE "context"=? AND "cache"=?');
+		$statementHandle->execute(array($this->context, $this->cacheIdentifier));
 	}
 
 	/**
@@ -284,38 +246,22 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $tag The tag the entries must have
 	 * @return void
-	 * @author Robert Lemke <robert@typo3.org>
 	 * @api
 	 */
 	public function flushByTag($tag) {
 		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "cache" WHERE "scope"=? AND "cache"=? AND "identifier" IN (SELECT "identifier" FROM "tags" WHERE "scope"=? AND "cache"=? AND "tag"=?)'
+			'DELETE FROM "cache" WHERE "context"=? AND "cache"=? AND "identifier" IN (SELECT "identifier" FROM "tags" WHERE "context"=? AND "cache"=? AND "tag"=?)'
 		);
 		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier, $this->scope, $this->cacheIdentifier, $tag)
+			array($this->context, $this->cacheIdentifier, $this->context, $this->cacheIdentifier, $tag)
 		);
 
 		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "tags" WHERE "scope"=? AND "cache"=? AND "tag"=?'
+			'DELETE FROM "tags" WHERE "context"=? AND "cache"=? AND "tag"=?'
 		);
 		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier, $tag)
+			array($this->context, $this->cacheIdentifier, $tag)
 		);
-	}
-
-	/**
-	 * Removes all cache entries of this cache which are tagged by the specified tags.
-	 * This method doesn't exist in FLOW3, but is mandatory for TYPO3v4.
-	 *
-	 * @TODO: Make smarter
-	 * @param array $tags The tags the entries must have
-	 * @return void
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 */
-	public function flushBytags(array $tags) {
-		foreach ($tags as $tag) {
-			$this->flushByTag($tag);
-		}
 	}
 
 	/**
@@ -324,77 +270,45 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 *
 	 * @param string $tag The tag to search for
 	 * @return array An array with identifiers of all matching entries. An empty array if no entries matched
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function findIdentifiersByTag($tag) {
 		$statementHandle = $this->databaseHandle->prepare(
-			'SELECT "identifier" FROM "tags" WHERE "scope"=?  AND "cache"=? AND "tag"=?'
+			'SELECT "identifier" FROM "tags" WHERE "context"=?  AND "cache"=? AND "tag"=?'
 		);
 		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier, $tag)
+			array($this->context, $this->cacheIdentifier, $tag)
 		);
-		return $statementHandle->fetchAll(PDO::FETCH_COLUMN);
-	}
-
-	/**
-	 * Finds and returns all cache entry identifiers which are tagged with
-	 * all of the specified tags.
-	 * This method doesn't exist in FLOW3, but is mandatory for TYPO3v4.
-	 *
-	 * @TODO: Make smarter
-	 * @param array $tags Tags to search for
-	 * @return array An array with identifiers of all matching entries. An empty array if no entries matched
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 */
-	public function findIdentifiersByTags(array $tags) {
-		$taggedEntries = array();
-		$foundEntries = array();
-
-		foreach ($tags as $tag) {
-			$taggedEntries[$tag] = $this->findIdentifiersByTag($tag);
-		}
-
-		$intersectedTaggedEntries = call_user_func_array('array_intersect', $taggedEntries);
-
-		foreach ($intersectedTaggedEntries as $entryIdentifier) {
-			if ($this->has($entryIdentifier)) {
-				$foundEntries[$entryIdentifier] = $entryIdentifier;
-			}
-		}
-
-		return $foundEntries;
+		return $statementHandle->fetchAll(\PDO::FETCH_COLUMN);
 	}
 
 	/**
 	 * Does garbage collection
 	 *
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 * @api
 	 */
 	public function collectGarbage() {
 		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "tags" WHERE "scope"=? AND "cache"=? AND "identifier" IN ' .
-			'(SELECT "identifier" FROM "cache" WHERE "scope"=? AND "cache"=? AND "lifetime" > 0 AND "created" + "lifetime" < ' . $GLOBALS['EXEC_TIME'] . ')'
+			'DELETE FROM "tags" WHERE "context"=? AND "cache"=? AND "identifier" IN ' .
+			'(SELECT "identifier" FROM "cache" WHERE "context"=? AND "cache"=? AND "lifetime" > 0 AND "created" + "lifetime" < ' . $GLOBALS['EXEC_TIME'] . ')'
 		);
 		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier, $this->scope, $this->cacheIdentifier)
+			array($this->context, $this->cacheIdentifier, $this->context, $this->cacheIdentifier)
 		);
 
 		$statementHandle = $this->databaseHandle->prepare(
-			'DELETE FROM "cache" WHERE "scope"=? AND "cache"=? AND "lifetime" > 0 AND "created" + "lifetime" < ' . $GLOBALS['EXEC_TIME']
+			'DELETE FROM "cache" WHERE "context"=? AND "cache"=? AND "lifetime" > 0 AND "created" + "lifetime" < ' . $GLOBALS['EXEC_TIME']
 		);
 		$statementHandle->execute(
-			array($this->scope, $this->cacheIdentifier)
+			array($this->context, $this->cacheIdentifier)
 		);
 	}
 
 	/**
-	 * Returns an SQL statement that evaluates to true if the entry is not expired.
+	 * Returns an SQL statement that evaluates to TRUE if the entry is not expired.
 	 *
 	 * @return string
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 */
 	protected function getNotExpiredStatement() {
 		return ' AND ("lifetime" = 0 OR "created" + "lifetime" >= ' . $GLOBALS['EXEC_TIME'] . ')';
@@ -404,7 +318,6 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 * Connect to the database
 	 *
 	 * @return void
-	 * @author Karsten Dambekalns <karsten@typo3.org>
 	 */
 	protected function connect() {
 		try {
@@ -418,12 +331,12 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 				$this->databaseHandle = t3lib_div::makeInstance('PDO', $this->dataSourceName, $this->username, $this->password);
 			}
 
-			$this->databaseHandle->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->databaseHandle->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
 			if ($this->pdoDriver === 'mysql') {
 				$this->databaseHandle->exec('SET SESSION sql_mode=\'ANSI\';');
 			}
-		} catch (PDOException $e) {
+		} catch (\PDOException $e) {
 		}
 	}
 
@@ -431,22 +344,17 @@ class t3lib_cache_backend_PdoBackend extends t3lib_cache_backend_AbstractBackend
 	 * Creates the tables needed for the cache backend.
 	 *
 	 * @return void
-	 * @throws RuntimeException if something goes wrong
-	 * @author Karsten Dambekalns <karsten@typo3.org>
+	 * @throws \RuntimeException if something goes wrong
 	 */
 	protected function createCacheTables() {
 		try {
 			t3lib_PdoHelper::importSql($this->databaseHandle, $this->pdoDriver, PATH_t3lib . 'cache/backend/resources/ddl.sql');
-		} catch (PDOException $e) {
-			throw new RuntimeException(
+		} catch (\PDOException $e) {
+			throw new \RuntimeException(
 				'Could not create cache tables with DSN "' . $this->dataSourceName . '". PDO error: ' . $e->getMessage(),
 				1259576985
 			);
 		}
 	}
-}
-
-if (defined('TYPO3_MODE') && $GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/cache/backend/class.t3lib_cache_backend_pdobackend.php']) {
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/cache/backend/class.t3lib_cache_backend_pdobackend.php']);
 }
 ?>

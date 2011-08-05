@@ -28,24 +28,9 @@
  * Shows a picture from uploads/* in enlarged format in a separate window.
  * Picture file and settings is supplied by GET-parameters: file, width, height, sample, alternativeTempPath, effects, frame, bodyTag, title, wrap, md5
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author		Kasper Skårhøj	<kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  112: class SC_tslib_showpic
- *  133:     function init()
- *  190:     function main()
- *  237:     function printContent()
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -54,11 +39,7 @@
 // *******************************
 // Set error reporting
 // *******************************
-if (defined('E_DEPRECATED')) {
-	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-} else {
-	error_reporting(E_ALL ^ E_NOTICE);
-}
+error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
 
 
 // ***********************
@@ -170,7 +151,7 @@ class SC_tslib_showpic {
 		// ***********************
 			// If no file-param or parameters are given, we must exit
 		if (!$this->file || !isset($parametersArray) || !is_array($parametersArray)) {
-			throw new UnexpectedValueException('Parameter Error: No file or no parameters given.');
+			throw new UnexpectedValueException('Parameter Error: No file or no parameters given.', 1299514081);
 		}
 
 		$this->parametersEncoded = implode($parametersArray);
@@ -183,8 +164,8 @@ class SC_tslib_showpic {
 			)
 		);
 
-		if ($md5_value!=$this->md5) {
-			throw new UnexpectedValueException('Parameter Error: Wrong parameters sent.');
+		if ($md5_value !== $this->md5) {
+			throw new UnexpectedValueException('Parameter Error: Wrong parameters sent.', 1299514082);
 		}
 
 		$parameters = unserialize(base64_decode($this->parametersEncoded));
@@ -199,10 +180,10 @@ class SC_tslib_showpic {
 
 		$test_file=PATH_site.$this->file;
 		if (!t3lib_div::validPathStr($test_file))	{
-			throw new UnexpectedValueException('Parameter Error: No valid filepath');
+			throw new UnexpectedValueException('Parameter Error: No valid filepath', 1299514083);
 		}
 		if (!@is_file($test_file))	{
-			throw new UnexpectedValueException('The given file was not found');
+			throw new UnexpectedValueException('The given file was not found', 1299514084);
 		}
 	}
 
@@ -224,14 +205,19 @@ class SC_tslib_showpic {
 		}
 
 		// Need to connect to database, because this is used (typo3temp_db_tracking, cached image dimensions).
-		$GLOBALS['TYPO3_DB']->sql_pconnect(TYPO3_db_host, TYPO3_db_username, TYPO3_db_password);
-		$GLOBALS['TYPO3_DB']->sql_select_db(TYPO3_db);
+		$GLOBALS['TYPO3_DB']->connectDB();
 
-		if (strstr($this->width.$this->height, 'm')) {$max='m';} else {$max='';}
+		if (strstr($this->width . $this->height, 'm')) {
+			$max = 'm';
+		} else {
+			$max = '';
+		}
 
-		$this->height = t3lib_div::intInRange($this->height,0);
-		$this->width = t3lib_div::intInRange($this->width,0);
-		if ($this->frame)	{$this->frame = intval($this->frame);}
+		$this->height = t3lib_utility_Math::forceIntegerInRange($this->height,0);
+		$this->width = t3lib_utility_Math::forceIntegerInRange($this->width,0);
+		if ($this->frame) {
+			$this->frame = intval($this->frame);
+		}
 		$imgInfo = $img->imageMagickConvert($this->file,'web',$this->width.$max,$this->height,$img->IMparams($this->effects),$this->frame,'');
 
 			// Create HTML output:

@@ -28,32 +28,9 @@
  * Generating gif/png-files from TypoScript
  * Used by the menu-objects and imgResource in TypoScript.
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  102: class tslib_gifBuilder extends t3lib_stdGraphic
- *  129:     function start($conf,$data)
- *  315:     function gifBuild()
- *  343:     function make()
- *
- *              SECTION: Various helper functions
- *  486:     function checkTextObj($conf)
- *  566:     function calcOffset($string)
- *  615:     function getResource($file,$fileArray)
- *  632:     function checkFile($file)
- *  643:     function fileName($pre)
- *  659:     function extension()
- *
- * TOTAL FUNCTIONS: 9
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -334,8 +311,8 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 				? intval($this->cObj->stdWrap($this->setup['maxHeight'], $this->setup['maxHeight.']))
 				: intval($this->setup['maxHeight']);
 
-			$XY[0] = t3lib_div::intInRange($XY[0],1, $maxWidth?$maxWidth:2000);
-			$XY[1] = t3lib_div::intInRange($XY[1],1, $maxHeight?$maxHeight:2000);
+			$XY[0] = t3lib_utility_Math::forceIntegerInRange($XY[0],1, $maxWidth?$maxWidth:2000);
+			$XY[1] = t3lib_utility_Math::forceIntegerInRange($XY[1],1, $maxHeight?$maxHeight:2000);
 			$this->XY = $XY;
 			$this->w = $XY[0];
 			$this->h = $XY[1];
@@ -347,7 +324,7 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 	}
 
 	/**
-	 * Initiates the image file generation if ->setup is true and if the file did not exist already.
+	 * Initiates the image file generation if ->setup is TRUE and if the file did not exist already.
 	 * Gets filename from fileName() and if file exists in typo3temp/ dir it will - of course - not be rendered again.
 	 * Otherwise rendering means calling ->make(), then ->output(), then ->destroy()
 	 *
@@ -385,15 +362,40 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 			// Get trivial data
 		$XY = $this->XY;
 
+			// Reset internal properties
+		$this->saveAlphaLayer = FALSE;
+
 			// Gif-start
 		$this->im = imagecreatetruecolor($XY[0], $XY[1]);
 		$this->w = $XY[0];
 		$this->h = $XY[1];
 
-			// backColor is set
-		$BGcols = $this->convertColor($this->setup['backColor']);
-		$Bcolor = ImageColorAllocate($this->im, $BGcols[0],$BGcols[1],$BGcols[2]);
-		ImageFilledRectangle($this->im, 0, 0, $XY[0], $XY[1], $Bcolor);
+			// Transparent layer as background if set and requirements are met
+		if (!empty($this->setup['backColor'])
+			&& $this->setup['backColor'] === 'transparent'
+			&& $this->png_truecolor
+			&& !$this->setup['reduceColors']
+			&& (empty($this->setup['format']) || $this->setup['format'] === 'png')) {
+
+				// Set transparency properties
+			imagealphablending($this->im, FALSE);
+			imagesavealpha($this->im, TRUE);
+
+				// Fill with a transparent background
+			$transparentColor = imagecolorallocatealpha($this->im, 0, 0, 0, 127);
+			imagefill($this->im, 0, 0, $transparentColor);
+
+				// Set internal properties to keep the transparency over the rendering process
+			$this->saveAlphaLayer = TRUE;
+				// Force PNG in case no format is set
+			$this->setup['format'] = 'png';
+		} else {
+
+				// Fill the background with the given color
+			$BGcols = $this->convertColor($this->setup['backColor']);
+			$Bcolor = ImageColorAllocate($this->im, $BGcols[0],$BGcols[1],$BGcols[2]);
+			ImageFilledRectangle($this->im, 0, 0, $XY[0], $XY[1], $Bcolor);
+		}
 
 			// Traverse the GIFBUILDER objects an render each one:
 		if (is_array($this->setup))	{
@@ -509,19 +511,26 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 			}
 		}
 
-
-		if ($this->setup['transparentBackground'])	{
-				// Auto transparent background is set
-			$Bcolor = ImageColorClosest($this->im, $BGcols[0], $BGcols[1], $BGcols[2]);
-			imagecolortransparent($this->im, $Bcolor);
-		} elseif (is_array($this->setup['transparentColor_array']))	{
-				// Multiple transparent colors are set. This is done via the trick that all transparent colors get converted to one color and then this one gets set as transparent as png/gif can just have one transparent color.
-			$Tcolor = $this->unifyColors($this->im, $this->setup['transparentColor_array'], intval($this->setup['transparentColor.']['closest']));
-			if ($Tcolor>=0)	{
-				imagecolortransparent($this->im, $Tcolor);
+			// preserve alpha transparency
+		if (!$this->saveAlphaLayer) {
+			if ($this->setup['transparentBackground']) {
+					// Auto transparent background is set
+				$Bcolor = ImageColorClosest($this->im, $BGcols[0], $BGcols[1], $BGcols[2]);
+				imagecolortransparent($this->im, $Bcolor);
+			} elseif (is_array($this->setup['transparentColor_array'])) {
+					// Multiple transparent colors are set. This is done via the trick that all transparent colors get
+					// converted to one color and then this one gets set as transparent as png/gif can just have one
+					// transparent color.
+				$Tcolor = $this->unifyColors(
+					$this->im,
+					$this->setup['transparentColor_array'],
+					intval($this->setup['transparentColor.']['closest'])
+				);
+				if ($Tcolor >= 0) {
+					imagecolortransparent($this->im, $Tcolor);
+				}
 			}
 		}
-
 	}
 
 
@@ -560,11 +569,14 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 	 * @access private
 	 */
 	function checkTextObj($conf)	{
+		$cObj = t3lib_div::makeInstance('tslib_cObj');
+		$cObj->start($this->data);
+
 		$isStdWrapped = array();
 		foreach($conf as $key => $value) {
 			$parameter = rtrim($key,'.');
 			if(!$isStdWrapped[$parameter] && isset($conf[$parameter.'.'])) {
-				$conf[$parameter] = $this->cObj->stdWrap($conf[$parameter], $conf[$parameter.'.']);
+				$conf[$parameter] = $cObj->stdWrap($conf[$parameter], $conf[$parameter . '.']);
 				$isStdWrapped[$parameter] = 1;
 			}
 		}
@@ -576,8 +588,6 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 			$conf['angle']=0;
 		}
 		if (!isset($conf['antiAlias'])){$conf['antiAlias']=1;}
-		$cObj =t3lib_div::makeInstance('tslib_cObj');
-		$cObj->start($this->data);
 
 		$conf['fontColor'] = trim($conf['fontColor']);
 			// Strip HTML
@@ -673,7 +683,7 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 	 *
 	 * @param	string		Filename value OR the string "GIFBUILDER", see documentation in TSref for the "datatype" called "imgResource"
 	 * @param	array		TypoScript properties passed to the function. Either GIFBUILDER properties or imgResource properties, depending on the value of $file (whether that is "GIFBUILDER" or a file reference)
-	 * @return	array		Returns an array with file information if an image was returned. Otherwise false.
+	 * @return	array		Returns an array with file information if an image was returned. Otherwise FALSE.
 	 * @access private
 	 * @see tslib_cObj::getImgResource()
 	 */
@@ -712,7 +722,7 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 		if ($GLOBALS['TSFE']->config['config']['meaningfulTempFilePrefix']) {
 			/** @var $basicFileFunctions t3lib_basicFileFunctions */
 			$basicFileFunctions = t3lib_div::makeInstance('t3lib_basicFileFunctions');
-			
+
 			$meaningfulPrefix = implode('_', array_merge($this->combinedTextStrings, $this->combinedFileNames));
 			$meaningfulPrefix = $basicFileFunctions->cleanFileName($meaningfulPrefix);
 			$meaningfulPrefix = substr($meaningfulPrefix, 0, intval($GLOBALS['TSFE']->config['config']['meaningfulTempFilePrefix'])) . '_';
@@ -832,7 +842,7 @@ class tslib_gifBuilder extends t3lib_stdGraphic {
 	 * @return	integer		The maxium value of the given comma separated and calculated values
 	 */
 	protected function calculateMaximum($string) {
-		$parts = t3lib_div::trimExplode(',', $this->calcOffset($string), true);
+		$parts = t3lib_div::trimExplode(',', $this->calcOffset($string), TRUE);
 		$maximum = (count($parts) ? max($parts) : 0);
 		return $maximum;
 	}

@@ -1,7 +1,7 @@
 /***************************************************************
  *  Copyright notice
  *
- *  (c) 2010 Steffen Kamper <info@sk-typo3.de>
+ *  (c) 2010-2011 Steffen Kamper <info@sk-typo3.de>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -28,7 +28,6 @@
  * @author Steffen Kamper <info@sk-typo3.de>
  * @package TYPO3
  * @subpackage t3lib
- * @version $Id: $
  */
 Ext.ns('TYPO3');
 
@@ -41,7 +40,7 @@ TYPO3.Severity = {
 	ok: 2,
 	warning: 3,
 	error: 4
-}
+};
 
 /**
  * @class TYPO3.Flashmessage
@@ -55,8 +54,9 @@ TYPO3.Flashmessage = function() {
 	var messageContainer;
 	var severities = ['notice', 'information', 'ok', 'warning', 'error'];
 
-	function createBox(severity, title, message){
+	function createBox(severity, title, message) {
 		return ['<div class="typo3-message message-', severity, '" style="width: 400px">',
+				'<div class="t3-icon t3-icon-actions t3-icon-actions-message t3-icon-actions-message-close t3-icon-message-' + severity + '-close"></div>',
 				'<div class="header-container">',
 				'<div class="message-header">', title, '</div>',
 				'</div>',
@@ -73,9 +73,9 @@ TYPO3.Flashmessage = function() {
 		 * @param string message
 		 * @param float duration in sec (default 5)
 		 */
-		display : function(severity, title, message, duration){
+		display : function(severity, title, message, duration) {
 			duration = duration || 5;
-			if(!messageContainer){
+			if (!messageContainer) {
 				messageContainer = Ext.DomHelper.insertFirst(document.body, {
 					id   : 'msg-div',
 					style: 'position:absolute;z-index:10000'
@@ -86,7 +86,13 @@ TYPO3.Flashmessage = function() {
 				html: createBox(severities[severity], title, message)
 			}, true);
 			messageContainer.alignTo(document, 't-t');
-			box.slideIn('t').pause(duration).ghost('t', {remove:true});
+			box.child('.t3-icon-actions-message-close').on('click',	function (e, t, o) {
+				var node;
+				node = Ext.get(t).findParent('div.typo3-message');
+				node.hide();
+				Ext.removeNode(node.dom);
+			}, box);
+			box.slideIn('t').pause(duration).ghost('t', {remove: true});
 		}
-	}
+	};
 }();

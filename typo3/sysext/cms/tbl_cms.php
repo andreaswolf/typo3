@@ -27,8 +27,6 @@
 /**
  * Dynamic configuation of the system-related tables, typ. sys_* series
  *
- * $Id$
- *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
 
@@ -254,9 +252,9 @@ $TCA['fe_users'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.starttime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0',
 			)
 		),
@@ -265,9 +263,9 @@ $TCA['fe_users'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.endtime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0',
 				'range' => array(
 					'upper' => mktime(0,0,0,12,31,2020),
@@ -435,7 +433,7 @@ $TCA['sys_domain'] = array(
 				'type' => 'input',
 				'size' => '35',
 				'max' => '80',
-				'eval' => 'required,unique,lower,trim',
+				'eval' => 'required,unique,lower,trim,domainname',
 				'softref' => 'substitute'
 			),
 		),
@@ -444,7 +442,7 @@ $TCA['sys_domain'] = array(
 			'config' => array(
 				'type' => 'input',
 				'size' => '35',
-				'max' => '120',
+				'max' => '255',
 				'default' => '',
 				'eval' => 'trim',
 				'softref' => 'substitute'
@@ -530,9 +528,9 @@ $TCA['pages_language_overlay'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.starttime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0'
 			)
 		),
@@ -541,9 +539,9 @@ $TCA['pages_language_overlay'] = array(
 			'label' => 'LLL:EXT:lang/locallang_general.xml:LGL.endtime',
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0',
 				'range' => array(
 					'upper' => mktime(0,0,0,12,31,2020),
@@ -642,7 +640,7 @@ $TCA['pages_language_overlay'] = array(
 				'uploadfolder' => 'uploads/media',
 				'show_thumbs' => '1',
 				'size' => '3',
-				'maxitems' => '5',
+				'maxitems' => '100',
 				'minitems' => '0'
 			)
 		),
@@ -762,22 +760,6 @@ $TCA['pages_language_overlay'] = array(
 					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.media;media,
 				--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.extended,
 				'),
-		// not in menu
-		(string) t3lib_pageSelect::DOKTYPE_HIDE_IN_MENU => array(
-			'showitem' =>
-			'--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.standard;standard,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.title;title,
-				--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.access,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.visibility;hiddenonly,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.access;access,
-				--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.metadata,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.abstract;abstract,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.metatags;metatags,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.editorial;editorial,
-				--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.resources,
-					--palette--;LLL:EXT:cms/locallang_tca.xml:pages.palettes.media;media,
-				--div--;LLL:EXT:cms/locallang_tca.xml:pages.tabs.extended,
-		'),
 		// mount page
 		(string) t3lib_pageSelect::DOKTYPE_MOUNTPOINT => array(
 			'showitem' =>
@@ -825,7 +807,7 @@ $TCA['pages_language_overlay'] = array(
 		'),
 	),
 	'palettes' => array(
-		'5' => array('showitem' => 'author,author_email', 'canNotCollapse' => true),
+		'5' => array('showitem' => 'author,author_email', 'canNotCollapse' => TRUE),
 		'standard' => array(
 			'showitem' => 'doktype;LLL:EXT:cms/locallang_tca.xml:pages.doktype_formlabel, sys_language_uid',
 			'canNotCollapse' => 1,
@@ -914,9 +896,9 @@ $TCA['sys_template'] = array(
 			'exclude' => 1,
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0'
 			)
 		),
@@ -925,9 +907,9 @@ $TCA['sys_template'] = array(
 			'exclude' => 1,
 			'config' => array(
 				'type' => 'input',
-				'size' => '8',
+				'size' => '13',
 				'max' => '20',
-				'eval' => 'date',
+				'eval' => 'datetime',
 				'default' => '0',
 				'range' => array(
 					'upper' => mktime(0,0,0,12,31,2020),
@@ -1108,6 +1090,7 @@ $TCA['sys_template'] = array(
 					array('LLL:EXT:cms/locallang_tca.xml:sys_template.static_file_mode.0', '0'),
 					array('LLL:EXT:cms/locallang_tca.xml:sys_template.static_file_mode.1', '1'),
 					array('LLL:EXT:cms/locallang_tca.xml:sys_template.static_file_mode.2', '2'),
+					array('LLL:EXT:cms/locallang_tca.xml:sys_template.static_file_mode.3', '3'),
 				),
 				'default' => '0'
 			)

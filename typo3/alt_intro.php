@@ -29,25 +29,10 @@
  * Will display the list of main- and sub-modules available to the user.
  * Each module will be show with description and a link to the module.
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   75: class SC_alt_intro
- *   84:     function init()
- *   98:     function main()
- *  148:     function printContent()
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -86,12 +71,10 @@ class SC_alt_intro {
 	 * @return	void
 	 */
 	function init()	{
-		global $TBE_MODULES;
-
 			// Loads the available backend modules so we can create the description overview.
 		$this->loadModules = t3lib_div::makeInstance('t3lib_loadModules');
 		$this->loadModules->observeWorkspaces = TRUE;
-		$this->loadModules->load($TBE_MODULES);
+		$this->loadModules->load($GLOBALS['TBE_MODULES']);
 	}
 
 	/**
@@ -100,19 +83,16 @@ class SC_alt_intro {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$TYPO3_CONF_VARS;
-		global $TBE_TEMPLATE;
-
 		$alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
 
-		$TBE_TEMPLATE->divClass = $TBE_TEMPLATE->bodyTagId;
+		$GLOBALS['TBE_TEMPLATE']->divClass = $GLOBALS['TBE_TEMPLATE']->bodyTagId;
 
 		$this->content = '
 			<div id="typo3-docheader">
 				<div id="typo3-docheader-row1">&nbsp;</div>
 			</div>
 			<div id="typo3-alt-intro-php-sub">
-			<h1>TYPO3 '.TYPO3_version.'<br />'.$LANG->getLL('introtext').'</h1>
+			<h1>TYPO3 ' . TYPO3_version . '<br />' . $GLOBALS['LANG']->getLL('introtext') . '</h1>
 
 			<p>'.t3lib_BEfunc::TYPO3_copyRightNotice().'</p>';
 
@@ -120,7 +100,7 @@ class SC_alt_intro {
 			'.t3lib_BEfunc::displayWarningMessages();
 
 		$this->content .= '
-			<h3>' . $LANG->getLL('introtext2') . '</h3>';
+			<h3>' . $GLOBALS['LANG']->getLL('introtext2') . '</h3>';
 
 
 			// Printing the description of the modules available
@@ -128,11 +108,11 @@ class SC_alt_intro {
 		$this->content.='<br />';
 
 			// end text: 'Features may vary depending on your website and permissions'
-		$this->content.='<p class="c-features"><em>('.$LANG->getLL('endText').')</em></p>';
+		$this->content .= '<p class="c-features"><em>(' . $GLOBALS['LANG']->getLL('endText') . ')</em></p>';
 		$this->content .= '<br /></div>';
 
 			// Renders the module page
-		$this->content = $TBE_TEMPLATE->render(
+		$this->content = $GLOBALS['TBE_TEMPLATE']->render(
 			'About modules',
 			$this->content
 		);

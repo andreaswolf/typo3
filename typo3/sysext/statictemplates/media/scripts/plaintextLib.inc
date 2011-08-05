@@ -27,45 +27,9 @@
 /**
  * Generating plain text content of content elements for Direct Mails
  *
- * $Id: plaintextLib.inc 5947 2009-09-16 17:57:09Z ohader $
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  123: class user_plaintext
- *  137:     function main_plaintext($content,$conf)
- *  209:     function getMenuSitemap()
- *  220:     function getShortcut()
- *  231:     function getHTML($str=array())
- *  241:     function getHeader()
- *  251:     function getImages()
- *  262:     function parseBody($str)
- *  284:     function renderUploads($str,$upload_path='uploads/media/')
- *  302:     function renderHeader($str,$type=0)
- *  353:     function pad($lines,$preLineChar,$len)
- *  369:     function breakContent($str)
- *  385:     function breakBulletlist($str)
- *  416:     function breakTable($str)
- *  472:     function addDiv($messure,$content,$divChar,$joinChar,$cols)
- *  488:     function traverseTable($tableLines)
- *  515:     function renderImages($str,$links,$caption,$upload_path='uploads/pics/')
- *  554:     function getLink($ll)
- *  571:     function breakLines($str,$implChar="\n",$charWidth=0)
- *  583:     function getString($str)
- *  595:     function userProcess($mConfKey,$passVar)
- *  613:     function atag_to_http($content,$conf)
- *  632:     function typolist($content,$conf)
- *  647:     function typohead($content,$conf)
- *  666:     function typocode($content,$conf)
- *
- * TOTAL FUNCTIONS: 24
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -317,22 +281,22 @@ class user_plaintext {
 	function renderHeader($str,$type=0)	{
 		if ($str)	{
 			$hConf = $this->conf['header.'];
-			$defaultType = t3lib_div::intInRange($hConf['defaultType'],1,5);
-			$type=t3lib_div::intInRange($type,0,6);
+			$defaultType = t3lib_utility_Math::forceIntegerInRange($hConf['defaultType'],1,5);
+			$type=t3lib_utility_Math::forceIntegerInRange($type,0,6);
 			if (!$type)	$type=$defaultType;
 			if ($type!=6)	{	// not hidden
 				$tConf = $hConf[$type.'.'];
 
 				$lines=array();
 
-				$blanks = t3lib_div::intInRange($tConf['preBlanks'],0,1000);
+				$blanks = t3lib_utility_Math::forceIntegerInRange($tConf['preBlanks'],0,1000);
 				if ($blanks)	{
 					$lines[]=str_pad('', $blanks-1, chr(10));
 				}
 
 				$lines=$this->pad($lines,$tConf['preLineChar'],$tConf['preLineLen']);
 
-				$blanks = t3lib_div::intInRange($tConf['preLineBlanks'],0,1000);
+				$blanks = t3lib_utility_Math::forceIntegerInRange($tConf['preLineBlanks'],0,1000);
 				if ($blanks)	{$lines[]=str_pad('', $blanks-1, chr(10));}
 
 				if ($this->cObj->data['date'])	{
@@ -346,12 +310,12 @@ class user_plaintext {
 				$lines[]=$this->cObj->stdWrap($prefix.$str,$tConf['stdWrap.']);
 				if ($this->cObj->data['header_link'])		{$lines[] = $this->getString($hConf['linkPrefix']).$this->getLink($this->cObj->data['header_link']);}
 
-				$blanks = t3lib_div::intInRange($tConf['postLineBlanks'],0,1000);
+				$blanks = t3lib_utility_Math::forceIntegerInRange($tConf['postLineBlanks'],0,1000);
 				if ($blanks)	{$lines[]=str_pad('', $blanks-1, chr(10));}
 
 				$lines=$this->pad($lines,$tConf['postLineChar'],$tConf['postLineLen']);
 
-				$blanks = t3lib_div::intInRange($tConf['postBlanks'],0,1000);
+				$blanks = t3lib_utility_Math::forceIntegerInRange($tConf['postBlanks'],0,1000);
 				if ($blanks)	{$lines[]=str_pad('', $blanks-1, chr(10));}
 				return implode(chr(10),$lines);
 			}
@@ -368,7 +332,7 @@ class user_plaintext {
 	 * @see renderHeader()
 	 */
 	function pad($lines,$preLineChar,$len)	{
-		$strPad = t3lib_div::intInRange($len,0,1000);
+		$strPad = t3lib_utility_Math::forceIntegerInRange($len,0,1000);
 		$strPadChar = $preLineChar?$preLineChar:'-';
 		if ($strPad)	{
 			$lines[]=str_pad('', $strPad, $strPadChar);
@@ -401,7 +365,7 @@ class user_plaintext {
 	 */
 	function breakBulletlist($str)	{
 		$type = $this->cObj->data['layout'];
-		$type=t3lib_div::intInRange($type,0,3);
+		$type=t3lib_utility_Math::forceIntegerInRange($type,0,3);
 
 		$tConf = $this->conf['bulletlist.'][$type.'.'];
 
@@ -418,7 +382,7 @@ class user_plaintext {
 
 			$lines[]=$bullet.$this->breakLines($substrs,chr(10).$secondRow,$this->charWidth-$bLen);
 
-			$blanks = t3lib_div::intInRange($tConf['blanks'],0,1000);
+			$blanks = t3lib_utility_Math::forceIntegerInRange($tConf['blanks'],0,1000);
 			if ($blanks)	{$lines[]=str_pad('', $blanks-1, chr(10));}
 		}
 		return implode(chr(10),$lines);

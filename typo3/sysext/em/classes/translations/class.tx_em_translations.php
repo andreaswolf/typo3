@@ -25,7 +25,6 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
-/* $Id: class.tx_em_translations.php 2018 2010-03-14 12:25:58Z steffenk $ */
 
 /**
  * Class for handling translations
@@ -56,7 +55,7 @@ class tx_em_Translations {
 	 *
 	 * @param string $extKey		The extension key to install the translations for
 	 * @param string $mirrorURL		Mirror URL to fetch data from
-	 * @return mixed	true on success, error string on fauilure
+	 * @return mixed	TRUE on success, error string on fauilure
 	 */
 	function installTranslationsForExtension($extKey, $mirrorURL) {
 		$selectedLanguages = unserialize($this->parentObject->MOD_SETTINGS['selectedLanguages']);
@@ -73,7 +72,7 @@ class tx_em_Translations {
 					t3lib_div::mkdir_deep(PATH_typo3conf, $path);
 				}
 				if (tx_em_Tools::unzip($file, PATH_typo3conf . $path)) {
-					return true;
+					return TRUE;
 				} else {
 					return $GLOBALS['LANG']->getLL('translation_unpacking_failed');
 				}
@@ -89,7 +88,7 @@ class tx_em_Translations {
 	 * @param string $extKey		The extension key to install the translations for
 	 * @param string $lang		Language code of translation to fetch
 	 * @param string $mirrorURL		Mirror URL to fetch data from
-	 * @return mixed	true on success, error string on fauilure
+	 * @return mixed	TRUE on success, error string on fauilure
 	 */
 	function updateTranslation($extKey, $lang, $mirrorURL) {
 		$l10n = $this->parentObject->terConnection->fetchTranslation($extKey, $lang, $mirrorURL);
@@ -140,13 +139,15 @@ class tx_em_Translations {
 		if (count($selectedLanguages) == 1 && empty($selectedLanguages[0])) {
 			$selectedLanguages = array();
 		}
-		$theLanguages = t3lib_div::trimExplode('|', TYPO3_languages);
+		/** @var $locales t3lib_l10n_Locales */
+		$locales = t3lib_div::makeInstance('t3lib_l10n_Locales');
+		$theLanguages = $locales->getLocales();
 		foreach ($theLanguages as $val) {
 			if ($val != 'default') {
-				$localLabel = '  -  [' . htmlspecialchars($GLOBALS['LOCAL_LANG']['default']['lang_' . $val]) . ']';
+				$localLabel = '  -  [' . htmlspecialchars($GLOBALS['LOCAL_LANG']['default']['lang_' . $val][0]['target']) . ']';
 				$selected = (is_array($selectedLanguages) && in_array($val, $selectedLanguages)) ? ' selected="selected"' : '';
 				$opt[$GLOBALS['LANG']->getLL('lang_' . $val, 1) . '--' . $val] = '
-			 <option value="' . $val . '"' . $selected . '>' . $LANG->getLL('lang_' . $val, 1) . $localLabel . '</option>';
+			 <option value="' . $val . '"' . $selected . '>' . $GLOBALS['LANG']->getLL('lang_' . $val, 1) . $localLabel . '</option>';
 			}
 		}
 		ksort($opt);
@@ -358,7 +359,7 @@ class tx_em_Translations {
 							// local!=remote or not installed -> needs update
 							if ($localmd5 != $translationStatusArr[$lang]['md5']) {
 								$ret = $this->updateTranslation($extKey, $lang, $mirrorURL);
-								if ($ret === true) {
+								if ($ret === TRUE) {
 									echo ('<td title="' . $GLOBALS['LANG']->getLL('translation_has_been_updated') .
 											'" style="background-color:#69a550">' . $GLOBALS['LANG']->getLL('translation_status_update') .
 											'</td>');

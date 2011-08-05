@@ -1,7 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - -
 Flash Messages (template.php)
 
-$Id$
 - - - - - - - - - - - - - - - - - - - - - */
 
 #typo3-messages {
@@ -21,4 +20,9 @@ $Id$
 
 .typo3-message .message-header {
 	display: block;
+}
+
+.typo3-message .t3-icon-actions-message-close {
+	cursor: pointer;
+	float: right;
 }

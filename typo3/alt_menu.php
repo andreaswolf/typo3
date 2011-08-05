@@ -27,27 +27,14 @@
 /**
  * Displays the vertical menu in the left most frame of TYPO3s backend
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  * XHTML-trans compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @co-author Sebastian Kurfürst <sebastian@garbage-group.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   80: class SC_alt_menu
- *   91:     function init()
- *  108:     function main()
- *  190:     function printContent()
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.
+ * @deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7.
+ * 		The TYPO3 backend is using typo3/backend.php with less frames,
+ * 		which makes this file obsolete.
  */
 
 
@@ -56,7 +43,7 @@ require ('template.php');
 require_once ('class.alt_menu_functions.inc');
 
 
-t3lib_div::deprecationLog('alt_palette.php is deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.');
+t3lib_div::deprecationLog('alt_menu.php is deprecated since TYPO3 4.5, this file will be removed in TYPO3 4.7. The TYPO3 backend is using typo3/backend.php with less frames, which makes this file obsolete.');
 
 
 
@@ -96,20 +83,18 @@ class SC_alt_menu {
 	 * @return	void
 	 */
 	function init()	{
-		global $TBE_MODULES, $TBE_TEMPLATE;
-
 			// Setting GPvars:
 		$this->_clearCacheFiles = t3lib_div::_GP('_clearCacheFiles');
 
 			// Loads the backend modules available for the logged in user.
 		$this->loadModules = t3lib_div::makeInstance('t3lib_loadModules');
 		$this->loadModules->observeWorkspaces = TRUE;
-		$this->loadModules->load($TBE_MODULES);
+		$this->loadModules->load($GLOBALS['TBE_MODULES']);
 
 			// Instantiates the menu object which will generate some JavaScript for the goToModule() JS function in this frame.
 		$this->alt_menuObj = t3lib_div::makeInstance('alt_menu_functions');
 
-		$TBE_TEMPLATE->JScodeArray[] = $this->alt_menuObj->generateMenuJScode($this->loadModules->modules);
+		$GLOBALS['TBE_TEMPLATE']->JScodeArray[] = $this->alt_menuObj->generateMenuJScode($this->loadModules->modules);
 	}
 
 	/**
@@ -118,12 +103,10 @@ class SC_alt_menu {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$TYPO3_CONF_VARS,$TBE_TEMPLATE;
+		$GLOBALS['TBE_TEMPLATE']->divClass = 'vertical-menu';
+		$GLOBALS['TBE_TEMPLATE']->bodyTagAdditions = 'onload="top.restoreHighlightedModuleMenuItem()"';
 
-		$TBE_TEMPLATE->divClass='vertical-menu';
-		$TBE_TEMPLATE->bodyTagAdditions = 'onload="top.restoreHighlightedModuleMenuItem()"';
-
-		$this->content.=$TBE_TEMPLATE->startPage('Vertical Backend Menu');
+		$this->content .= $GLOBALS['TBE_TEMPLATE']->startPage('Vertical Backend Menu');
 		$backPath = $GLOBALS['BACK_PATH'];
 
 			// Printing the menu
@@ -133,7 +116,8 @@ class SC_alt_menu {
 			// clear cache commands for Admins and allowed users
 		if($GLOBALS['BE_USER']->isAdmin()
 		|| $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.pages')
-		|| $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.all')) {	//  && $BE_USER->workspace===0 NOT used anyway because under a workspace developers might still like to clear cache!
+		|| $GLOBALS['BE_USER']->getTSConfigVal('options.clearCache.all')) {
+				//  && $GLOBALS['BE_USER']->workspace===0 NOT used anyway because under a workspace developers might still like to clear cache!
 			$functionsArray = $alt_menuObj->adminFunctions($backPath);
 
 			$this->content.='
@@ -181,12 +165,12 @@ class SC_alt_menu {
 		}
 
 			// superuser mode
-		if($BE_USER->user['ses_backuserid']) {
+		if ($GLOBALS['BE_USER']->user['ses_backuserid']) {
 			$username = '<p id="username" class="typo3-red-background">[' .
 				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_misc.xml:switchtousershort') . ' ' .
-				htmlspecialchars($BE_USER->user['username']) . ']</p>';
+				htmlspecialchars($GLOBALS['BE_USER']->user['username']) . ']</p>';
 		} else {
-			$username = '<p id="username">[' . htmlspecialchars($BE_USER->user['username']) . ']</p>';
+			$username = '<p id="username">[' . htmlspecialchars($GLOBALS['BE_USER']->user['username']) . ']</p>';
 		}
 			// Printing buttons (logout button)
 		$this->content.='
@@ -199,7 +183,7 @@ class SC_alt_menu {
 </div>';
 
 			// End page:
-		$this->content.=$TBE_TEMPLATE->endPage();
+		$this->content .= $GLOBALS['TBE_TEMPLATE']->endPage();
 	}
 
 	/**

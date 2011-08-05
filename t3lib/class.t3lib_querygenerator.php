@@ -27,54 +27,9 @@
 /**
  * Class for generating front end for building queries
  *
- * $Id$
- *
  * @author	Christian Jul Jensen <christian@typo3.com>
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	Jo Hasenau <info@cybercraft.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   98: class t3lib_queryGenerator
- *  245:	 function makeFieldList()
- *  273:	 function init($name,$table,$fieldList='')
- *  410:	 function setAndCleanUpExternalLists($name,$list,$force='')
- *  426:	 function procesData($qC='')
- *  529:	 function cleanUpQueryConfig($queryConfig)
- *  586:	 function getFormElements($subLevel=0,$queryConfig='',$parent='')
- *  744:	 function makeOptionList($fN, $conf, $table)
- *  953:	 function printCodeArray($codeArr,$l=0)
- *  976:	 function formatQ($str)
- *  989:	 function mkOperatorSelect($name,$op,$draw,$submit)
- * 1011:	 function mkTypeSelect($name,$fieldName,$prepend='FIELD_')
- * 1032:	 function verifyType($fieldName)
- * 1049:	 function verifyComparison($comparison,$neg)
- * 1068:	 function mkFieldToInputSelect($name,$fieldName)
- * 1091:	 function mkTableSelect($name,$cur)
- * 1113:	 function mkCompSelect($name,$comparison,$neg)
- * 1131:	 function getSubscript($arr)
- * 1146:	 function initUserDef()
- * 1155:	 function userDef()
- * 1164:	 function userDefCleanUp($queryConfig)
- * 1175:	 function getQuery ($queryConfig,$pad='')
- * 1205:	 function getQuerySingle($conf,$first)
- * 1245:	 function cleanInputVal($conf,$suffix='')
- * 1270:	 function getUserDefQuery ($qcArr)
- * 1278:	 function updateIcon()
- * 1287:	 function getLabelCol()
- * 1299:	 function makeSelectorTable($modSettings,$enableList='table,fields,query,group,order,limit')
- * 1431:	 function getTreeList($id, $depth, $begin=0, $perms_clause)
- * 1465:	 function getSelectQuery($qString = '', $fN = '')
- * 1504:	 function JSbottom($formname='forms[0]')
- * 1510:	 function typo3FormFieldSet(theField, evallist, is_in, checkbox, checkboxValue)
- * 1528:	 function typo3FormFieldGet(theField, evallist, is_in, checkbox, checkboxValue, checkbox_off)
- *
- * TOTAL FUNCTIONS: 32
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -231,27 +186,26 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function makeFieldList() {
-		global $TCA;
 		$fieldListArr = array();
-		if (is_array($TCA[$this->table])) {
+		if (is_array($GLOBALS['TCA'][$this->table])) {
 			t3lib_div::loadTCA($this->table);
-			foreach ($TCA[$this->table]['columns'] as $fN => $value) {
+			foreach ($GLOBALS['TCA'][$this->table]['columns'] as $fN => $value) {
 				$fieldListArr[] = $fN;
 			}
 			$fieldListArr[] = 'uid';
 			$fieldListArr[] = 'pid';
 			$fieldListArr[] = 'deleted';
-			if ($TCA[$this->table]['ctrl']['tstamp']) {
-				$fieldListArr[] = $TCA[$this->table]['ctrl']['tstamp'];
+			if ($GLOBALS['TCA'][$this->table]['ctrl']['tstamp']) {
+				$fieldListArr[] = $GLOBALS['TCA'][$this->table]['ctrl']['tstamp'];
 			}
-			if ($TCA[$this->table]['ctrl']['crdate']) {
-				$fieldListArr[] = $TCA[$this->table]['ctrl']['crdate'];
+			if ($GLOBALS['TCA'][$this->table]['ctrl']['crdate']) {
+				$fieldListArr[] = $GLOBALS['TCA'][$this->table]['ctrl']['crdate'];
 			}
-			if ($TCA[$this->table]['ctrl']['cruser_id']) {
-				$fieldListArr[] = $TCA[$this->table]['ctrl']['cruser_id'];
+			if ($GLOBALS['TCA'][$this->table]['ctrl']['cruser_id']) {
+				$fieldListArr[] = $GLOBALS['TCA'][$this->table]['ctrl']['cruser_id'];
 			}
-			if ($TCA[$this->table]['ctrl']['sortby']) {
-				$fieldListArr[] = $TCA[$this->table]['ctrl']['sortby'];
+			if ($GLOBALS['TCA'][$this->table]['ctrl']['sortby']) {
+				$fieldListArr[] = $GLOBALS['TCA'][$this->table]['ctrl']['sortby'];
 			}
 		}
 		return implode(',', $fieldListArr);
@@ -266,10 +220,9 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function init($name, $table, $fieldList = '') {
-		global $TCA;
 
 			// Analysing the fields in the table.
-		if (is_array($TCA[$table])) {
+		if (is_array($GLOBALS['TCA'][$table])) {
 			t3lib_div::loadTCA($table);
 			$this->name = $name;
 			$this->table = $table;
@@ -277,7 +230,7 @@ class t3lib_queryGenerator {
 
 			$fieldArr = t3lib_div::trimExplode(',', $this->fieldList, 1);
 			foreach ($fieldArr as $fN) {
-				$fC = $TCA[$this->table]['columns'][$fN];
+				$fC = $GLOBALS['TCA'][$this->table]['columns'][$fN];
 				$this->fields[$fN] = $fC['config'];
 				$this->fields[$fN]['exclude'] = $fC['exclude'];
 				if (is_array($fC) && $fC['label']) {
@@ -749,6 +702,7 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function makeOptionList($fN, $conf, $table) {
+		$out = '';
 		$fieldSetup = $this->fields[$fN];
 		if ($fieldSetup['type'] == 'files') {
 			if ($conf['comparison'] == 66 || $conf['comparison'] == 67) {
@@ -763,7 +717,7 @@ class t3lib_queryGenerator {
 				}
 			}
 			$d = dir(PATH_site . $fieldSetup['uploadfolder']);
-			while (false !== ($entry = $d->read())) {
+			while (FALSE !== ($entry = $d->read())) {
 				if ($entry == '.' || $entry == '..') {
 					continue;
 				}
@@ -822,7 +776,6 @@ class t3lib_queryGenerator {
 					}
 				}
 			}
-			global $TCA;
 			if (stristr($fieldSetup['allowed'], ',')) {
 				$from_table_Arr = explode(',', $fieldSetup['allowed']);
 				$useTablePrefix = 1;
@@ -862,12 +815,12 @@ class t3lib_queryGenerator {
 					$tablePrefix = $from_table . '_';
 				}
 				$counter = 1;
-				if (is_array($TCA[$from_table])) {
+				if (is_array($GLOBALS['TCA'][$from_table])) {
 					t3lib_div::loadTCA($from_table);
-					$labelField = $TCA[$from_table]['ctrl']['label'];
-					$altLabelField = $TCA[$from_table]['ctrl']['label_alt'];
-					if ($TCA[$from_table]['columns'][$labelField]['config']['items']) {
-						foreach ($TCA[$from_table]['columns'][$labelField]['config']['items'] as $labelArray) {
+					$labelField = $GLOBALS['TCA'][$from_table]['ctrl']['label'];
+					$altLabelField = $GLOBALS['TCA'][$from_table]['ctrl']['label_alt'];
+					if ($GLOBALS['TCA'][$from_table]['columns'][$labelField]['config']['items']) {
+						foreach ($GLOBALS['TCA'][$from_table]['columns'][$labelField]['config']['items'] as $labelArray) {
 							if (substr($labelArray[0], 0, 4) == 'LLL:') {
 								$labelFieldSelect[$labelArray[1]] = $GLOBALS['LANG']->sL($labelArray[0]);
 							} else {
@@ -876,8 +829,8 @@ class t3lib_queryGenerator {
 						}
 						$useSelectLabels = 1;
 					}
-					if ($TCA[$from_table]['columns'][$altLabelField]['config']['items']) {
-						foreach ($TCA[$from_table]['columns'][$altLabelField]['config']['items'] as $altLabelArray) {
+					if ($GLOBALS['TCA'][$from_table]['columns'][$altLabelField]['config']['items']) {
+						foreach ($GLOBALS['TCA'][$from_table]['columns'][$altLabelField]['config']['items'] as $altLabelArray) {
 							if (substr($altLabelArray[0], 0, 4) == 'LLL:') {
 								$altLabelFieldSelect[$altLabelArray[1]] = $GLOBALS['LANG']->sL($altLabelArray[0]);
 							} else {
@@ -1004,7 +957,7 @@ class t3lib_queryGenerator {
 			$out .= '<option value="OR"' . ($op == 'OR' ? ' selected' : '') . '>' . $this->lang['OR'] . '</option>';
 			$out .= '</select>';
 		} else {
-			$out .= '<input type="hidden" value="' . $op . '" name="' . $name . '[operator]">';
+			$out = '<input type="hidden" value="' . $op . '" name="' . $name . '[operator]">';
 			$out .= '<img src="clear.gif" height="1" width="47">';
 
 		}
@@ -1103,12 +1056,11 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function mkTableSelect($name, $cur) {
-		global $TCA;
 		$out = '<select name="' . $name . '" onChange="submit();">';
 		$out .= '<option value=""></option>';
-		foreach ($TCA as $tN => $value) {
+		foreach ($GLOBALS['TCA'] as $tN => $value) {
 			if ($GLOBALS['BE_USER']->check('tables_select', $tN)) {
-				$out .= '<option value="' . $tN . '"' . ($tN == $cur ? ' selected' : '') . '>' . $GLOBALS['LANG']->sl($TCA[$tN]['ctrl']['title']) . '</option>';
+				$out .= '<option value="' . $tN . '"' . ($tN == $cur ? ' selected' : '') . '>' . $GLOBALS['LANG']->sl($GLOBALS['TCA'][$tN]['ctrl']['title']) . '</option>';
 			}
 		}
 		$out .= '</select>';
@@ -1215,6 +1167,7 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function getQuerySingle($conf, $first) {
+		$qs = '';
 		$prefix = $this->enablePrefix ? $this->table . '.' : '';
 		if (!$first) {
 				// Is it OK to insert the AND operator if none is set?
@@ -1297,8 +1250,7 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function getLabelCol() {
-		global $TCA;
-		return $TCA[$this->table]['ctrl']['label'];
+		return $GLOBALS['TCA'][$this->table]['ctrl']['label'];
 	}
 
 	/**
@@ -1522,6 +1474,7 @@ class t3lib_queryGenerator {
 	 * @return	[type]		...
 	 */
 	function JSbottom($formname) {
+		$out = '';
 		if ($this->extJSCODE) {
 			$out .= '
 			<script language="javascript" type="text/javascript" src="' . $GLOBALS['BACK_PATH'] . '../t3lib/jsfunc.evalfield.js"></script>
@@ -1532,8 +1485,8 @@ class t3lib_queryGenerator {
 				TBE_EDITOR.backend_interface = "' . $GLOBALS['BE_USER']->uc['interfaceSetup'] . '";
 				' . $this->extJSCODE . '
 			</script>';
-			return $out;
 		}
+		return $out;
 	}
 
 	/**

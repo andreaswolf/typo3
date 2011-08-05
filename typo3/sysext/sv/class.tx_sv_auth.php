@@ -29,20 +29,6 @@
  *
  * @author	René Fritz <r.fritz@colorcube.de>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   56: class tx_sv_auth extends tx_sv_authbase
- *   64:     function getUser()
- *   89:     function authUser($user)
- *  129:     function getGroups($user, $knownGroups)
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 
@@ -59,10 +45,10 @@ class tx_sv_auth extends tx_sv_authbase 	{
 	/**
 	 * Find a user (eg. look up the user record in database when a login is sent)
 	 *
-	 * @return	mixed		user array or false
+	 * @return	mixed		user array or FALSE
 	 */
 	function getUser()	{
-		$user = false;
+		$user = FALSE;
 
 		if ($this->login['status']=='login' && $this->login['uident'])	{
 
@@ -127,7 +113,7 @@ class tx_sv_auth extends tx_sv_authbase 	{
 						0
 					);
 				}
-				$OK = false;
+				$OK = FALSE;
 			}
 		}
 

@@ -28,12 +28,7 @@
 /**
  * A TS-Config parsing class which performs condition evaluation
  *
- * $Id$
- *
  * @author	Kraft Bernhard <kraftb@kraftb.at>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
  */
 
 class t3lib_TSparser_TSconfig extends t3lib_TSparser {

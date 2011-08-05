@@ -28,8 +28,6 @@
 /**
  * Class to handle mail specific functionality
  *
- * $Id: class.t3lib_utility_mail.php 6536 2009-11-25 14:07:18Z stucki $
- *
  *
  * @author	 Tolleiv Nietsch <nietsch@aoemedia.de>
  * @package TYPO3
@@ -80,7 +78,7 @@ final class t3lib_utility_Mail {
 				$hookSubscriberContainsArrow = strpos($hookSubscriber, '->');
 
 				if ($hookSubscriberContainsArrow !== FALSE) {
-						// deprecated, remove in TYPO3 4.7
+						// @deprecated: remove in TYPO3 4.7
 					t3lib_div::deprecationLog(
 						'The usage of user function notation for the substituteMailDelivery hook is deprecated,
 						use the t3lib_mail_MailerAdapter interface instead.'
@@ -100,10 +98,6 @@ final class t3lib_utility_Mail {
 				}
 			}
 		} else {
-			if (t3lib_utility_PhpOptions::isSafeModeEnabled() && !is_null($additionalParameters)) {
-				$additionalParameters = null;
-			}
-
 			if (is_null($additionalParameters)) {
 				$success = @mail($to, $subject, $messageBody, $additionalHeaders);
 			} else {
@@ -204,6 +198,53 @@ final class t3lib_utility_Mail {
 		}
 
 		return $address;
+	}
+
+	/**
+	 * Breaks up a single line of text for emails
+	 *
+	 * @param string $str The string to break up
+	 * @param string $newlineChar The string to implode the broken lines with (default/typically \n)
+	 * @param integer $lineWidth The line width
+	 * @return string reformated text
+	 */
+	public static function breakLinesForEmail($str, $newlineChar = LF, $lineWidth = 76) {
+		$lines = array();
+		$substrStart = 0;
+		while (strlen($str) > $substrStart) {
+			$substr = substr($str, $substrStart, $lineWidth);
+
+				// has line exceeded (reached) the maximum width?
+			if (strlen($substr) == $lineWidth) {
+					// find last space-char
+				$count = count(explode(' ', trim(strrev($substr))));
+					// space-char found?
+				if ($count > 1) {
+						// take everything up to last space-char
+					$parts = explode(' ', strrev($substr), 2);
+					$theLine = strrev($parts[1]);
+				} else {
+						// search for space-char in remaining text
+						// makes this line longer than $lineWidth!
+					$afterParts = explode(' ', substr($str, $lineWidth + $substrStart), 2);
+					$theLine = $substr . $afterParts[0];
+				}
+				if (!strlen($theLine)) {
+						// prevent endless loop because of empty line
+					break;
+				}
+			} else {
+				$theLine = $substr;
+			}
+
+			$lines[] = trim($theLine);
+			$substrStart += strlen($theLine);
+			if (trim(substr($str, $substrStart, $lineWidth)) === '') {
+					// no more text
+				break;
+			}
+		}
+		return implode($newlineChar, $lines);
 	}
 }
 

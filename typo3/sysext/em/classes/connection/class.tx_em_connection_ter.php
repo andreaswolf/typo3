@@ -63,11 +63,11 @@ class tx_em_Connection_Ter {
 	function fetchExtension($extKey, $version, $expectedMD5, $mirrorURL) {
 		$extPath = t3lib_div::strtolower($extKey);
 		$mirrorURL .= $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '_' . $version . '.t3x';
-		$t3x = t3lib_div::getURL($mirrorURL, 0, array(TYPO3_user_agent));
+		$t3x = t3lib_div::getUrl($mirrorURL, 0, array(TYPO3_user_agent));
 		$MD5 = md5($t3x);
 
 		if ($t3x === FALSE) {
-			return 'The T3X file could not be fetched. Possible reasons: network problems, allow_url_fopen is off, curl is not enabled in Install tool.';
+			return sprintf('The T3X file "%s" could not be fetched. Possible reasons: network problems, allow_url_fopen is off, cURL is not enabled in Install Tool.', $mirrorURL);
 		}
 
 		if ($MD5 == $expectedMD5) {
@@ -89,9 +89,9 @@ class tx_em_Connection_Ter {
 	function fetchTranslation($extKey, $lang, $mirrorURL) {
 		$extPath = t3lib_div::strtolower($extKey);
 		$mirrorURL .= $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '-l10n/' . $extPath . '-l10n-' . $lang . '.zip';
-		$l10n = t3lib_div::getURL($mirrorURL, 0, array(TYPO3_user_agent));
+		$l10n = t3lib_div::getUrl($mirrorURL, 0, array(TYPO3_user_agent));
 
-		if ($l10n !== false) {
+		if ($l10n !== FALSE) {
 			return array($l10n);
 		} else {
 			return 'Error: Translation could not be fetched.';
@@ -104,7 +104,7 @@ class tx_em_Connection_Ter {
 	 * @param string $extKey		The extension key to install the translations for
 	 * @param string $lang		Language code of translation to fetch
 	 * @param string $mirrorURL		Mirror URL to fetch data from
-	 * @return mixed	true on success, error string on fauilure
+	 * @return mixed	TRUE on success, error string on fauilure
 	 */
 	function updateTranslation($extKey, $lang, $mirrorURL) {
 		$l10n = $this->fetchTranslation($extKey, $lang, $mirrorURL);
@@ -132,9 +132,9 @@ class tx_em_Connection_Ter {
 	function fetchTranslationStatus($extKey, $mirrorURL) {
 		$extPath = t3lib_div::strtolower($extKey);
 		$mirrorURL .= $extPath{0} . '/' . $extPath{1} . '/' . $extPath . '-l10n/' . $extPath . '-l10n.xml';
-		$remote = t3lib_div::getURL($mirrorURL, 0, array(TYPO3_user_agent));
+		$remote = t3lib_div::getUrl($mirrorURL, 0, array(TYPO3_user_agent));
 
-		if ($remote !== false) {
+		if ($remote !== FALSE) {
 			$parsed = $this->emObj->xmlHandler->parseL10nXML($remote);
 			return $parsed['languagePackIndex'];
 		}

@@ -1,6 +1,5 @@
 *******************************************************************************
 INSTALLING TYPO3
-$Id$
 *******************************************************************************
 
 This document is a part of the TYPO3 project. TYPO3 is an open source web
@@ -22,7 +21,7 @@ cover using TYPO3 with other databases or web servers.
 
 The following configuration is the minimum required:
 - a web server capable of running PHP
-- PHP 5.2.0 or newer with the following extensions:
+- PHP 5.3.0 or newer with the following extensions:
 	- filter
 	- GD2
 	- JSON
@@ -30,13 +29,14 @@ The following configuration is the minimum required:
 	- pcre
 	- session
 	- SPL
+	- SOAP
 	- standard
 	- xml
 	- zlib
 	Some extensions can be optionally compiled into PHP. A list of loaded
 	extensions can be checked using the phpinfo() function.
-- memory_limit set to at least to 64M in php.ini
-- MySQL 4.1 or newer
+- memory_limit set to at least 64M in php.ini
+- MySQL 5.0 or newer
 - 200 MB of disk space
 - AllowOverride in the Apache configuration includes "Indexes" and "FileInfo"
   (see FAQ below)
@@ -44,7 +44,7 @@ The following configuration is the minimum required:
 The following configuration is recommended:
 - Apache 2.x
 - mod_expires and mod_rewrite enabled in the Apache configuration
-- PHP 5.2.0 or newer with the following extensions:
+- PHP 5.3.0 or newer with the following extensions:
 	- cURL
 	- filter
 	- GD2
@@ -54,15 +54,17 @@ The following configuration is recommended:
 	- mysql
 	- pcre
 	- session
+	- SOAP
 	- SPL
 	- standard
 	- xml
 	- zlib
 	Some extensions can be optionally compiled into PHP. A list of loaded
 	extensions can be checked using the phpinfo() function.
+- Safe mode is not supported, thus it must not be activated
 - memory_limit set to 128M or more in php.ini
 - MySQL 5.1 or newer
-- GraphicsMagick
+- GraphicsMagick or ImageMagick v6 or newer
 - 200 MB or more of disk space
 - AllowOverride in the Apache configuration includes "Indexes" and "FileInfo"
   (see FAQ below)
@@ -98,8 +100,8 @@ the web server.
 
 To install TYPO3, unpack the source package locally. Unpacking will produce a
 directory with a name like typo3_src-x.y.z, where x, y and z correspond to the
-TYPO3 version. For example, the TYPO3 4.3.0 source package will create a
-directory named typo3_src-4.3.0.
+TYPO3 version. For example, the TYPO3 x.y.z source package will create a
+directory named typo3_src-x.y.z.
 
 Next unpack the dummy package. This will create a directory with the name
 dummy-x.y.z. Now create a new directory and copy all files and folders from
@@ -221,3 +223,17 @@ A:	If you use MySQL 5.x or newer, try setting it to "compatible" mode. Open the
 	is the web site domain), navigate to "All configuration". find "setDBinit",
 	and add this line to the top of the input field:
 		SET SESSION sql_mode='MYSQL40'
+
+Q:	What do I have to do regarding security?
+A:	You have to make sure that you keep your TYPO3-core and the extensions
+	up to date.
+	* Subscribe to the announcement mailing list. This will inform you about new
+	  releases of the TYPO3 core and security bulletins of core and community
+	  extensions.
+	  http://lists.typo3.org/cgi-bin/mailman/listinfo/typo3-announce
+	* Use the scheduler task "Update Extension List (em)" to update the list of
+	  available extensions regularly. You should check regularly, if new versions
+	  of these extensions are available and install them respectively.
+	* For further reading regarding securing TYPO3, please read the TYPO3 security
+	  cookbook and other resources. Please visit
+	  http://typo3.org/teams/security/resources/

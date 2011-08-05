@@ -27,24 +27,9 @@
 /**
  * Web>File: Create new folders in the filemounts
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   74: class SC_file_newfolder
- *  101:     function init()
- *  161:     function main()
- *  255:     function printContent()
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -115,8 +100,6 @@ class SC_file_newfolder {
 	 * @return	void
 	 */
 	function init()	{
-		global $LANG,$BACK_PATH,$TYPO3_CONF_VARS;
-
 			// Initialize GPvars:
 		$this->number = t3lib_div::_GP('number');
 		$this->target = t3lib_div::_GP('target');
@@ -124,7 +107,7 @@ class SC_file_newfolder {
 
 			// Init basic-file-functions object:
 		$this->basicff = t3lib_div::makeInstance('t3lib_basicFileFunctions');
-		$this->basicff->init($GLOBALS['FILEMOUNTS'],$TYPO3_CONF_VARS['BE']['fileExtensions']);
+		$this->basicff->init($GLOBALS['FILEMOUNTS'],$GLOBALS['TYPO3_CONF_VARS']['BE']['fileExtensions']);
 
 			// Init basic-charset-functions object:
 		$this->charsetConversion = t3lib_div::makeInstance('t3lib_cs');
@@ -136,14 +119,19 @@ class SC_file_newfolder {
 		if (!$this->target || !$key) {
 			$title = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_file_list.xml:paramError', TRUE);
 			$message = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_file_list.xml:targetNoDir', TRUE);
-			throw new RuntimeException($title . ': ' . $message);
+			throw new RuntimeException($title . ': ' . $message, 1294586843);
 		}
 
 			// Finding the icon
-		switch($GLOBALS['FILEMOUNTS'][$key]['type'])	{
-			case 'user':	$this->icon = 'gfx/i/_icon_ftp_user.gif';	break;
-			case 'group':	$this->icon = 'gfx/i/_icon_ftp_group.gif';	break;
-			default:		$this->icon = 'gfx/i/_icon_ftp.gif';	break;
+		switch($GLOBALS['FILEMOUNTS'][$key]['type']) {
+			case 'user':
+				$this->icon = 'gfx/i/_icon_ftp_user.gif';
+				break;
+			case 'group':
+				$this->icon = 'gfx/i/_icon_ftp_group.gif';
+				break;
+			default:
+				$this->icon = 'gfx/i/_icon_ftp.gif';
 		}
 
 		$this->icon = '<img'.t3lib_iconWorks::skinImg($this->backPath,$this->icon,'width="18" height="16"').' title="" alt="" />';
@@ -157,12 +145,12 @@ class SC_file_newfolder {
 			// Setting template object
 		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->setModuleTemplate('templates/file_newfolder.html');
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->JScode=$this->doc->wrapScriptTags('
 			var path = "'.$this->target.'";
 
 			function reload(a)	{	//
-				if (!changed || (changed && confirm('.$LANG->JScharCode($LANG->sL('LLL:EXT:lang/locallang_core.php:mess.redraw')).')))	{
+				if (!changed || (changed && confirm(' . $GLOBALS['LANG']->JScharCode($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:mess.redraw')) . '))) {
 					var params = "&target="+encodeURIComponent(path)+"&number="+a+"&returnUrl='
 							. urlencode($this->charsetConversion->conv($this->returnUrl, $GLOBALS['LANG']->charSet, 'utf-8'))
 							. '";
@@ -183,26 +171,25 @@ class SC_file_newfolder {
 	 * @return	void
 	 */
 	function main()	{
-		global $LANG;
 
 			// start content compilation
-		$this->content.=$this->doc->startPage($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
+		$this->content .= $this->doc->startPage($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
 
 
 			// Make page header:
 		$pageContent='';
-		$pageContent.=$this->doc->header($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
+		$pageContent.=$this->doc->header($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.pagetitle'));
 		$pageContent.=$this->doc->spacer(5);
 		$pageContent.=$this->doc->divider(5);
 
 
 		$code = '<form action="tce_file.php" method="post" name="editform">';
 			// Making the selector box for the number of concurrent folder-creations
-		$this->number = t3lib_div::intInRange($this->number,1,10);
+		$this->number = t3lib_utility_Math::forceIntegerInRange($this->number,1,10);
 		$code .= '
 			<div id="c-select">
 				<label for="number-of-new-folders">' .
-				$LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.number_of_folders') .
+				$GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.number_of_folders') .
 				'</label>
 				<select name="number" id="number-of-new-folders" onchange="reload(this.options[this.selectedIndex].value);">';
 		for ($a=1;$a<=$this->folderNumber;$a++)	{
@@ -232,8 +219,8 @@ class SC_file_newfolder {
 			// Making submit button for folder creation:
 		$code.='
 			<div id="c-submitFolders">
-				<input type="submit" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.submit',1).'" />
-				<input type="submit" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.cancel',1).'" onclick="backToList(); return false;" />
+				<input type="submit" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.submit', 1) . '" />
+				<input type="submit" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.cancel', 1) . '" onclick="backToList(); return false;" />
 				<input type="hidden" name="redirect" value="'.htmlspecialchars($this->returnUrl).'" />
 			</div>
 			';
@@ -272,15 +259,15 @@ class SC_file_newfolder {
 			// Submit button for creation of a new file:
 		$code.='
 			<div id="c-submitFiles">
-				<input type="submit" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.newfile_submit',1).'" />
-				<input type="submit" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.cancel',1).'" onclick="backToList(); return false;" />
+				<input type="submit" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.newfile_submit', 1) . '" />
+				<input type="submit" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.cancel', 1) . '" onclick="backToList(); return false;" />
 				<input type="hidden" name="redirect" value="'.htmlspecialchars($this->returnUrl).'" />
 			</div>
 			';
 
 			// CSH:
 		$code.= t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'file_newfile', $GLOBALS['BACK_PATH'], '<br />');
-		$pageContent.= $this->doc->section($LANG->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.newfile'),$code);
+		$pageContent .= $this->doc->section($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_newfolder.php.newfile'), $code);
 		$pageContent .= $this->doc->sectionEnd();
 		$pageContent .= '</form>';
 

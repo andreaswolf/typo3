@@ -57,7 +57,7 @@
  *   This is "forward" tag index. It is mainly used for flushing content by tag.
  * - temp:xxx, value type "set"
  *   xxx is a unique id, value is a set of identifiers. Used as temporary key
- *   used in flushByTag() and flushByTags(), removed after usage again.
+ *   used in flushByTag(), removed after usage again.
  *
  * Each cache using this backend should use an own redis database to
  * avoid namespace problems. By default redis has 16 databases which are
@@ -66,6 +66,8 @@
  *
  * @package TYPO3
  * @subpackage t3lib_cache
+ * @author Christopher Hlubek <hlubek@networkteam.com>
+ * @author Christian Kuhn <lolli@schwarzbu.ch>
  * @api
  * @scope prototype
  */
@@ -87,69 +89,79 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	const FAKED_UNLIMITED_LIFETIME = 31536000;
 
 	/**
-	 * @var string Key prefix for identifier->data entries
+	 * Key prefix for identifier->data entries
+	 * @var string
 	 */
 	const IDENTIFIER_DATA_PREFIX = 'identData:';
 
 	/**
-	 * @var string Key prefix for identifier->tags sets
+	 * Key prefix for identifier->tags sets
+	 * @var string
 	 */
 	const IDENTIFIER_TAGS_PREFIX = 'identTags:';
 
 	/**
-	 * @var string Key prefix for tag->identifiers sets
+	 * Key prefix for tag->identifiers sets
+	 * @var string
 	 */
 	const TAG_IDENTIFIERS_PREFIX = 'tagIdents:';
 
 	/**
-	 * @var Redis Instance of the PHP redis class
+	 * Instance of the PHP redis class
+	 * @var \Redis
 	 */
 	protected $redis;
 
 	/**
-	 * @var boolean Indicates wether the server is connected
+	 * Indicates wether the server is connected
+	 * @var boolean
 	 */
 	protected $connected = FALSE;
 
 	/**
-	 * @var string Hostname / IP of the Redis server, defaults to 127.0.0.1.
+	 * Hostname / IP of the Redis server, defaults to 127.0.0.1.
+	 * @var string
 	 */
 	protected $hostname = '127.0.0.1';
 
 	/**
-	 * @var integer Port of the Redis server, defaults to 6379
+	 * Port of the Redis server, defaults to 6379
+	 * @var integer
 	 */
 	protected $port = 6379;
 
 	/**
-	 * @var integer Number of selected database, defaults to 0
+	 * Number of selected database, defaults to 0
+	 * @var integer
 	 */
 	protected $database = 0;
 
 	/**
-	 * @var string Password for redis authentication
+	 * Password for redis authentication
+	 * @var string
 	 */
 	protected $password = '';
 
 	/**
-	 * @var boolean Indicates wether data is compressed or not (requires php zlib)
+	 * Indicates wether data is compressed or not (requires php zlib)
+	 * @var boolean
 	 */
 	protected $compression = FALSE;
 
 	/**
-	 * @var integer -1 to 9, indicates zlib compression level: -1 = default level 6, 0 = no compression, 9 maximum compression
+	 * -1 to 9, indicates zlib compression level: -1 = default level 6, 0 = no compression, 9 maximum compression
+	 * @var integer
 	 */
 	protected $compressionLevel = -1;
 
 	/**
 	 * Construct this backend
 	 *
+	 * @param string $context FLOW3's application context
 	 * @param array $options Configuration options
 	 * @throws t3lib_cache_Exception if php redis module is not loaded
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 */
-	public function __construct(array $options = array()) {
+	public function __construct($context, array $options = array()) {
 		if (!extension_loaded('redis')) {
 			throw new t3lib_cache_Exception(
 				'The PHP extension "redis" must be installed and loaded in order to use the redis backend.',
@@ -157,9 +169,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 			);
 		}
 
-		parent::__construct($options);
-
-		$this->initializeObject();
+		parent::__construct($context, $options);
 	}
 
 	/**
@@ -167,15 +177,14 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @return void
 	 * @throws t3lib_cache_Exception if access to redis with password is denied or if database selection fails
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 */
-	protected function initializeObject() {
-		$this->redis = new Redis();
+	public function initializeObject() {
+		$this->redis = new \Redis();
 
 		try {
 			$this->connected = $this->redis->connect($this->hostname, $this->port);
 		} catch (Exception $e) {
-			t3lib_div::sysLog('Unable to connect to redis server.', 'core', 3);
+			t3lib_div::sysLog('Could not connect to redis server.', 'core', 3);
 		}
 
 		if ($this->connected) {
@@ -206,8 +215,6 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param string $hostname Hostname
 	 * @return void
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 * @api
 	 */
 	public function setHostname($hostname) {
@@ -219,8 +226,6 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param integer $port Port
 	 * @return void
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 * @api
 	 */
 	public function setPort($port) {
@@ -232,19 +237,18 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param integer $database Database
 	 * @return void
-	 * @throws InvalidArgumentException if database number is not valid
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if database number is not valid
 	 * @api
 	 */
 	public function setDatabase($database) {
 		if (!is_integer($database)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified database number is of type "' . gettype($database) . '" but an integer is expected.',
 				1279763057
 			);
 		}
 		if ($database < 0) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified database "' . $database . '" must be greater or equal than zero.',
 				1279763534
 			);
@@ -258,7 +262,6 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param string $password Password
 	 * @return void
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 * @api
 	 */
 	public function setPassword($password) {
@@ -270,13 +273,12 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param boolean $compression TRUE to enable compression
 	 * @return void
-	 * @throws InvalidArgumentException if compression parameter is not of type boolean
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if compression parameter is not of type boolean
 	 * @api
 	 */
 	public function setCompression($compression) {
 		if (!is_bool($compression)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified compression of type "' . gettype($compression) . '" but a boolean is expected.',
 				1289679153
 			);
@@ -292,13 +294,12 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param integer $compressionLevel -1 to 9: Compression level
 	 * @return void
-	 * @throws InvalidArgumentException if compressionLevel parameter is not within allowed bounds
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if compressionLevel parameter is not within allowed bounds
 	 * @api
 	 */
 	public function setCompressionLevel($compressionLevel) {
 		if (!is_integer($compressionLevel)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified compression of type "' . gettype($compressionLevel) . '" but an integer is expected.',
 				1289679154
 			);
@@ -307,7 +308,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 		if ($compressionLevel >= -1 && $compressionLevel <= 9) {
 			$this->compressionLevel = $compressionLevel;
 		} else {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified compression level must be an integer between -1 and 9.',
 				1289679155
 			);
@@ -325,15 +326,13 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 * @param array $tags Tags to associate with this cache entry
 	 * @param integer $lifetime Lifetime of this cache entry in seconds. If NULL is specified, default lifetime is used. "0" means unlimited lifetime.
 	 * @return void
-	 * @throws InvalidArgumentException if identifier is not valid
+	 * @throws \InvalidArgumentException if identifier is not valid
 	 * @throws t3lib_cache_Exception_InvalidData if data is not a string
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 * @api
 	 */
 	public function set($entryIdentifier, $data, array $tags = array(), $lifetime = NULL) {
 		if (!is_string($entryIdentifier)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified identifier is of type "' . gettype($entryIdentifier) . '" but a string is expected.',
 				1279470252
 			);
@@ -349,13 +348,13 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 		$lifetimeIsInteger = is_integer($lifetime);
 
 		if (!$lifetimeIsNull && !$lifetimeIsInteger) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified lifetime is of type "' . gettype($lifetime) . '" but a string or NULL is expected.',
 				1279488008
 			);
 		}
 		if ($lifetimeIsInteger && $lifetime < 0) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified lifetime "' . $lifetime . '" must be greater or equal than zero.',
 				1279487573
 			);
@@ -380,7 +379,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 			}
 
 			if (count($removeTags) > 0 || count($addTags) > 0) {
-				$queue = $this->redis->multi(Redis::PIPELINE);
+				$queue = $this->redis->multi(\Redis::PIPELINE);
 				foreach ($removeTags as $tag) {
 					$queue->sRemove(self::IDENTIFIER_TAGS_PREFIX . $entryIdentifier, $tag);
 					$queue->sRemove(self::TAG_IDENTIFIERS_PREFIX . $tag, $entryIdentifier);
@@ -402,14 +401,12 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param string $entryIdentifier An identifier which describes the cache entry to load
 	 * @return mixed The cache entry's content as a string or FALSE if the cache entry could not be loaded
-	 * @throws InvalidArgumentException if identifier is not a string
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if identifier is not a string
 	 * @api
 	 */
 	public function get($entryIdentifier) {
 		if (!is_string($entryIdentifier)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified identifier is of type "' . gettype($entryIdentifier) . '" but a string is expected.',
 				1279470253
 			);
@@ -434,14 +431,12 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param string $entryIdentifier Identifier specifying the cache entry
 	 * @return boolean TRUE if such an entry exists, FALSE if not
-	 * @throws InvalidArgumentException if identifier is not a string
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if identifier is not a string
 	 * @api
 	 */
 	public function has($entryIdentifier) {
 		if (!is_string($entryIdentifier)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified identifier is of type "' . gettype($entryIdentifier) . '" but a string is expected.',
 				1279470254
 			);
@@ -457,14 +452,12 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param string $entryIdentifier Specifies the cache entry to remove
 	 * @return boolean TRUE if (at least) an entry could be removed or FALSE if no entry was found
-	 * @throws InvalidArgumentException if identifier is not a string
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if identifier is not a string
 	 * @api
 	 */
 	public function remove($entryIdentifier) {
 		if (!is_string($entryIdentifier)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified identifier is of type "' . gettype($entryIdentifier) . '" but a string is expected.',
 				1279470255
 			);
@@ -475,7 +468,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 			if ($this->redis->exists(self::IDENTIFIER_DATA_PREFIX . $entryIdentifier)) {
 				$assignedTags = $this->redis->sMembers(self::IDENTIFIER_TAGS_PREFIX . $entryIdentifier);
 
-				$queue = $this->redis->multi(Redis::PIPELINE);
+				$queue = $this->redis->multi(\Redis::PIPELINE);
 				foreach ($assignedTags as $tag) {
 					$queue->sRemove(self::TAG_IDENTIFIERS_PREFIX . $tag, $entryIdentifier);
 				}
@@ -497,14 +490,12 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 *
 	 * @param string $tag The tag to search for
 	 * @return array An array of entries with all matching entries. An empty array if no entries matched
-	 * @throws InvalidArgumentException if tag is not a string
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if tag is not a string
 	 * @api
 	 */
 	public function findIdentifiersByTag($tag) {
 		if (!is_string($tag)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified tag is of type "' . gettype($tag) . '" but a string is expected.',
 				1279569759
 			);
@@ -519,39 +510,11 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	}
 
 	/**
-	 * Finds and returns all cache entry identifiers which are tagged
-	 * with all of the specified tags.
-	 *
-	 * Scales O(n) with number of tags
-	 *
-	 * @param array $tags Array of tags to search for
-	 * @return array An array with identifiers of all matching entries. An empty array if no entries matched
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 * @api
-	 */
-	public function findIdentifiersByTags(array $tags) {
-		$foundIdentifiers = array();
-
-		if ($this->connected) {
-			$tagsWithPrefix = array();
-			foreach ($tags as $tag) {
-				$tagsWithPrefix[] = self::TAG_IDENTIFIERS_PREFIX . $tag;
-			}
-			$foundIdentifiers = $this->redis->sInter($tagsWithPrefix);
-		}
-
-		return $foundIdentifiers;
-	}
-
-	/**
 	 * Removes all cache entries of this cache.
 	 *
 	 * Scales O(1) with number of cache entries
 	 *
 	 * @return void
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
 	 * @api
 	 */
 	public function flush() {
@@ -566,16 +529,14 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 * Scales O(1) with number of cache entries
 	 * Scales O(n^2) with number of tag entries
 	 *
-	 * @param string $tags Tag the entries must have
+	 * @param string $tag Tag the entries must have
 	 * @return void
-	 * @throws InvalidArgumentException if identifier is not a string
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
+	 * @throws \InvalidArgumentException if identifier is not a string
 	 * @api
 	 */
 	public function flushByTag($tag) {
 		if (!is_string($tag)) {
-			throw new InvalidArgumentException(
+			throw new \InvalidArgumentException(
 				'The specified tag is of type "' . gettype($tag) . '" but a string is expected.',
 				1279578078
 			);
@@ -591,33 +552,6 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	}
 
 	/**
-	 * Removes all cache entries of this cache which are tagged with one of the specified tags.
-	 *
-	 * Scales O(1) with number of cache entries
-	 * Scales O(n^2) with number of tags
-	 *
-	 * @param array $tags Tags the entries must have
-	 * @return void
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 * @api
-	 */
-	public function flushByTags(array $tags) {
-		if ($this->connected) {
-			$prefixedKeysToDelete = array();
-			foreach ($tags as $tag) {
-				$prefixedKeysToDelete[] = self::TAG_IDENTIFIERS_PREFIX . $tag;
-			}
-
-				// Get all identifiers tagged with at least one of the given tags
-			$identifiers = $this->redis->sUnion($prefixedKeysToDelete);
-
-			if (count($identifiers)) {
-				$this->removeIdentifierEntriesAndRelations($identifiers, $tags, $prefixedKeysToDelete);
-			}
-		}
-	}
-
-	/**
 	 * With the current internal structure, only the identifier to data entries
 	 * have a redis internal lifetime. If an entry expires, attached
 	 * identifier to tags and tag to identifiers entries will be left over.
@@ -626,8 +560,6 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 * Scales O(n*m) with number of cache entries (n) and number of tags (m)
 	 *
 	 * @return void
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
 	 * @api
 	 */
 	public function collectGarbage() {
@@ -637,7 +569,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 				// Check if the data entry still exists
 			if (!$this->redis->exists(self::IDENTIFIER_DATA_PREFIX . $identifier)) {
 				$tagsToRemoveIdentifierFrom = $this->redis->sMembers($identifierToTagsKey);
-				$queue = $this->redis->multi(Redis::PIPELINE);
+				$queue = $this->redis->multi(\Redis::PIPELINE);
 				$queue->delete($identifierToTagsKey);
 				foreach ($tagsToRemoveIdentifierFrom as $tag) {
 					$queue->sRemove(self::TAG_IDENTIFIERS_PREFIX . $tag, $identifier);
@@ -648,7 +580,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	}
 
 	/**
-	 * Helper method for flushByTag() and flushByTags()
+	 * Helper method for flushByTag()
 	 * Gets list of identifiers and tags and removes all relations of those tags
 	 *
 	 * Scales O(1) with number of cache entries
@@ -657,8 +589,6 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 	 * @param array $identifiers List of identifiers to remove
 	 * @param array $tags List of tags to be handled
 	 * @return void
-	 * @author Christian Kuhn <lolli@schwarzbu.ch>
-	 * @author Christopher Hlubek <hlubek@networkteam.com>
 	 */
 	protected function removeIdentifierEntriesAndRelations(array $identifiers, array $tags) {
 			// Set a temporary entry which holds all identifiers that need to be removed from
@@ -682,7 +612,7 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 
 			// Diff all identifiers that must be removed from tag to identifiers sets off from a
 			// tag to identifiers set and store result in same tag to identifiers set again
-		$queue = $this->redis->multi(Redis::PIPELINE);
+		$queue = $this->redis->multi(\Redis::PIPELINE);
 		foreach ($identifiers as $identifier) {
 			$queue->sAdd($uniqueTempKey, $identifier);
 		}
@@ -698,5 +628,4 @@ class t3lib_cache_backend_RedisBackend extends t3lib_cache_backend_AbstractBacke
 		$queue->exec();
 	}
 }
-
 ?>

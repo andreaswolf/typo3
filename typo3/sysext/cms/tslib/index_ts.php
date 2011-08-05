@@ -30,7 +30,6 @@
  * The script configures constants, includes libraries and does a little logic here and there in order to instantiate the right classes to create the webpage.
  * All the real data processing goes on in the "tslib/" classes which this script will include and use as needed.
  *
- * $Id$
  * Revised for TYPO3 3.6 June/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
@@ -46,17 +45,13 @@ if (version_compare(phpversion(), '5.2', '<'))	die ('TYPO3 requires PHP 5.2.0 or
 // *******************************
 // Set error reporting
 // *******************************
-if (defined('E_DEPRECATED')) {
-	error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
-} else {
-	error_reporting(E_ALL ^ E_NOTICE);
-}
+error_reporting(E_ALL ^ E_NOTICE ^ E_DEPRECATED);
 
 
 // ******************
 // Constants defined
 // ******************
-$TYPO3_MISC['microtime_start'] = microtime(true);
+$TYPO3_MISC['microtime_start'] = microtime(TRUE);
 define('TYPO3_OS', stristr(PHP_OS,'win')&&!stristr(PHP_OS,'darwin')?'WIN':'');
 define('TYPO3_MODE','FE');
 
@@ -99,7 +94,7 @@ ob_start();
 // *********************
 // Timetracking started
 // *********************
-if ($_COOKIE['be_typo_user']) {
+if ($_SESSION['TYPO3-TT-start']) {
 	require_once(PATH_t3lib.'class.t3lib_timetrack.php');
 	$TT = new t3lib_timeTrack;
 } else {
@@ -134,6 +129,14 @@ if (!defined('PATH_tslib')) {
 }
 
 
+// Restart time tracking if BE login exists
+if (!$_SESSION['TYPO3-TT-start'] && $_COOKIE[t3lib_beUserAuth::getCookieName()]) {
+	$_SESSION['TYPO3-TT-start'] = TRUE;
+
+	$TT = new t3lib_timeTrack;
+	$TT->start();
+	$TT->push('', 'Script start (late)');
+}
 
 
 // *********************
@@ -161,7 +164,9 @@ $TT->pull();
 // *******************************
 // Checking environment
 // *******************************
-if (isset($_POST['GLOBALS']) || isset($_GET['GLOBALS']))	die('You cannot set the GLOBALS-array from outside the script.');
+if (isset($_POST['GLOBALS']) || isset($_GET['GLOBALS'])) {
+	throw new Exception('You cannot set the GLOBALS-array from outside the script.', 1294585200);
+}
 if (!get_magic_quotes_gpc())	{
 	$TT->push('Add slashes to GET/POST arrays','');
 	t3lib_div::addSlashesOnArray($_GET);
@@ -236,7 +241,8 @@ if ($temp_previewConfig = $TSFE->ADMCMD_preview())	{
 	$TSFE->ADMCMD_preview_postInit($temp_previewConfig);
 }
 
-if ($TSFE->RDCT)	{$TSFE->sendRedirect();}
+
+$TSFE->sendRedirect();
 
 
 // *******************
@@ -245,7 +251,7 @@ if ($TSFE->RDCT)	{$TSFE->sendRedirect();}
 // Remove any output produced until now
 ob_clean();
 if ($TYPO3_CONF_VARS['FE']['compressionLevel'] && extension_loaded('zlib'))	{
-	if (t3lib_div::testInt($TYPO3_CONF_VARS['FE']['compressionLevel'])) {
+	if (t3lib_utility_Math::canBeInterpretedAsInteger($TYPO3_CONF_VARS['FE']['compressionLevel'])) {
 		// Prevent errors if ini_set() is unavailable (safe mode)
 		@ini_set('zlib.output_compression_level', $TYPO3_CONF_VARS['FE']['compressionLevel']);
 	}
@@ -260,59 +266,13 @@ $TT->push('Front End user initialized','');
 	$TSFE->initFEuser();
 $TT->pull();
 
-// ****************
-// PRE BE_USER HOOK
-// ****************
-if (is_array($TYPO3_CONF_VARS['SC_OPTIONS']['tslib/index_ts.php']['preBeUser'])) {
-	foreach($TYPO3_CONF_VARS['SC_OPTIONS']['tslib/index_ts.php']['preBeUser'] as $_funcRef) {
-		$_params = array();
-		t3lib_div::callUserFunction($_funcRef, $_params , $_params);
-	}
-}
-
 
 // *********
 // BE_USER
 // *********
-$BE_USER = NULL;
 /** @var $BE_USER t3lib_tsfeBeUserAuth */
-if ($_COOKIE['be_typo_user']) {		// If the backend cookie is set, we proceed and checks if a backend user is logged in.
-	$TYPO3_MISC['microtime_BE_USER_start'] = microtime(true);
-	$TT->push('Back End user initialized','');
+$BE_USER = $TSFE->initializeBackendUser();
 
-			// the value this->formfield_status is set to empty in order to disable login-attempts to the backend account through this script
-		$BE_USER = t3lib_div::makeInstance('t3lib_tsfeBeUserAuth');	// New backend user object
-		$BE_USER->OS = TYPO3_OS;
-		$BE_USER->lockIP = $TYPO3_CONF_VARS['BE']['lockIP'];
-		$BE_USER->start();			// Object is initialized
-		$BE_USER->unpack_uc('');
-		if ($BE_USER->user['uid'])	{
-			$BE_USER->fetchGroupData();
-			$TSFE->beUserLogin = 1;
-		}
-			// Unset the user initialization.
-		if (!$BE_USER->checkLockToIP() || !$BE_USER->checkBackendAccessSettingsFromInitPhp() || !$BE_USER->user['uid']) {
-			$BE_USER = NULL;
-			$TSFE->beUserLogin=0;
-		}
-	$TT->pull();
-	$TYPO3_MISC['microtime_BE_USER_end'] = microtime(true);
-} elseif ($TSFE->ADMCMD_preview_BEUSER_uid)	{
-
-		// the value this->formfield_status is set to empty in order to disable login-attempts to the backend account through this script
-	$BE_USER = t3lib_div::makeInstance('t3lib_tsfeBeUserAuth');	// New backend user object
-	$BE_USER->userTS_dontGetCached = 1;
-	$BE_USER->OS = TYPO3_OS;
-	$BE_USER->setBeUserByUid($TSFE->ADMCMD_preview_BEUSER_uid);
-	$BE_USER->unpack_uc('');
-	if ($BE_USER->user['uid'])	{
-		$BE_USER->fetchGroupData();
-		$TSFE->beUserLogin = 1;
-	} else {
-		$BE_USER = NULL;
-		$TSFE->beUserLogin = 0;
-	}
-}
 
 // ********************
 // Workspace preview:
@@ -326,7 +286,7 @@ $TSFE->workspacePreviewInit();
 // *****************************************
 $TT->push('Process ID','');
 		// Initialize admin panel since simulation settings are required here:
-	if ($TSFE->beUserLogin) {
+	if ($TSFE->isBackendUserLoggedIn()) {
 		$BE_USER->initializeAdminPanel();
 	}
 
@@ -335,7 +295,7 @@ $TT->push('Process ID','');
 	$TSFE->determineId();
 
 		// Now, if there is a backend user logged in and he has NO access to this page, then re-evaluate the id shown!
-	if ($TSFE->beUserLogin && (!$BE_USER->extPageReadAccess($TSFE->page) || t3lib_div::_GP('ADMCMD_noBeUser')))	{	// t3lib_div::_GP('ADMCMD_noBeUser') is placed here because workspacePreviewInit() might need to know if a backend user is logged in!
+	if ($TSFE->isBackendUserLoggedIn() && (!$BE_USER->extPageReadAccess($TSFE->page) || t3lib_div::_GP('ADMCMD_noBeUser')))	{	// t3lib_div::_GP('ADMCMD_noBeUser') is placed here because workspacePreviewInit() might need to know if a backend user is logged in!
 
 			// Remove user
 		unset($BE_USER);
@@ -352,7 +312,7 @@ $TT->pull();
 // *****************************************
 // Admin Panel & Frontend editing
 // *****************************************
-if ($TSFE->beUserLogin) {
+if ($TSFE->isBackendUserLoggedIn()) {
 		// if a BE User is present load, the sprite manager for frontend-editing
 	$spriteManager = t3lib_div::makeInstance('t3lib_SpriteManager', FALSE);
 	$spriteManager->loadCacheFile();
@@ -435,6 +395,12 @@ switch($TSFE->checkDataSubmission())	{
 }
 
 
+// *******************************
+// Check for shortcut page and redirect
+// *******************************
+$TSFE->checkPageForShortcutRedirect();
+
+
 // ********************************
 // Generate page
 // *******************************
@@ -469,7 +435,7 @@ if ($TSFE->isINTincScript())		{
 // ***************
 // Output content
 // ***************
-$sendTSFEContent = false;
+$sendTSFEContent = FALSE;
 if ($TSFE->isOutputting())	{
 	$TT->push('Print Content','');
 	$TSFE->processOutput();
@@ -486,7 +452,7 @@ if ($TSFE->isOutputting())	{
 				// Special feature: Include libraries
 			foreach ($EXTiS_config as $EXTiS_cPart) {
 				if (isset($EXTiS_cPart['conf']['includeLibs']) && $EXTiS_cPart['conf']['includeLibs']) {
-					$EXTiS_resourceList = t3lib_div::trimExplode(',',$EXTiS_cPart['conf']['includeLibs'], true);
+					$EXTiS_resourceList = t3lib_div::trimExplode(',',$EXTiS_cPart['conf']['includeLibs'], TRUE);
 					$TSFE->includeLibraries($EXTiS_resourceList);
 				}
 			}
@@ -509,7 +475,7 @@ if ($TSFE->isOutputting())	{
 
 		$TT->pull();
 	} else {
-		$sendTSFEContent = true;
+		$sendTSFEContent = TRUE;
 	}
 	$TT->pull();
 }
@@ -524,7 +490,7 @@ $TSFE->storeSessionData();
 // ***********
 // Statistics
 // ***********
-$TYPO3_MISC['microtime_end'] = microtime(true);
+$TYPO3_MISC['microtime_end'] = microtime(TRUE);
 $TSFE->setParseTime();
 if ($TSFE->isOutputting() && (!empty($TSFE->TYPO3_CONF_VARS['FE']['debug']) || !empty($TSFE->config['config']['debug']))) {
 	$TSFE->content .=  LF . '<!-- Parsetime: ' . $TSFE->scriptParseTime . 'ms -->';
@@ -545,16 +511,6 @@ $TSFE->previewInfo();
 
 
 // ******************
-// Publishing static
-// ******************
-if (is_object($BE_USER) && ($BE_USER->adminPanel instanceof tslib_AdminPanel)) {
-	if ($BE_USER->adminPanel->isAdminModuleEnabled('publish') && $BE_USER->adminPanel->getExtPublishList()) {
-		include_once(PATH_tslib.'publish.php');
-	}
-}
-
-
-// ******************
 // Hook for end-of-frontend
 // ******************
 $TSFE->hook_eofe();
@@ -565,6 +521,10 @@ $TSFE->hook_eofe();
 // ********************
 $TT->pull();
 
+// ******************
+// Check memory usage
+// ******************
+t3lib_utility_Monitor::peakMemoryUsage();
 
 // ******************
 // beLoginLinkIPList
@@ -575,7 +535,7 @@ echo $TSFE->beLoginLinkIPList();
 // *************
 // Admin panel
 // *************
-if (is_object($BE_USER) && $BE_USER->isAdminPanelVisible() && $TSFE->beUserLogin) {
+if (is_object($BE_USER) && $BE_USER->isAdminPanelVisible() && $TSFE->isBackendUserLoggedIn()) {
 	$TSFE->content = str_ireplace('</head>',  $BE_USER->adminPanel->getAdminPanelHeaderData() . '</head>', $TSFE->content);
 	$TSFE->content = str_ireplace('</body>',  $BE_USER->displayAdminPanel() . '</body>', $TSFE->content);
 }

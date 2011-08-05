@@ -27,23 +27,9 @@
 /**
  * Contains a class for formmail
  *
- * $Id$
  * Revised for TYPO3 3.6 July/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   69: class t3lib_formmail
- *   95:	 function start($V,$base64=false)
- *  172:	 function addAttachment($file, $filename)
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -100,7 +86,7 @@ class t3lib_formmail {
 	 * @param	boolean		Whether to base64 encode the mail content
 	 * @return	void
 	 */
-	function start($valueList, $base64 = false) {
+	function start($valueList, $base64 = FALSE) {
 
 		$this->mailMessage = t3lib_div::makeInstance('t3lib_mail_Message');
 
@@ -144,7 +130,7 @@ class t3lib_formmail {
 
 			$this->replyToAddress = ($valueList['replyto_email']) ? $valueList['replyto_email'] : $this->fromAddress;
 
-			$this->priority = ($valueList['priority']) ? t3lib_div::intInRange($valueList['priority'], 1, 5) : 3;
+			$this->priority = ($valueList['priority']) ? t3lib_utility_Math::forceIntegerInRange($valueList['priority'], 1, 5) : 3;
 
 				// auto responder
 			$this->autoRespondMessage = (trim($valueList['auto_respond_msg']) && $this->fromAddress)
@@ -229,10 +215,10 @@ class t3lib_formmail {
 					->setTo($this->recipient)
 					->setPriority($this->priority);
 			$replyTo = $this->replyToName ? array($this->replyToAddress => $this->replyToName) : array($this->replyToAddress);
-			$this->mailMessage->addReplyTo($replyTo);
+			$this->mailMessage->setReplyTo($replyTo);
 			$this->mailMessage->getHeaders()->addTextHeader('Organization', $this->organisation);
 			if ($valueList['recipient_copy']) {
-				$this->mailMessage->addCc($this->parseAddresses($valueList['recipient_copy']));
+				$this->mailMessage->setCc($this->parseAddresses($valueList['recipient_copy']));
 			}
 			if ($this->characterSet) {
 				$this->mailMessage->setCharset($this->characterSet);
@@ -264,7 +250,7 @@ class t3lib_formmail {
 		}
 		return $string;
 	}
-	
+
 	/**
 	 * Parses mailbox headers and turns them into an array.
 	 *
@@ -330,7 +316,9 @@ class t3lib_formmail {
 	 */
 	public function __destruct() {
 		foreach ($this->temporaryFiles as $file) {
-			t3lib_div::unlink_tempfile($file);
+			if (t3lib_div::isAllowedAbsPath($file) && t3lib_div::isFirstPartOfStr($file, PATH_site . 'typo3temp/upload_temp_')) {
+				t3lib_div::unlink_tempfile($file);
+			}
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 TYPO3 Tree Team <http://forge.typo3.org/projects/typo3v4-extjstrees>
+*  (c) 2010-2011 Stefan Galinski <stefan.galinski@gmail.com>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -41,7 +41,7 @@ TYPO3.Components.PageTree.TreeEditor = Ext.extend(Ext.tree.TreeEditor, {
 	 *
 	 * @type {Boolean}
 	 */
-	ignoreNoChange: true,
+	ignoreNoChange: false,
 
 	/**
 	 * Edit delay
@@ -74,13 +74,25 @@ TYPO3.Components.PageTree.TreeEditor = Ext.extend(Ext.tree.TreeEditor, {
 
 		complete: {
 			fn: function(node, newValue, oldValue) {
-				this.editNode.ownerTree.commandProvider.saveTitle(node, this.updatedValue, oldValue, this);
+				if (newValue === oldValue) {
+					this.fireEvent('canceledit', this);
+					return false;
+				}
+
+				this.editNode.getOwnerTree().commandProvider.saveTitle(node, this.updatedValue, oldValue, this);
 			}
 		},
 
 		startEdit: {
 			fn: function(element, value) {
 				this.field.selectText();
+			}
+		},
+
+		canceledit: function() {
+			var tree = this.editNode.getOwnerTree();
+			if (tree.currentSelectedNode) {
+				tree.currentSelectedNode.select();
 			}
 		}
 	},

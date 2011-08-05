@@ -1,7 +1,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Steffen Kamper <steffen@typo3.org>
+*  (c) 2010-2011 Steffen Kamper <steffen@typo3.org>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -198,7 +198,7 @@ TYPO3.ModuleMenu.App = {
 
 	showModule: function(mod, params) {
 		params = params || '';
-		this.selecteModule = mod;
+		this.selectedModule = mod;
 
 		params = this.includeId(mod, params);
 		var record = this.getRecordFromName(mod);
@@ -223,7 +223,9 @@ TYPO3.ModuleMenu.App = {
 	},
 
 	loadModuleComponents: function(record, params) {
+		var url;
 		var mod = record.name;
+		var relatedCard;
 		if (record.navigationComponentId) {
 				this.loadNavigationComponent(record.navigationComponentId);
 				TYPO3.Backend.NavigationDummy.hide();
@@ -238,7 +240,22 @@ TYPO3.ModuleMenu.App = {
 				TYPO3.Backend.NavigationContainer.hide();
 				TYPO3.Backend.NavigationDummy.show();
 			}
-			this.openInContentFrame(record.originalLink, params);
+			relatedCard = Ext.getCmp('typo3-card-' + record.name);
+			if (relatedCard) {
+					// Check wether the panel is an iframe or not - if it is try to set the uri
+				if (relatedCard.getXType() == 'iframePanel') {
+						// Handle click on already opened module and evt. force reload
+					if ((Ext.getCmp('typo3-contentContainerWrapper').layout.activeItem.id == 'typo3-card-' + record.name)
+						|| (relatedCard.getUrl() == 'about:blank')) {
+						url = record.originalLink;
+						Ext.getCmp('typo3-card-'+record.name).setUrl(url + (params ? (url.indexOf('?') !== -1 ? '&' : '?') + params : ''));
+					}
+				}
+					// Independed of the xtype activate the module
+				Ext.getCmp('typo3-contentContainerWrapper').layout.setActiveItem('typo3-card-' + record.name);
+			} else {
+				this.openInContentFrame(record.originalLink, params);
+			}
 			this.loadedModule = mod;
 			this.highlightModuleMenuItem(mod);
 
@@ -287,7 +304,7 @@ TYPO3.ModuleMenu.App = {
 
 			// backwards compatibility
 		top.nav = component;
-		
+
 		TYPO3.Backend.NavigationContainer.show();
 		this.loadedNavigationComponentId = navigationComponentId;
 	},
@@ -305,11 +322,25 @@ TYPO3.ModuleMenu.App = {
 	},
 
 	openInContentFrame: function(url, params) {
+		var urlToLoad, relatedCard;
+
 		if (top.nextLoadModuleUrl) {
-			TYPO3.Backend.ContentContainer.setUrl(top.nextLoadModuleUrl);
+			urlToLoad = top.nextLoadModuleUrl;
 			top.nextLoadModuleUrl = '';
 		} else {
-			TYPO3.Backend.ContentContainer.setUrl(url + (params ? (url.indexOf('?') !== -1 ? '&' : '?') + params : ''));
+			urlToLoad = url + (params ? (url.indexOf('?') !== -1 ? '&' : '?') + params : '');
+		}
+			// Make shourtcut to card
+		relatedCard = Ext.getCmp('typo3-contentContainerWrapper').get('typo3-card-' + this.loadedModule);
+			// Decide where to load module, either in card or compatibility card
+		if (relatedCard) {
+			if (relatedCard.getXType() == 'iframePanel') {
+				relatedCard.setUrlIfChanged(urlToLoad);
+			}
+			Ext.getCmp('typo3-contentContainerWrapper').layout.setActiveItem('typo3-card-' + this.loadedModule);
+		} else {
+			TYPO3.Backend.ContentContainer.setUrl(urlToLoad);
+			Ext.getCmp('typo3-contentContainerWrapper').layout.setActiveItem(0);
 		}
 	},
 

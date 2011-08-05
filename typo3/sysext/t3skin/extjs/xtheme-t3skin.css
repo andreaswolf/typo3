@@ -1669,6 +1669,10 @@ td.x-date-mp-sep {
 	height: 16px;
 }
 
+.x-tip.tipIsLinked {
+	cursor: pointer;
+}
+
 .x-menu {
 	border-color:#898989;
 	background-color: #ffffff;
@@ -2268,7 +2272,7 @@ body.x-body-masked .x-window-plain .x-window-mc {
 .no-boxshadow #typo3-navigationContainer-xcollapsed,
 .no-boxshadow #typo3-navigationDummy  {
 	background-image: url("data:image/png;base64,R0lGODlhAgABAIAAAMjIyLOzsyH5BAAAAAAALAAAAAACAAEAAAICRAoAOw==");
-	/* star-hack targets IE6+7 */
+	/* star-hack targets IE7 */
 	*background-image: url("../images/backgrounds/module-menu-right.png");
 	background-position: right;
 	background-repeat: repeat-y;
@@ -2376,3 +2380,12 @@ div.x-grid3-row:hover img.t3-icon-extensions-workspaces {
 	width: 17px
 }
 
+.t3skin-typo3-module-panel-toolbar .x-toolbar{
+	background-color: #585858;
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAABCAYAAAAb4BS0AAAAGElEQVR42gENAPL/AEBAQExAQECzQEBA/xb3BD8CHBN0AAAAAElFTkSuQmCC");
+	background-position: right;
+	background-repeat: repeat-y;
+	border: none;
+	padding: 0;
+	margin: 0;
+}

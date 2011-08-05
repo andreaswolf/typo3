@@ -29,25 +29,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   64: class t3lib_rteapi
- *
- *			  SECTION: Main API functions;
- *   93:	 function isAvailable()
- *  118:	 function drawRTE(&$pObj,$table,$field,$row,$PA,$specConf,$thisConfig,$RTEtypeVal,$RTErelPath,$thePidValue)
- *  151:	 function transformContent($dirRTE,$value,$table,$field,$row,$specConf,$thisConfig,$RTErelPath,$pid)
- *
- *			  SECTION: Helper functions
- *  197:	 function triggerField($fieldName)
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 /**
@@ -76,16 +57,14 @@ class t3lib_rteapi {
 	 **********************************/
 
 	/**
-	 * Returns true if the RTE is available. Here you check if the browser requirements are met.
+	 * Returns TRUE if the RTE is available. Here you check if the browser requirements are met.
 	 * If there are reasons why the RTE cannot be displayed you simply enter them as text in ->errorLog
 	 *
 	 * @return	boolean		TRUE if this RTE object offers an RTE in the current browser environment
 	 */
 	function isAvailable() {
-		global $CLIENT;
-
 		$this->errorLog = array();
-		if (!$CLIENT['FORMSTYLE']) {
+		if (!$GLOBALS['CLIENT']['FORMSTYLE']) {
 			$this->errorLog[] = 'RTE API: Browser didn\'t support styles';
 		}
 
@@ -185,14 +164,6 @@ class t3lib_rteapi {
 		$triggerFieldName = preg_replace('/\[([^]]+)\]$/', '[_TRANSFORM_\1]', $fieldName);
 		return '<input type="hidden" name="' . htmlspecialchars($triggerFieldName) . '" value="RTE" />';
 	}
-}
-
-/**
- * @deprecated since TYPO3 4.4: Use XCLASS t3lib/class.t3lib_rteapi.php instead. Will be removed in TYPO3 4.6.
- */
-if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rte/class.tx_rte_base.php'])) {
-	t3lib_div::deprecationLog('XCLASS "ext/rte/class.tx_rte_base.php" is deprecated since TYPO3 4.4 - use "t3lib/class.t3lib_rteapi.php" instead.');
-	include_once($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['ext/rte/class.tx_rte_base.php']);
 }
 
 if (defined('TYPO3_MODE') && isset($GLOBALS['TYPO3_CONF_VARS'][TYPO3_MODE]['XCLASS']['t3lib/class.t3lib_rteapi.php'])) {

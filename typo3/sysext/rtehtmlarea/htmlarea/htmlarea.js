@@ -30,8 +30,6 @@
 ***************************************************************/
 /*
  * Main script of TYPO3 htmlArea RTE
- *
- * TYPO3 SVN ID: $Id$
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 if (typeof(HTMLArea) == 'undefined') {
@@ -56,8 +54,13 @@ Ext.apply(HTMLArea, {
 	/***************************************************
 	 * LOCALIZATION                                    *
 	 ***************************************************/
-	localize: function (label) {
-		return HTMLArea.I18N.dialogs[label] || HTMLArea.I18N.tooltips[label] || HTMLArea.I18N.msg[label] || '';
+	localize: function (label, plural) {
+		var i = plural || 0;
+		var localized = HTMLArea.I18N.dialogs[label] || HTMLArea.I18N.tooltips[label] || HTMLArea.I18N.msg[label] || '';
+		if (typeof localized === 'object' && typeof localized[i] !== 'undefined') {
+			localized = localized[i]['target'];
+		}
+		return localized;
 	},
 	/***************************************************
 	 * INITIALIZATION                                  *
@@ -526,7 +529,7 @@ Ext.ux.form.HTMLAreaCombo = Ext.extend(Ext.form.ComboBox, {
 				// Invoke the plugin onChange handler
 			this.plugins[this.action](editor, combo, record, index);
 				// In IE, bookmark the updated selection as the editor will be loosing focus
-			if (Ext.isIE) { 
+			if (Ext.isIE) {
 				editor.focus();
 				this.savedRange = editor._createRange(editor._getSelection());
 				this.triggered = true;
@@ -807,7 +810,8 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		this.htmlRenderer = new HTMLArea.DOM.Walker({
 			keepComments: !this.config.htmlRemoveComments,
 			removeTags: this.config.htmlRemoveTags,
-			removeTagsAndContents: this.config.htmlRemoveTagsAndContents
+			removeTagsAndContents: this.config.htmlRemoveTagsAndContents,
+			baseUrl: this.config.baseURL
 		});
 		if (!this.config.showStatusBar) {
 			this.addClass('noStatusBar');
@@ -963,6 +967,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		if (!link0) {
 			link0 = this.document.createElement('link');
 			link0.rel = 'stylesheet';
+			link0.type = 'text/css';
 				// Firefox 3.0.1 does not apply the base URL while Firefox 3.6.8 does so. Do not know in what version this was fixed.
 				// Therefore, for versions before 3.6.8, we prepend the url with the base, if the url is not absolute
 			link0.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^http(s?):\/{2}/.test(this.config.editedContentStyle)) ? this.config.baseURL : '') + this.config.editedContentStyle;
@@ -974,6 +979,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
+				link.type = 'text/css';
 				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.defaultPageStyle)) ? this.config.baseURL : '') + this.config.defaultPageStyle;
 				head.appendChild(link);
 			}
@@ -984,6 +990,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 			if (!link) {
 				link = this.document.createElement('link');
 				link.rel = 'stylesheet';
+				link.type = 'text/css';
 				link.href = ((Ext.isGecko && navigator.productSub < 2010072200 && !/^https?:\/{2}/.test(this.config.pageStyle)) ? this.config.baseURL : '') + this.config.pageStyle;
 				head.appendChild(link);
 			}
@@ -1188,6 +1195,9 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		this.mon(Ext.get(this.document.documentElement), (Ext.isIE || Ext.isWebKit) ? 'keydown' : 'keypress', this.onAnyKey, this);
 		this.mon(Ext.get(this.document.documentElement), 'mouseup', this.onMouse, this);
 		this.mon(Ext.get(this.document.documentElement), 'click', this.onMouse, this);
+		if (Ext.isGecko) {
+			this.mon(Ext.get(this.document.documentElement), 'paste', this.onPaste, this);
+		}
 		this.mon(Ext.get(this.document.documentElement), 'drop', this.onDrop, this);
 		if (Ext.isWebKit) {
 			this.mon(Ext.get(this.document.body), 'dragend', this.onDrop, this);
@@ -1237,11 +1247,25 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		return true;
 	},
 	/*
-	 * Handlers for drag and drop operations
+	 * Handler for paste operations in Gecko
 	 */
-	onDrop: function (event) {
+	onPaste: function (event) {
+			// Make src and href urls absolute
+		if (Ext.isGecko) {
+			HTMLArea.DOM.makeUrlsAbsolute.defer(50, this, [this.getEditor().document.body, this.config.baseURL, this.htmlRenderer]);
+		}
+	},
+	/*
+	 * Handler for drag and drop operations
+	 */
+	onDrop: function (event, target) {
+			// Clean up span elements added by WebKit
 		if (Ext.isWebKit) {
 			this.getEditor().cleanAppleStyleSpans.defer(50, this.getEditor(), [this.getEditor().document.body]);
+		}
+			// Make src url absolute in Firefox
+		if (Ext.isGecko) {
+			HTMLArea.DOM.makeUrlsAbsolute.defer(50, this, [target, this.config.baseURL, this.htmlRenderer]);
 		}
 		this.getToolbar().updateLater.delay(100);
 	},
@@ -1464,13 +1488,13 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 			id: this.editorId + '-statusBarTree',
 			tag: 'span',
 			cls: 'statusBarTree',
-			html: HTMLArea.I18N.msg['Path'] + ': '
+			html: HTMLArea.localize('Path') + ': '
 		}, true).setVisibilityMode(Ext.Element.DISPLAY).setVisible(true);
 		this.statusBarTextMode = Ext.DomHelper.append(this.getEl(), {
 			id: this.editorId + '-statusBarTextMode',
 			tag: 'span',
 			cls: 'statusBarTextMode',
-			html: HTMLArea.I18N.msg['TEXT_MODE']
+			html: HTMLArea.localize('TEXT_MODE')
 		}, true).setVisibilityMode(Ext.Element.DISPLAY).setVisible(false);
 	},
 	/*
@@ -1503,7 +1527,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 			this.clear();
 			var path = Ext.DomHelper.append(this.statusBarTree, {
 				tag: 'span',
-				html: HTMLArea.I18N.msg['Path'] + ': '
+				html: HTMLArea.localize('Path') + ': '
 			},true);
 			Ext.each(ancestors, function (ancestor, index) {
 				if (!ancestor) {
@@ -1533,7 +1557,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 				var element = Ext.DomHelper.insertAfter(path, {
 					tag: 'a',
 					href: '#',
-					'ext:qtitle': HTMLArea.I18N.dialogs['statusBarStyle'],
+					'ext:qtitle': HTMLArea.localize('statusBarStyle'),
 					'ext:qtip': ancestor.style.cssText.split(';').join('<br />'),
 					html: text
 				}, true);
@@ -1581,7 +1605,7 @@ HTMLArea.StatusBar = Ext.extend(Ext.Container, {
 			}
 		}
 			// Update the word count of the status bar
-		this.statusBarWordCount.dom.innerHTML = wordCount ? ( wordCount + ' ' + HTMLArea.I18N.dialogs[(wordCount == 1) ? 'word' : 'words']) : '&nbsp;';
+		this.statusBarWordCount.dom.innerHTML = wordCount ? ( wordCount + ' ' + HTMLArea.localize((wordCount == 1) ? 'word' : 'words')) : '&nbsp;';
 	},
 	/*
 	 * Adapt status bar to current editor mode
@@ -2073,7 +2097,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 						id: this.editorId + '-iframe',
 						tag: 'iframe',
 						cls: 'editorIframe',
-						src: (Ext.isGecko || Ext.isChrome) ? 'javascript:void(0);' : HTMLArea.editorUrl + 'popups/blank.html'
+						src: (Ext.isGecko || Ext.isWebKit) ? 'javascript:void(0);' : HTMLArea.editorUrl + 'popups/blank.html'
 					},
 					isNested: this.isNested,
 					nestedParentElements: this.nestedParentElements,
@@ -2174,7 +2198,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 					this.appendToLog('HTMLArea.Editor', 'setMode', 'The HTML document is not well-formed.', 'warn');
 					TYPO3.Dialog.ErrorDialog({
 						title: 'htmlArea RTE',
-						msg: HTMLArea.I18N.msg['HTML-document-not-well-formed']
+						msg: HTMLArea.localize('HTML-document-not-well-formed')
 					});
 					break;
 				}
@@ -2925,7 +2949,7 @@ HTMLArea.getHTML = function(root, outputRoot, editor){
 		editor.appendToLog('HTMLArea', 'getHTML', 'The HTML document is not well-formed.', 'warn');
 		TYPO3.Dialog.ErrorDialog({
 			title: 'htmlArea RTE',
-			msg: HTMLArea.I18N.msg['HTML-document-not-well-formed']
+			msg: HTMLArea.localize('HTML-document-not-well-formed')
 		});
 		return editor.document.body.innerHTML;
 	}
@@ -3073,6 +3097,75 @@ HTMLArea.DOM = function () {
 					}
 				}
 			}
+		},
+		/*
+		 * Make url's absolute in the DOM tree under the root node
+		 *
+		 * @param	object		root: the root node
+		 * @param	string		baseUrl: base url to use
+		 * @param	string		walker: a HLMLArea.DOM.Walker object
+		 * @return	void
+		 */
+		makeUrlsAbsolute: function (node, baseUrl, walker) {
+			walker.walk(node, true, 'HTMLArea.DOM.makeImageSourceAbsolute(node, args[0]) || HTMLArea.DOM.makeLinkHrefAbsolute(node, args[0])', 'Ext.emptyFn', [baseUrl]);
+		},
+		/*
+		 * Make the src attribute of an image node absolute
+		 *
+		 * @param	object		node: the image node
+		 * @param	string		baseUrl: base url to use
+		 * @return	void
+		 */
+		makeImageSourceAbsolute: function (node, baseUrl) {
+			if (/^img$/i.test(node.nodeName)) {
+				var src = node.getAttribute('src');
+				if (src) {
+					node.setAttribute('src', HTMLArea.DOM.addBaseUrl(src, baseUrl));
+				}
+				return true;
+			}
+			return false;
+		},
+		/*
+		 * Make the href attribute of an a node absolute
+		 *
+		 * @param	object		node: the image node
+		 * @param	string		baseUrl: base url to use
+		 * @return	void
+		 */
+		makeLinkHrefAbsolute: function (node, baseUrl) {
+			if (/^a$/i.test(node.nodeName)) {
+				var href = node.getAttribute('href');
+				if (href) {
+					node.setAttribute('href', HTMLArea.DOM.addBaseUrl(href, baseUrl));
+				}
+				return true;
+			}
+			return false;
+		},
+		/*
+		 * Add base url
+		 *
+		 * @param	string		url: value of a href or src attribute
+		 * @param	string		baseUrl: base url to add
+		 * @return	string		absolute url
+		 */
+		addBaseUrl: function (url, baseUrl) {
+			var absoluteUrl = url;
+			var base = baseUrl;
+			while (absoluteUrl.match(/^\.\.\/(.*)/)) {
+					// Remove leading ../ from url
+				absoluteUrl = RegExp.$1;
+				base.match(/(.*\:\/\/.*\/)[^\/]+\/$/);
+					// Remove lowest directory level from base
+				base = RegExp.$1;
+				absoluteUrl = base + absoluteUrl;
+			}
+				// If the url is still not absolute...
+			if (!/^.*\:\/\//.test(absoluteUrl)) {
+				absoluteUrl = baseUrl + absoluteUrl;
+			}
+			return absoluteUrl;
 		}
 	};
 }();
@@ -3087,7 +3180,8 @@ HTMLArea.DOM.Walker = function (config) {
 		removeTagsAndContents: /none/i,
 		keepTags: /.*/i,
 		removeAttributes: /none/i,
-		removeTrailingBR: true
+		removeTrailingBR: true,
+		baseUrl: ''
 	};
 	Ext.apply(this, config, configDefaults);
 };
@@ -3217,9 +3311,14 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 				} else if (attributeName === 'value' && /^li$/i.test(node.nodeName) && attributeValue == 0) {
 					continue;
 				}
-				// Ignore special values reported by Mozilla
-			} else if (Ext.isGecko && /(_moz|^$)/.test(attributeValue)) {
-				continue;
+			} else if (Ext.isGecko) {
+					// Ignore special values reported by Mozilla
+				if (/(_moz|^$)/.test(attributeValue)) {
+					continue;
+					// Pasted internal url's are made relative by Mozilla: https://bugzilla.mozilla.org/show_bug.cgi?id=613517
+				} else if (attributeName === 'href' || attributeName === 'src') {
+					attributeValue = HTMLArea.DOM.addBaseUrl(attributeValue, this.baseUrl);
+				}
 			}
 				// Ignore id attributes generated by ExtJS
 			if (attributeName === 'id' && /^ext-gen/.test(attributeValue)) {
@@ -3417,7 +3516,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 			}
 		} else {
 			if (Ext.isIE) {
-				try { 
+				try {
 					var rules = this.editor.document.styleSheets[0].rules;
 					var imports = this.editor.document.styleSheets[0].imports;
 					if ((!rules || !rules.length) && (!imports || !imports.length)) {
@@ -3429,7 +3528,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 					this.error = e;
 				}
 			} else {
-				try { 
+				try {
 					this.editor.document.styleSheets && this.editor.document.styleSheets[0] && this.editor.document.styleSheets[0].rules;
 				} catch(e) {
 					this.cssLoaded = false;
@@ -3440,7 +3539,7 @@ HTMLArea.CSS.Parser = Ext.extend(Ext.util.Observable, {
 		if (this.cssLoaded) {
 			if (this.editor.document.styleSheets.length) {
 				Ext.each(this.editor.document.styleSheets, function (styleSheet) {
-					try { 
+					try {
 						if (Ext.isIE) {
 							if (styleSheet.imports) {
 								this.parseIeRules(styleSheet.imports);
@@ -3999,7 +4098,7 @@ HTMLArea.Plugin = function (editor, pluginName) {
 /**
  ***********************************************
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
- *********************************************** 
+ ***********************************************
  * Extends class HTMLArea.Plugin
  *
  * Defined for backward compatibility only
@@ -4032,7 +4131,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 		/**
 		 ***********************************************
 		 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
-		 *********************************************** 
+		 ***********************************************
 		 * Extends class HTMLArea[pluginName]
 		 *
 		 * Defined for backward compatibility only
@@ -4060,7 +4159,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	/**
 	 ***********************************************
 	 * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.6 *
-	 *********************************************** 
+	 ***********************************************
 	 * Invove the base class constructor
 	 *
 	 * Defined for backward compatibility only
@@ -4345,7 +4444,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	 * @return	boolean
 	 */
 	onMode: function(mode) {
-		if (mode === "textmode" && this.dialog && HTMLArea.Dialog[this.name] == this.dialog && !(this.dialog.buttonId && this.editorConfiguration.buttons[this.dialog.buttonId] && this.editorConfiguration.buttons[this.dialog.buttonId].textMode)) {
+		if (mode === "textmode" && this.dialog && !(this.dialog.buttonId && this.editorConfiguration.buttons[this.dialog.buttonId] && this.editorConfiguration.buttons[this.dialog.buttonId].textMode)) {
 			this.dialog.close();
 		}
 	},
@@ -4364,8 +4463,15 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	 *
 	 * @return	string		the localization of the label
 	 */
-	localize: function (label) {
-		return this.I18N[label] || HTMLArea.localize(label);
+	localize: function (label, plural) {
+		var i = plural || 0;
+		var localized = this.I18N[label];
+		if (typeof localized === 'object' && typeof localized[i] !== 'undefined') {
+			localized = localized[i]['target'];
+		} else {
+			localized = HTMLArea.localize(label, plural);
+		}
+		return localized;
 	},
 	/**
 	 * Get localized label wrapped with contextual help markup when available
@@ -4379,9 +4485,9 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	getHelpTip: function (fieldName, label, pluginName) {
 		if (Ext.isDefined(TYPO3.ContextHelp)) {
 			var pluginName = Ext.isDefined(pluginName) ? pluginName : this.name;
-			return '<span class="t3-help-link" href="#" data-table="xEXT_rtehtmlarea_' + pluginName + '" data-field="' + fieldName + '"><abbr class="t3-help-teaser">' + this.localize(label) + '</abbr></span>';
+			return '<span class="t3-help-link" href="#" data-table="xEXT_rtehtmlarea_' + pluginName + '" data-field="' + fieldName + '"><abbr class="t3-help-teaser">' + (this.localize(label) || label) + '</abbr></span>';
 		} else {
-			return this.localize(label);
+			return this.localize(label) || label;
 		}
 	},
 	/**
@@ -4602,7 +4708,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	 *
 	 * @param	string		button: the text of the button
 	 * @param	function	handler: button handler
-	 * 
+	 *
 	 * @return	object		the button configuration object
 	 */
 	buildButtonConfig: function (button, handler) {

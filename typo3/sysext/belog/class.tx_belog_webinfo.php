@@ -29,24 +29,6 @@
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   65: class logFunctions_ext extends t3lib_BEDisplayLog
- *   72:     function initArray()
- *
- *
- *   97: class tx_belog_webinfo extends t3lib_extobjbase
- *  105:     function modMenu()
- *  136:     function localLang()
- *  147:     function main()
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 
@@ -65,14 +47,13 @@ class logFunctions_ext extends t3lib_BEDisplayLog {
 	 * @return	array
 	 */
 	function initArray()	{
-		global $LANG;
-		$codeArr=Array();
-		$codeArr[$i][]=$LANG->getLL('chLog_l_time');
-		$codeArr[$i][]=$LANG->getLL('chLog_l_user');
-		$codeArr[$i][]=$LANG->getLL('chLog_l_error');
-		$codeArr[$i][]=$LANG->getLL('chLog_l_action');
-		$codeArr[$i][]=$LANG->getLL('chLog_l_table');
-		$codeArr[$i][]=$LANG->getLL('chLog_l_details');
+		$codeArr = array();
+		$codeArr[0][] = $GLOBALS['LANG']->getLL('chLog_l_time');
+		$codeArr[0][] = $GLOBALS['LANG']->getLL('chLog_l_user');
+		$codeArr[0][] = $GLOBALS['LANG']->getLL('chLog_l_error');
+		$codeArr[0][] = $GLOBALS['LANG']->getLL('chLog_l_action');
+		$codeArr[0][] = $GLOBALS['LANG']->getLL('chLog_l_table');
+		$codeArr[0][] = $GLOBALS['LANG']->getLL('chLog_l_details');
 		return $codeArr;
 	}
 }
@@ -96,27 +77,26 @@ class tx_belog_webinfo extends t3lib_extobjbase {
 	 * @return	array		Menu items
 	 */
 	function modMenu()	{
-		global $LANG;
 
 		return array(
 			'log_users' => array(
-				0 => $LANG->getLL('chLog_users_0'),
-				'-1' => $LANG->getLL('chLog_users_-1')
+				0 => $GLOBALS['LANG']->getLL('chLog_users_0'),
+				'-1' => $GLOBALS['LANG']->getLL('chLog_users_-1')
 			),
 			'log_time' => array(
-				0 => $LANG->getLL('chLog_time_0'),
-				1 => $LANG->getLL('chLog_time_1'),
-				2 => $LANG->getLL('chLog_time_2'),
-				10 => $LANG->getLL('chLog_time_10'),
-				11 => $LANG->getLL('chLog_time_11'),
-				12 => $LANG->getLL('chLog_time_12'),
-				20 => $LANG->getLL('chLog_time_20')
+				0 => $GLOBALS['LANG']->getLL('chLog_time_0'),
+				1 => $GLOBALS['LANG']->getLL('chLog_time_1'),
+				2 => $GLOBALS['LANG']->getLL('chLog_time_2'),
+				10 => $GLOBALS['LANG']->getLL('chLog_time_10'),
+				11 => $GLOBALS['LANG']->getLL('chLog_time_11'),
+				12 => $GLOBALS['LANG']->getLL('chLog_time_12'),
+				20 => $GLOBALS['LANG']->getLL('chLog_time_20')
 			),
 			'depth' => array(
-				0 => $LANG->getLL('depth_0'),
-				1 => $LANG->getLL('depth_1'),
-				2 => $LANG->getLL('depth_2'),
-				3 => $LANG->getLL('depth_3')
+				0 => $GLOBALS['LANG']->getLL('depth_0'),
+				1 => $GLOBALS['LANG']->getLL('depth_1'),
+				2 => $GLOBALS['LANG']->getLL('depth_2'),
+				3 => $GLOBALS['LANG']->getLL('depth_3')
 			)
 		);
 	}
@@ -138,18 +118,40 @@ class tx_belog_webinfo extends t3lib_extobjbase {
 	 * @return	string		HTML output
 	 */
 	function main()	{
-		global $SOBE,$LANG;
 
 		$this->localLang();
 
-		$lF = t3lib_div::makeInstance('logFunctions_ext');
+		$displayLogInstance = t3lib_div::makeInstance('logFunctions_ext');
 
 		$theOutput='';
 		$menu='';
-		$menu.=  '&nbsp;'.$LANG->getLL('chLog_menuUsers').': '.t3lib_BEfunc::getFuncMenu($this->pObj->id,'SET[log_users]',$this->pObj->MOD_SETTINGS['log_users'],$this->pObj->MOD_MENU['log_users']);
-		$menu.=  '&nbsp;'.$LANG->getLL('chLog_menuDepth').': '.t3lib_BEfunc::getFuncMenu($this->pObj->id,'SET[depth]',$this->pObj->MOD_SETTINGS['depth'],$this->pObj->MOD_MENU['depth']);
-		$menu.=  '&nbsp;'.$LANG->getLL('chLog_menuTime').': '.t3lib_BEfunc::getFuncMenu($this->pObj->id,'SET[log_time]',$this->pObj->MOD_SETTINGS['log_time'],$this->pObj->MOD_MENU['log_time']);
-		$theOutput.=$this->pObj->doc->section($LANG->getLL('chLog_title'),'<span class="nobr">'.$menu.'</span>',0,1);
+		$menu .= '&nbsp;' . $GLOBALS['LANG']->getLL('chLog_menuUsers') . ': ' .
+			t3lib_BEfunc::getFuncMenu(
+				$this->pObj->id,
+				'SET[log_users]',
+				$this->pObj->MOD_SETTINGS['log_users'],
+				$this->pObj->MOD_MENU['log_users']
+			);
+		$menu .= '&nbsp;' . $GLOBALS['LANG']->getLL('chLog_menuDepth') . ': ' .
+			t3lib_BEfunc::getFuncMenu(
+				$this->pObj->id,
+				'SET[depth]',
+				$this->pObj->MOD_SETTINGS['depth'],
+				$this->pObj->MOD_MENU['depth']
+			);
+		$menu .= '&nbsp;' . $GLOBALS['LANG']->getLL('chLog_menuTime') . ': ' .
+			t3lib_BEfunc::getFuncMenu(
+				$this->pObj->id,
+				'SET[log_time]',
+				$this->pObj->MOD_SETTINGS['log_time'],
+				$this->pObj->MOD_MENU['log_time']
+			);
+		$theOutput .= $this->pObj->doc->section(
+			$GLOBALS['LANG']->getLL('chLog_title'),
+			'<span class="nobr">' . $menu . '</span>',
+			0,
+			1
+		);
 
 			// Build query
 		$where_part='';
@@ -158,7 +160,7 @@ class tx_belog_webinfo extends t3lib_extobjbase {
 		$tree = t3lib_div::makeInstance('t3lib_pageTree');
 		$tree->init('AND '.$this->pObj->perms_clause);
 		$tree->makeHTML=0;
-		$tree->fieldArray = Array('uid');
+		$tree->fieldArray = array('uid');
 		if ($this->pObj->MOD_SETTINGS['depth'])	{
 			$tree->getTree($this->pObj->id, $this->pObj->MOD_SETTINGS['depth'], '');
 		}
@@ -226,7 +228,7 @@ class tx_belog_webinfo extends t3lib_extobjbase {
 		} else {
 			$where_part.=' AND userid='.$GLOBALS['BE_USER']->user['uid'];	// Self user
 		}
-		$lF->be_user_Array = &$this->pObj->be_user_Array;
+		$displayLogInstance->be_user_Array = &$this->pObj->be_user_Array;
 
 		if ($GLOBALS['BE_USER']->workspace!==0)	{
 			$where_part.=' AND workspace='.intval($GLOBALS['BE_USER']->workspace);
@@ -236,8 +238,9 @@ class tx_belog_webinfo extends t3lib_extobjbase {
 			// Select 100 recent log entries:
 		$log = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'sys_log', '1=1'.$where_part, '', 'uid DESC', 100);
 
-		$codeArr = $lF->initArray();
+		$codeArr = $displayLogInstance->initArray();
 		$oldHeader = '';
+		$i = 0;
 		while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($log))	{
 			$header = $this->pObj->doc->formatTime($row['tstamp'],10);
 			if (!$oldHeader)	$oldHeader = $header;
@@ -245,18 +248,18 @@ class tx_belog_webinfo extends t3lib_extobjbase {
 			if ($header!=$oldHeader)	{
 				$theOutput.=$this->pObj->doc->spacer(10);
 				$theOutput.=$this->pObj->doc->section($oldHeader,$this->pObj->doc->table($codeArr));
-				$codeArr=$lF->initArray();
+				$codeArr = $displayLogInstance->initArray();
 				$oldHeader=$header;
-				$lF->reset();
+				$displayLogInstance->reset();
 			}
 
 			$i++;
-			$codeArr[$i][]=$lF->getTimeLabel($row['tstamp']);
-			$codeArr[$i][]=$lF->getUserLabel($row['userid'],$row['workspace']);
-			$codeArr[$i][]=$row['error'] ? $lF->getErrorFormatting($lF->errorSign[$row['error']],$row['error']) : '';
-			$codeArr[$i][]=$lF->getActionLabel($row['type'].'_'.$row['action']);
-			$codeArr[$i][]=$row['tablename'];
-			$codeArr[$i][]=$lF->formatDetailsForList($row);
+			$codeArr[$i][] = $displayLogInstance->getTimeLabel($row['tstamp']);
+			$codeArr[$i][] = $displayLogInstance->getUserLabel($row['userid'], $row['workspace']);
+			$codeArr[$i][] = $row['error'] ? $displayLogInstance->getErrorIcon($row['error']) : '';
+			$codeArr[$i][] = $displayLogInstance->getActionLabel($row['type'] . '_' . $row['action']);
+			$codeArr[$i][] = $row['tablename'];
+			$codeArr[$i][] = $displayLogInstance->formatDetailsForList($row);
 		}
 		$theOutput.=$this->pObj->doc->spacer(10);
 		$theOutput.=$this->pObj->doc->section($header,$this->pObj->doc->table($codeArr));

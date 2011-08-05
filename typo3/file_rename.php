@@ -27,24 +27,9 @@
 /**
  * Web>File: Renaming files and folders
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   74: class SC_file_rename
- *   96:     function init()
- *  149:     function main()
- *  192:     function printContent()
- *
- * TOTAL FUNCTIONS: 3
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -103,16 +88,13 @@ class SC_file_rename {
 	 * @return	void
 	 */
 	function init()	{
-		//TODO remove global
-		global $LANG,$BACK_PATH,$TYPO3_CONF_VARS;
-
 			// Initialize GPvars:
 		$this->target = t3lib_div::_GP('target');
 		$this->returnUrl = t3lib_div::sanitizeLocalUrl(t3lib_div::_GP('returnUrl'));
 
 			// Init basic-file-functions object:
 		$this->basicff = t3lib_div::makeInstance('t3lib_basicFileFunctions');
-		$this->basicff->init($GLOBALS['FILEMOUNTS'],$TYPO3_CONF_VARS['BE']['fileExtensions']);
+		$this->basicff->init($GLOBALS['FILEMOUNTS'],$GLOBALS['TYPO3_CONF_VARS']['BE']['fileExtensions']);
 
 			// Cleaning and checking target
 		if (file_exists($this->target))	{
@@ -124,14 +106,19 @@ class SC_file_rename {
 		if (!$this->target || !$key) {
 			$title = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_file_list.xml:paramError', TRUE);
 			$message = $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_mod_file_list.xml:targetNoDir', TRUE);
-			throw new RuntimeException($title . ': ' . $message);
+			throw new RuntimeException($title . ': ' . $message, 1294586844);
 		}
 
 			// Finding the icon
-		switch($GLOBALS['FILEMOUNTS'][$key]['type'])	{
-			case 'user':	$this->icon = 'gfx/i/_icon_ftp_user.gif';	break;
-			case 'group':	$this->icon = 'gfx/i/_icon_ftp_group.gif';	break;
-			default:		$this->icon = 'gfx/i/_icon_ftp.gif';	break;
+		switch($GLOBALS['FILEMOUNTS'][$key]['type']) {
+			case 'user':
+				$this->icon = 'gfx/i/_icon_ftp_user.gif';
+				break;
+			case 'group':
+				$this->icon = 'gfx/i/_icon_ftp_group.gif';
+				break;
+			default:
+				$this->icon = 'gfx/i/_icon_ftp.gif';
 		}
 
 		$this->icon = '<img'.t3lib_iconWorks::skinImg($this->backPath,$this->icon,'width="18" height="16"').' title="" alt="" />';
@@ -145,7 +132,7 @@ class SC_file_rename {
 			// Setting template object
 		$this->doc = t3lib_div::makeInstance('template');
 		$this->doc->setModuleTemplate('templates/file_rename.html');
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->JScode=$this->doc->wrapScriptTags('
 			function backToList()	{	//
 				top.goToModule("file_list");
@@ -159,14 +146,12 @@ class SC_file_rename {
 	 * @return	void
 	 */
 	function main()	{
-		//TODO remove global, change $LANG into $GLOBALS['LANG'], change locallang*.php to locallang*.xml
-
-		global $LANG;
+		//TODO: change locallang*.php to locallang*.xml
 
 			// Make page header:
-		$this->content = $this->doc->startPage($LANG->sL('LLL:EXT:lang/locallang_core.php:file_rename.php.pagetitle'));
+		$this->content = $this->doc->startPage($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_rename.php.pagetitle'));
 
-		$pageContent = $this->doc->header($LANG->sL('LLL:EXT:lang/locallang_core.php:file_rename.php.pagetitle'));
+		$pageContent = $this->doc->header($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_rename.php.pagetitle'));
 		$pageContent .= $this->doc->spacer(5);
 		$pageContent .= $this->doc->divider(5);
 
@@ -184,8 +169,8 @@ class SC_file_rename {
 			// Making submit button:
 		$code.='
 			<div id="c-submit">
-				<input type="submit" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:file_rename.php.submit',1).'" />
-				<input type="submit" value="'.$LANG->sL('LLL:EXT:lang/locallang_core.php:labels.cancel',1).'" onclick="backToList(); return false;" />
+				<input type="submit" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:file_rename.php.submit', 1) . '" />
+				<input type="submit" value="' . $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.php:labels.cancel', 1) . '" onclick="backToList(); return false;" />
 				<input type="hidden" name="redirect" value="'.htmlspecialchars($this->returnUrl).'" />
 			</div>
 		';

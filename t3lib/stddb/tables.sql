@@ -1,6 +1,4 @@
 #
-# TYPO3 SVN ID: $Id$
-#
 
 #
 # Table structure for table 'be_groups'
@@ -48,7 +46,8 @@ CREATE TABLE be_sessions (
   ses_tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   ses_data longtext,
   ses_backuserid int(11) NOT NULL default '0',
-  PRIMARY KEY (ses_id,ses_name)
+  PRIMARY KEY (ses_id,ses_name),
+  KEY ses_tstamp (ses_tstamp)
 );
 
 #
@@ -59,7 +58,7 @@ CREATE TABLE be_users (
   pid int(11) unsigned DEFAULT '0' NOT NULL,
   tstamp int(11) unsigned DEFAULT '0' NOT NULL,
   username varchar(50) DEFAULT '' NOT NULL,
-  password varchar(40) DEFAULT '' NOT NULL,
+  password varchar(60) DEFAULT '' NOT NULL,
   admin tinyint(4) unsigned DEFAULT '0' NOT NULL,
   usergroup varchar(255) DEFAULT '' NOT NULL,
   disable tinyint(1) unsigned DEFAULT '0' NOT NULL,
@@ -74,7 +73,7 @@ CREATE TABLE be_users (
   realName varchar(80) DEFAULT '' NOT NULL,
   userMods varchar(255) DEFAULT '' NOT NULL,
   allowed_languages varchar(255) DEFAULT '' NOT NULL,
-  uc text,
+  uc mediumtext,
   file_mountpoints varchar(255) DEFAULT '' NOT NULL,
   fileoper_perms tinyint(4) DEFAULT '0' NOT NULL,
   workspace_perms tinyint(3) DEFAULT '1' NOT NULL,
@@ -91,47 +90,6 @@ CREATE TABLE be_users (
   KEY parent (pid),
   KEY username (username)
 );
-
-#
-# Table structure for table 'cache_hash'
-#
-CREATE TABLE cache_hash (
-  id int(11) unsigned NOT NULL auto_increment,
-  hash varchar(32) DEFAULT '' NOT NULL,
-  content mediumblob,
-  tstamp int(11) unsigned DEFAULT '0' NOT NULL,
-  ident varchar(32) DEFAULT '' NOT NULL,
-  PRIMARY KEY (id),
-  KEY hash (hash)
-) ENGINE=InnoDB;
-
-
-#
-# Table structure for table 'cachingframework_cache_hash'
-#
-CREATE TABLE cachingframework_cache_hash (
-  id int(11) unsigned NOT NULL auto_increment,
-  identifier varchar(128) DEFAULT '' NOT NULL,
-  crdate int(11) unsigned DEFAULT '0' NOT NULL,
-  content mediumblob,
-  lifetime int(11) unsigned DEFAULT '0' NOT NULL,
-  PRIMARY KEY (id),
-  KEY cache_id (identifier)
-) ENGINE=InnoDB;
-
-
-#
-# Table structure for table 'cachingframework_cache_hash_tags'
-#
-CREATE TABLE cachingframework_cache_hash_tags (
-  id int(11) unsigned NOT NULL auto_increment,
-  identifier varchar(128) DEFAULT '' NOT NULL,
-  tag varchar(128) DEFAULT '' NOT NULL,
-  PRIMARY KEY (id),
-  KEY cache_id (identifier),
-  KEY cache_tag (tag)
-) ENGINE=InnoDB;
-
 
 #
 # Table structure for table 'cache_imagesizes'
@@ -269,18 +227,6 @@ CREATE TABLE sys_news (
 
   PRIMARY KEY (uid),
   KEY parent (pid)
-);
-
-
-#
-# Table structure for table 'sys_preview'
-#
-CREATE TABLE sys_preview (
-  keyword varchar(32) DEFAULT '' NOT NULL,
-  tstamp int(11) DEFAULT '0' NOT NULL,
-  endtime int(11) DEFAULT '0' NOT NULL,
-  config text,
-  PRIMARY KEY (keyword)
 );
 
 

@@ -27,25 +27,9 @@
 /**
  * Web>File: File listing
  *
- * $Id$
  * Revised for TYPO3 3.6 2/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   77: class SC_file_list
- *  103:     function init()
- *  130:     function menuConfig()
- *  151:     function main()
- *  325:     function printContent()
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -159,11 +143,9 @@ class SC_file_list {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG,$BACK_PATH,$TYPO3_CONF_VARS,$FILEMOUNTS;
-
 			// Initialize the template object
 		$this->doc = t3lib_div::makeInstance('template');
-		$this->doc->backPath = $BACK_PATH;
+		$this->doc->backPath = $GLOBALS['BACK_PATH'];
 		$this->doc->setModuleTemplate('templates/file_list.html');
 		$this->doc->getPageRenderer()->loadPrototype();
 
@@ -236,7 +218,7 @@ class SC_file_list {
 			}
 				// Create filelisting object
 			$this->filelist = t3lib_div::makeInstance('fileList');
-			$this->filelist->backPath = $BACK_PATH;
+			$this->filelist->backPath = $GLOBALS['BACK_PATH'];
 
 				// Apply predefined values for hidden checkboxes
 				// Set predefined value for DisplayBigControlPanel:
@@ -262,7 +244,7 @@ class SC_file_list {
 
 				// if user never opened the list module, set the value for displayThumbs
 			if (!isset($this->MOD_SETTINGS['displayThumbs'])) {
-				$this->MOD_SETTINGS['displayThumbs'] = $BE_USER->uc['thumbnailsByDefault'];
+				$this->MOD_SETTINGS['displayThumbs'] = $GLOBALS['BE_USER']->uc['thumbnailsByDefault'];
 			}
 			$this->filelist->thumbs = $this->MOD_SETTINGS['displayThumbs'];
 
@@ -290,7 +272,7 @@ class SC_file_list {
 
 						// Init file processing object for deleting and pass the cmd array.
 					$fileProcessor = t3lib_div::makeInstance('t3lib_extFileFunctions');
-					$fileProcessor->init($FILEMOUNTS, $TYPO3_CONF_VARS['BE']['fileExtensions']);
+					$fileProcessor->init($GLOBALS['FILEMOUNTS'], $GLOBALS['TYPO3_CONF_VARS']['BE']['fileExtensions']);
 					$fileProcessor->init_actionPerms($GLOBALS['BE_USER']->getFileoperationPermissions());
 					$fileProcessor->dontCheckForUnique = $this->overwriteExistingFiles ? 1 : 0;
 					$fileProcessor->start($FILE);
@@ -307,7 +289,7 @@ class SC_file_list {
 			}
 
 				// Start up filelisting object, include settings.
-			$this->pointer = t3lib_div::intInRange($this->pointer,0,100000);
+			$this->pointer = t3lib_utility_Math::forceIntegerInRange($this->pointer,0,100000);
 			$this->filelist->start($this->id, $this->pointer, $this->MOD_SETTINGS['sort'], $this->MOD_SETTINGS['reverse'], $this->MOD_SETTINGS['clipBoard'], $this->MOD_SETTINGS['bigControlPanel']);
 
 				// Generate the list
@@ -414,14 +396,14 @@ class SC_file_list {
 			$this->content = $this->doc->moduleBody(array(), $docHeaderButtons, array_merge($markerArray, $otherMarkers));
 				// Renders the module page
 			$this->content = $this->doc->render(
-				$LANG->getLL('files'),
+				$GLOBALS['LANG']->getLL('files'),
 				$this->content
 			);
 
 		} else {
 				// Create output - no access (no warning though)
 			$this->content = $this->doc->render(
-				$LANG->getLL('files'),
+				$GLOBALS['LANG']->getLL('files'),
 				''
 			);
 		}
@@ -443,9 +425,7 @@ class SC_file_list {
 	 *
 	 * @return	array	all available buttons as an assoc. array
 	 */
-	function getButtons()	{
-		global $TCA, $LANG, $BACK_PATH, $BE_USER;
-
+	function getButtons() {
 		$buttons = array(
 			'csh' => '',
 			'shortcut' => '',
@@ -454,7 +434,7 @@ class SC_file_list {
 		);
 
 			// Add shortcut
-		if ($BE_USER->mayMakeShortcut())	{
+		if ($GLOBALS['BE_USER']->mayMakeShortcut()) {
 			$buttons['shortcut'] = $this->doc->makeShortcutIcon('pointer,id,target,table',implode(',',array_keys($this->MOD_MENU)),$this->MCONF['name']);
 		}
 
@@ -462,11 +442,15 @@ class SC_file_list {
 		$buttons['csh'] = t3lib_BEfunc::cshItem('xMOD_csh_corebe', 'filelist_module', $GLOBALS['BACK_PATH'], '', TRUE);
 
 			// upload button
-		$buttons['upload'] = '<a href="' . $BACK_PATH . 'file_upload.php?target=' . rawurlencode($this->id) . '&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" id="button-upload" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.upload',1)).'">' .
+		$buttons['upload'] = '<a href="' . $GLOBALS['BACK_PATH'] . 'file_upload.php?target=' . rawurlencode($this->id) .
+			'&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" id="button-upload" title="' .
+			$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.upload', 1)) . '">' .
 			t3lib_iconWorks::getSpriteIcon('actions-edit-upload') .
 		'</a>';
 
-		$buttons['new'] = '<a href="' . $BACK_PATH . 'file_newfolder.php?target=' . rawurlencode($this->id) . '&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" title="'.$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.new',1)).'">' .
+		$buttons['new'] = '<a href="' . $GLOBALS['BACK_PATH'] . 'file_newfolder.php?target=' . rawurlencode($this->id) .
+			'&amp;returnUrl=' . rawurlencode($this->filelist->listURL()) . '" title="' .
+			$GLOBALS['LANG']->makeEntities($GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_core.xml:cm.new', 1)) . '">' .
 			t3lib_iconWorks::getSpriteIcon('actions-document-new') .
 		'</a>';
 

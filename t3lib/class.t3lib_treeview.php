@@ -27,65 +27,10 @@
 /**
  * Contains base class for creating a browsable array/page/folder tree in HTML
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
  * @coauthor	René Fritz <r.fritz@colorcube.de>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  115: class t3lib_treeView
- *  270:	 function init($clause='', $orderByFields='')
- *  301:	 function setTreeName($treeName='')
- *  315:	 function addField($field,$noCheck=0)
- *  329:	 function reset()
- *
- *			  SECTION: output
- *  349:	 function getBrowsableTree()
- *  412:	 function printTree($treeArr='')
- *
- *			  SECTION: rendering parts
- *  467:	 function PMicon($row,$a,$c,$nextCount,$exp)
- *  489:	 function PM_ATagWrap($icon,$cmd,$bMark='')
- *  511:	 function wrapTitle($title,$row,$bank=0)
- *  524:	 function wrapIcon($icon,$row)
- *  535:	 function addTagAttributes($icon,$attr)
- *  547:	 function wrapStop($str,$row)
- *
- *			  SECTION: tree handling
- *  575:	 function expandNext($id)
- *  585:	 function initializePositionSaving()
- *  612:	 function savePosition()
- *
- *			  SECTION: Functions that might be overwritten by extended classes
- *  641:	 function getRootIcon($rec)
- *  654:	 function getIcon($row)
- *  673:	 function getTitleStr($row,$titleLen=30)
- *  685:	 function getTitleAttrib($row)
- *  695:	 function getId($row)
- *  705:	 function getJumpToParam($row)
- *
- *			  SECTION: tree data buidling
- *  739:	 function getTree($uid, $depth=999, $depthData='',$blankLineCode='',$subCSSclass='')
- *
- *			  SECTION: Data handling
- *  839:	 function getCount($uid)
- *  865:	 function getRootRecord($uid)
- *  878:	 function getRecord($uid)
- *  898:	 function getDataInit($parentId,$subCSSclass='')
- *  929:	 function getDataCount(&$res)
- *  947:	 function getDataNext(&$res,$subCSSclass='')
- *  986:	 function getDataFree(&$res)
- * 1006:	 function setDataFromArray(&$dataArr,$traverse=FALSE,$pid=0)
- * 1035:	 function setDataFromTreeArray(&$treeArr, &$treeLookupArr)
- *
- * TOTAL FUNCTIONS: 31
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -105,11 +50,11 @@ class t3lib_treeView {
 	var $expandAll = 0; // If set, then ALL items will be expanded, regardless of stored settings.
 	var $thisScript = ''; // Holds the current script to reload to.
 	var $titleAttrib = 'title'; // Which HTML attribute to use: alt/title. See init().
-	var $ext_IconMode = FALSE; // If true, no context menu is rendered on icons. If set to "titlelink" the icon is linked as the title is.
+	var $ext_IconMode = FALSE; // If TRUE, no context menu is rendered on icons. If set to "titlelink" the icon is linked as the title is.
 	var $addSelfId = 0; // If set, the id of the mounts will be added to the internal ids array
 	var $title = 'no title'; // Used if the tree is made of records (not folders for ex.)
-	var $showDefaultTitleAttribute = FALSE; // If true, a default title attribute showing the UID of the record is shown. This cannot be enabled by default because it will destroy many applications where another title attribute is in fact applied later.
-	var $highlightPagesWithVersions = TRUE; // If true, pages containing child records which has versions will be highlighted in yellow. This might be too expensive in terms of processing power.
+	var $showDefaultTitleAttribute = FALSE; // If TRUE, a default title attribute showing the UID of the record is shown. This cannot be enabled by default because it will destroy many applications where another title attribute is in fact applied later.
+	var $highlightPagesWithVersions = TRUE; // If TRUE, pages containing child records which has versions will be highlighted in yellow. This might be too expensive in terms of processing power.
 
 	/**
 	 * Needs to be initialized with $GLOBALS['BE_USER']
@@ -200,13 +145,13 @@ class t3lib_treeView {
 	var $iconName = 'default.gif';
 
 	/**
-	 * If true, HTML code is also accumulated in ->tree array during rendering of the tree.
+	 * If TRUE, HTML code is also accumulated in ->tree array during rendering of the tree.
 	 * If 2, then also the icon prefix code (depthData) is stored
 	 */
 	var $makeHTML = 1;
 
 	/**
-	 * If true, records as selected will be stored internally in the ->recs array
+	 * If TRUE, records as selected will be stored internally in the ->recs array
 	 */
 	var $setRecs = 0;
 
@@ -270,7 +215,7 @@ class t3lib_treeView {
 			t3lib_div::loadTCA($this->table);
 		}
 
-			// setting this to false disables the use of array-trees by default
+			// setting this to FALSE disables the use of array-trees by default
 		$this->data = FALSE;
 		$this->dataLookup = FALSE;
 	}
@@ -294,12 +239,11 @@ class t3lib_treeView {
 	 * Adds a fieldname to the internal array ->fieldArray
 	 *
 	 * @param	string		Field name to
-	 * @param	boolean		If set, the fieldname will be set no matter what. Otherwise the field name must either be found as key in $TCA[$table]['columns'] or in the list ->defaultList
+	 * @param	boolean		If set, the fieldname will be set no matter what. Otherwise the field name must either be found as key in $GLOBALS['TCA'][$table]['columns'] or in the list ->defaultList
 	 * @return	void
 	 */
 	function addField($field, $noCheck = 0) {
-		global $TCA;
-		if ($noCheck || is_array($TCA[$this->table]['columns'][$field]) || t3lib_div::inList($this->defaultList, $field)) {
+		if ($noCheck || is_array($GLOBALS['TCA'][$this->table]['columns'][$field]) || t3lib_div::inList($this->defaultList, $field)) {
 			$this->fieldArray[] = $field;
 		}
 	}
@@ -547,7 +491,7 @@ class t3lib_treeView {
 
 
 	/**
-	 * Returns true/false if the next level for $id should be expanded - based on data in $this->stored[][] and ->expandAll flag.
+	 * Returns TRUE/FALSE if the next level for $id should be expanded - based on data in $this->stored[][] and ->expandAll flag.
 	 * Extending parent function
 	 *
 	 * @param	integer		record id/key
@@ -732,7 +676,7 @@ class t3lib_treeView {
 			$newID = $row['uid'];
 
 			if ($newID == 0) {
-				throw new RuntimeException('Endless recursion detected: TYPO3 has detected an error in the database. Please fix it manually (e.g. using phpMyAdmin) and change the UID of ' . $this->table . ':0 to a new value.<br /><br />See <a href="http://bugs.typo3.org/view.php?id=3495" target="_blank">bugs.typo3.org/view.php?id=3495</a> to get more information about a possible cause.');
+				throw new RuntimeException('Endless recursion detected: TYPO3 has detected an error in the database. Please fix it manually (e.g. using phpMyAdmin) and change the UID of ' . $this->table . ':0 to a new value.<br /><br />See <a href="http://bugs.typo3.org/view.php?id=3495" target="_blank">bugs.typo3.org/view.php?id=3495</a> to get more information about a possible cause.', 1294586383);
 			}
 
 			$this->tree[] = array(); // Reserve space.

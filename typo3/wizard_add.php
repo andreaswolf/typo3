@@ -27,23 +27,9 @@
 /**
  * Wizard to add new records to a group/select TCEform formfield
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   75: class SC_wizard_add
- *  104:     function init()
- *  157:     function main()
- *
- * TOTAL FUNCTIONS: 2
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -128,7 +114,7 @@ class SC_wizard_add {
 			// Else proceed:
 		if ($this->returnEditConf)	{	// If a new id has returned from a newly created record...
 			$eC = unserialize($this->returnEditConf);
-			if (is_array($eC[$this->table]) && t3lib_div::testInt($this->P['uid']))	{
+			if (is_array($eC[$this->table]) && t3lib_utility_Math::canBeInterpretedAsInteger($this->P['uid']))	{
 
 					// Getting id and cmd from returning editConf array.
 				reset($eC[$this->table]);
@@ -164,8 +150,7 @@ class SC_wizard_add {
 					// Preparing the data of the parent record...:
 				$trData = t3lib_div::makeInstance('t3lib_transferData');
 				$trData->fetchRecord($this->P['table'],$this->P['uid'],'');	// 'new'
-				reset($trData->regTableItems_data);
-				$current = current($trData->regTableItems_data);
+				$current = reset($trData->regTableItems_data);
 
 					// If that record was found (should absolutely be...), then init TCEmain and set, prepend or append the record
 				if (is_array($current))	{

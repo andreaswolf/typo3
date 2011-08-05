@@ -27,26 +27,10 @@
 /**
  * Wizard to display the RTE in "full screen" mode
  *
- * $Id$
  * Revised for TYPO3 3.6 November/2003 by Kasper Skårhøj
  * XHTML compliant
  *
  * @author	Kasper Skårhøj <kasperYYYY@typo3.com>
- */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *   81: class SC_wizard_rte
- *   99:     function init()
- *  123:     function main()
- *  285:     function printContent()
- *  298:     function checkEditAccess($table,$uid)
- *
- * TOTAL FUNCTIONS: 4
- * (This index is automatically created/updated by the extension "extdeveval")
- *
  */
 
 
@@ -54,7 +38,7 @@
 $BACK_PATH='';
 require ('init.php');
 require ('template.php');
-$LANG->includeLLFile('EXT:lang/locallang_wizards.xml');
+$GLOBALS['LANG']->includeLLFile('EXT:lang/locallang_wizards.xml');
 
 t3lib_BEfunc::lockRecords();
 
@@ -122,8 +106,6 @@ class SC_wizard_rte {
 	 * @return	void
 	 */
 	function main()	{
-		global $BE_USER,$LANG;
-
 			// translate id to the workspace version:
 		if ($versionRec = t3lib_BEfunc::getWorkspaceVersionOfRecord($GLOBALS['BE_USER']->workspace, $this->P['table'], $this->P['uid'], 'uid'))	{
 			$this->P['uid'] = $versionRec['uid'];
@@ -168,8 +150,7 @@ class SC_wizard_rte {
 			$trData->fetchRecord($this->P['table'],$this->P['uid'],'');
 
 				// Getting the processed record content out:
-			reset($trData->regTableItems_data);
-			$rec = current($trData->regTableItems_data);
+			$rec = reset($trData->regTableItems_data);
 			$rec['uid'] = $this->P['uid'];
 			$rec['pid'] = $rawRec['pid'];
 
@@ -209,7 +190,7 @@ class SC_wizard_rte {
 				$tceforms->printNeededJSFunctions();
 		} else {
 				// ERROR:
-			$this->content.=$this->doc->section($LANG->getLL('forms_title'),'<span class="typo3-red">'.$LANG->getLL('table_noData',1).'</span>',0,1);
+			$this->content.=$this->doc->section($GLOBALS['LANG']->getLL('forms_title'),'<span class="typo3-red">'.$GLOBALS['LANG']->getLL('table_noData',1).'</span>',0,1);
 		}
 
 		// Setting up the buttons and markers for docheader
@@ -304,22 +285,21 @@ class SC_wizard_rte {
 	 * @return	void
 	 */
 	function checkEditAccess($table,$uid)	{
-		global $BE_USER;
-
 		$calcPRec = t3lib_BEfunc::getRecord($table,$uid);
 		t3lib_BEfunc::fixVersioningPid($table,$calcPRec);
 		if (is_array($calcPRec))	{
 			if ($table=='pages')	{	// If pages:
-				$CALC_PERMS = $BE_USER->calcPerms($calcPRec);
+				$CALC_PERMS = $GLOBALS['BE_USER']->calcPerms($calcPRec);
 				$hasAccess = $CALC_PERMS&2 ? TRUE : FALSE;
 			} else {
-				$CALC_PERMS = $BE_USER->calcPerms(t3lib_BEfunc::getRecord('pages',$calcPRec['pid']));	// Fetching pid-record first.
+					// Fetching pid-record first.
+				$CALC_PERMS = $GLOBALS['BE_USER']->calcPerms(t3lib_BEfunc::getRecord('pages',$calcPRec['pid']));
 				$hasAccess = $CALC_PERMS&16 ? TRUE : FALSE;
 			}
 
 				// Check internals regarding access:
 			if ($hasAccess)	{
-				$hasAccess = $BE_USER->recordEditAccessInternals($table, $calcPRec);
+				$hasAccess = $GLOBALS['BE_USER']->recordEditAccessInternals($table, $calcPRec);
 			}
 		} else $hasAccess = FALSE;
 

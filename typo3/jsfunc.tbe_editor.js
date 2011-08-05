@@ -26,8 +26,6 @@
 /**
  * Contains JavaScript for TYPO3 Core Form generator - AKA "TCEforms"
  *
- * $Id$
- *
  * @author	Kasper Skaarhoj <kasperYYYY@typo3.com>
  * @coauthor	Oliver Hader <oh@inpublica.de>
  */
@@ -74,6 +72,8 @@ var TBE_EDITOR = {
 		sel: new Image(),
 		clear: new Image()
 	},
+
+	clearBeforeSettingFormValueFromBrowseWin: [],
 
 	// Handling of data structures:
 	addElements: function(elements) {
@@ -341,13 +341,6 @@ var TBE_EDITOR = {
 			return true;
 		}
 	},
-	/**
-	 * This function is not used by core and will be removed in version 4.6
-	 * @deprecated
-	 */
-	setHiddenContent: function(RTEcontent,theField) {
-		document[TBE_EDITOR.formname][theField].value = RTEcontent;
-	},
 	fieldChanged_fName: function(fName,el) {
 		var idx=2+TBE_EDITOR.prependFormFieldNamesCnt;
 		var table = TBE_EDITOR.split(fName, "[", idx);
@@ -504,22 +497,6 @@ var TBE_EDITOR = {
 		if(ePos == -1) { ePos = theStr.length; }
 		return (theStr.substring(sPos+lengthOfDelim,ePos));
 	},
-	palUrl: function(inData,fieldList,fieldNum,table,uid,isOnFocus) {
-		var url = TBE_EDITOR.backPath+'alt_palette.php?inData='+inData+'&formName='+TBE_EDITOR.formnameUENC+'&prependFormFieldNames='+TBE_EDITOR.prependFormFieldNamesUENC;
-		var field = "";
-		var theField="";
-		for (var a=0; a<fieldNum;a++)	{
-			field = TBE_EDITOR.split(fieldList, ",", a+1);
-			theField = TBE_EDITOR.prependFormFieldNames+'['+table+']['+uid+']['+field+']';
-			if (document[TBE_EDITOR.formname][theField]) url+="&rec["+field+"]="+TBE_EDITOR.rawurlencode(document[TBE_EDITOR.formname][theField].value);
-		}
-		if (top.topmenuFrame)	{
-			top.topmenuFrame.location.href = url+"&backRef="+(top.content.list_frame ? (top.content.list_frame.view_frame ? "top.content.list_frame.view_frame" : "top.content.list_frame") : "top.content");
-		} else if (!isOnFocus) {
-			var vHWin=window.open(url,"palette","height=300,width=200,status=0,menubar=0,scrollbars=1");
-			vHWin.focus();
-		}
-	},
 	curSelected: function(theField)	{
 		var fObjSel = document[TBE_EDITOR.formname][theField];
 		var retVal="";
@@ -538,11 +515,7 @@ var TBE_EDITOR = {
 	rawurlencode: function(str,maxlen) {
 		var output = str;
 		if (maxlen)	output = output.substr(0,200);
-		output = escape(output);
-		output = TBE_EDITOR.str_replace("*","%2A", output);
-		output = TBE_EDITOR.str_replace("+","%2B", output);
-		output = TBE_EDITOR.str_replace("/","%2F", output);
-		output = TBE_EDITOR.str_replace("@","%40", output);
+		output = encodeURIComponent(output);
 		return output;
 	},
 	str_replace: function(match,replace,string) {
@@ -615,7 +588,6 @@ var TBE_EDITOR_initRequired = TBE_EDITOR.initRequired;
 var TBE_EDITOR_setImage = TBE_EDITOR.setImage;
 var TBE_EDITOR_submitForm = TBE_EDITOR.submitForm;
 var TBE_EDITOR_split = TBE_EDITOR.split;
-var TBE_EDITOR_palUrl = TBE_EDITOR.palUrl;
 var TBE_EDITOR_curSelected = TBE_EDITOR.curSelected;
 var TBE_EDITOR_rawurlencode = TBE_EDITOR.rawurlencode;
 var TBE_EDITOR_str_replace = TBE_EDITOR.str_replace;

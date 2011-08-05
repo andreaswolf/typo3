@@ -26,59 +26,6 @@
  *
  * @author    Kasper Skårhøj <kasperYYYY@typo3.com>
  */
-/**
- * [CLASS/FUNCTION INDEX of SCRIPT]
- *
- *
- *
- *  106: class tx_indexedsearch_modfunc1 extends t3lib_extobjbase
- *  120:     function modMenu()
- *  144:     function main()
- *
- *              SECTION: Drawing table of indexed pages
- *  248:     function drawTableOfIndexedPages()
- *  299:     function indexed_info($data, $firstColContent)
- *  386:     function printPhashRow($row,$grouping=0,$extraGrListRows)
- *  527:     function printPhashRowHeader()
- *  582:     function returnNumberOfColumns()
- *
- *              SECTION: Details display, phash row
- *  618:     function showDetailsForPhash($phash)
- *  737:     function listWords($ftrows,$header, $stopWordBoxes=FALSE, $page='')
- *  787:     function listMetaphoneStat($ftrows,$header)
- *  824:     function linkWordDetails($string,$wid)
- *  836:     function linkMetaPhoneDetails($string,$metaphone)
- *  846:     function flagsMsg($flags)
- *
- *              SECTION: Details display, words / metaphone
- *  877:     function showDetailsForWord($wid)
- *  936:     function showDetailsForMetaphone($metaphone)
- *
- *              SECTION: Helper functions
- * 1007:     function printRemoveIndexed($phash,$alt)
- * 1020:     function printReindex($resultRow,$alt)
- * 1035:     function linkDetails($string,$phash)
- * 1044:     function linkList()
- * 1055:     function showPageDetails($string,$id)
- * 1065:     function printExtraGrListRows($extraGrListRows)
- * 1082:     function printRootlineInfo($row)
- * 1116:     function makeItemTypeIcon($it,$alt='')
- * 1141:     function utf8_to_currentCharset($string)
- *
- *              SECTION: Reindexing
- * 1173:     function reindexPhash($phash, $pageId)
- * 1227:     function getUidRootLineForClosestTemplate($id)
- *
- *              SECTION: SQL functions
- * 1270:     function removeIndexedPhashRow($phashList,$clearPageCache=1)
- * 1314:     function getGrListEntriesForPhash($phash,$gr_list)
- * 1334:     function processStopWords($stopWords)
- * 1354:     function processPageKeywords($pageKeywords, $pageUid)
- *
- * TOTAL FUNCTIONS: 30
- * (This index is automatically created/updated by the extension "extdeveval")
- *
- */
 
 
 require_once(t3lib_extMgm::extPath('indexed_search').'class.indexer.php');
@@ -166,7 +113,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 			foreach($TYPO3_CONF_VARS['EXTCONF']['indexed_search']['external_parsers'] as $extension => $_objRef)	{
 				$this->external_parsers[$extension] = t3lib_div::getUserObj($_objRef);
 
-					// Init parser and if it returns false, unset its entry again:
+					// Init parser and if it returns FALSE, unset its entry again:
 				if (!$this->external_parsers[$extension]->softInit($extension))	{
 					unset($this->external_parsers[$extension]);
 				}
@@ -436,7 +383,7 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 				$arr = unserialize($row['cHashParams']);
 				if (!is_array($arr)) {
 					$arr = array(
-						'cHash' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_general.xml:LGL.error', true)
+						'cHash' => $GLOBALS['LANG']->sL('LLL:EXT:lang/locallang_general.xml:LGL.error', TRUE)
 					);
 				}
 				$theCHash = $arr['cHash'];
@@ -1291,13 +1238,9 @@ class tx_indexedsearch_modfunc1 extends t3lib_extobjbase {
 							$idList[] = (int)$row['page_id'];
 						}
 
-						if (TYPO3_UseCachingFramework) {
-							$pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages');
-							foreach ($idList as $pageId) {
-								$pageCache->flushByTag('pageId_' . $pageId);
-							}
-						} else {
-							$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_pages', 'page_id IN (' . implode(',', $idList) . ')');
+						$pageCache = $GLOBALS['typo3CacheManager']->getCache('cache_pages');
+						foreach ($idList as $pageId) {
+							$pageCache->flushByTag('pageId_' . $pageId);
 						}
 					}
 				}
