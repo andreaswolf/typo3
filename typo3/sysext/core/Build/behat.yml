@@ -1,0 +1,18 @@
+default:
+  paths:
+    features: '%behat.paths.base%/../Tests/Acceptance/Features/'
+  extensions:
+    Behat\MinkExtension\Extension:
+      base_url: http://dev.typo3.localsite/testing-sprint/
+      default_session: goutte
+      javascript_session: selenium2
+      goutte: ~
+      selenium2:
+        wd_host: http://localhost:4444/wd/hub
+      #sahi: ~
+      #zombie: ~
+  context:
+    parameters:
+      paths:
+        backendLogin: /typo3/
+        backend: /typo3/backend.php
