@@ -31,6 +31,7 @@ namespace TYPO3\CMS\Core\Resource;
  *
  * @author Ingmar Schlecht <ingmar@typo3.org>
  */
+// TODO make this conform to EnrichedFileInterface, implement LocalizableFileInterface later on
 interface FileInterface extends ResourceInterface {
 	/*******************************
 	 * VARIOUS FILE PROPERTY GETTERS
