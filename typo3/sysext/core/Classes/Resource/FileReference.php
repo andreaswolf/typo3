@@ -77,15 +77,6 @@ class FileReference implements RichFileInterface {
 	protected $referenceProperties;
 
 	/**
-	 * The identifier of this file to identify it on the storage.
-	 * On some drivers, this is the path to the file, but drivers could also just
-	 * provide any other unique identifier for this file on the specific storage.
-	 *
-	 * @var string
-	 */
-	protected $uidOfFileReference;
-
-	/**
 	 * The file name of this file. It's either the fileName of the original underlying file,
 	 * or the overlay file name supplied by the user for this particular usage (FileReference) of the file.
 	 *
