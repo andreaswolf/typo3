@@ -177,10 +177,11 @@ class FileRepository extends AbstractRepository {
 	 *
 	 * @param string $hash A SHA1 hash of a file
 	 * @return array
+	 * @throws \InvalidArgumentException
 	 */
 	public function findBySha1Hash($hash) {
-		if (preg_match('/[^a-f0-9]*/i', $hash)) {
-
+		if (strlen($hash) !== 40 || preg_match('/[^a-f0-9]{40}/i', strtolower($hash))) {
+			throw new \InvalidArgumentException('Given hash does not seem to be a valid SHA-1 hash');
 		}
 		$resultRows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 			'*',
