@@ -234,7 +234,7 @@ class FileReference implements RichFileInterface {
 	 * @return string
 	 */
 	public function getName() {
-		return $this->originalFile->getName();
+		return $this->name;
 	}
 
 	/**
