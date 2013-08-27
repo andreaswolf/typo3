@@ -105,7 +105,8 @@ interface TaskInterface {
 	public function getTargetFileExtension();
 
 	/**
-	 * Returns TRUE if the file has to be processed at all, such as e.g. the original file does.
+	 * Returns TRUE if the file has to be processed at all. If it returns FALSE, this in turn means that
+	 * the original file already meets the criteria set by the task.
 	 *
 	 * Note: This does not indicate if the concrete ProcessedFile attached to this task has to be (re)processed.
 	 * This check is done in ProcessedFile::isOutdated(). TODO isOutdated()/needsReprocessing()?

@@ -83,7 +83,7 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param bool $updateObject Set this to FALSE to get the indexed values. You have to take care of updating the object yourself then!
 	 * @return \TYPO3\CMS\Core\Resource\File|array the indexed $fileObject or an array of indexed properties.
 	 */
-	public function indexFile(\TYPO3\CMS\Core\Resource\File $fileObject, $updateObject = TRUE) {
+	public function indexFile(\TYPO3\CMS\Core\Resource\IndexableFileInterface $fileObject, $updateObject = TRUE) {
 		// Get the file information of this object
 		$fileInfo = $this->gatherFileInformation($fileObject);
 		// Signal slot BEFORE the file was indexed
@@ -94,6 +94,7 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 			$rawFileLocation = $fileObject->getForLocalProcessing(FALSE);
 			list($fileInfo['width'], $fileInfo['height']) = getimagesize($rawFileLocation);
 		}
+
 		// If the file is already indexed, then the file information will
 		// be updated on the existing record
 		if ($fileObject->isIndexed()) {
@@ -119,6 +120,7 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 					break;
 				}
 			}
+
 			// File was not moved, so it is a new index record
 			if ($movedFile === FALSE) {
 				// Crdate and tstamp should not be present when updating
@@ -136,11 +138,13 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 				$fileInfo['uid'] = $GLOBALS['TYPO3_DB']->sql_insert_id();
 			}
 		}
+
 		// Check for an error during the execution and throw an exception
 		$error = $GLOBALS['TYPO3_DB']->sql_error();
 		if ($error) {
 			throw new \RuntimeException('Error during file indexing: "' . $error . '"', 1314455642);
 		}
+
 		// Signal slot AFTER the file was indexed
 		$this->emitPostFileIndexSignal($fileObject, $fileInfo);
 		if ($updateObject) {
@@ -210,6 +214,7 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 		$gatherDefaultInformation->getDefaultFileInfo = 1;
 		// signal before the files are modified
 		$this->emitPreGatherFileInformationSignal($file, $fileInfo, $gatherDefaultInformation);
+
 		// the check helps you to disable the regular file fetching,
 		// so a signal could actually remotely access the service
 		if ($gatherDefaultInformation->getDefaultFileInfo) {

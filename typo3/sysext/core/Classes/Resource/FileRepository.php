@@ -88,7 +88,7 @@ class FileRepository extends AbstractRepository {
 	 * @param File $fileObject
 	 * @return array The indexed file data
 	 */
-	public function addToIndex(File $fileObject) {
+	public function addToIndex(RichFileInterface $fileObject) {
 		return $this->getIndexerService()->indexFile($fileObject, FALSE);
 	}
 
@@ -102,7 +102,7 @@ class FileRepository extends AbstractRepository {
 	 * @param File $fileObject
 	 * @return boolean|integer
 	 */
-	public function getFileIndexStatus(File $fileObject) {
+	public function getFileIndexStatus(RichFileInterface $fileObject) {
 		$storageUid = $fileObject->getStorage()->getUid();
 		$identifier = $fileObject->getIdentifier();
 		$row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
@@ -124,7 +124,7 @@ class FileRepository extends AbstractRepository {
 	 * @param File $fileObject
 	 * @return bool|array
 	 */
-	public function getFileIndexRecord(File $fileObject) {
+	public function getFileIndexRecord(RichFileInterface $fileObject) {
 		$storageUid = $fileObject->getStorage()->getUid();
 		$identifier = $fileObject->getIdentifier();
 		$row = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow(
@@ -259,8 +259,7 @@ class FileRepository extends AbstractRepository {
 	 * @return void
 	 */
 	public function update($modifiedObject) {
-		// TODO check if $modifiedObject is an instance of AbstractFile
-		// TODO check if $modifiedObject is indexed
+		// TODO check if $modifiedObject is an instance of IndexableFile and it is indexed
 		$changedProperties = $modifiedObject->getUpdatedProperties();
 		$properties = $modifiedObject->getProperties();
 		$updateFields = array();

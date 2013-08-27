@@ -34,7 +34,7 @@ use TYPO3\CMS\Core\Utility\PathUtility;
  *
  * @author Ingmar Schlecht <ingmar@typo3.org>
  */
-abstract class AbstractFile implements FileInterface {
+abstract class AbstractFile implements BasicFileInterface {
 
 	/**
 	 * Various file properties
@@ -168,6 +168,17 @@ abstract class AbstractFile implements FileInterface {
 		// Do not check if file has been deleted because we might need the
 		// name for undeleting it.
 		return $this->name;
+	}
+
+	/**
+	 * Returns a modified version of the file.
+	 *
+	 * @param string $taskType The task type of this processing
+	 * @param array $configuration the processing configuration, see manual for that
+	 * @return ProcessedFile The processed file
+	 */
+	public function process($taskType, array $configuration) {
+		return $this->getStorage()->processFile($this, $taskType, $configuration);
 	}
 
 	/**

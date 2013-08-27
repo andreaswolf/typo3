@@ -46,8 +46,7 @@ class ProcessedFileRepository extends AbstractRepository {
 	protected $objectType = 'TYPO3\\CMS\\Core\\Resource\\ProcessedFile';
 
 	/**
-	 * Main File object storage table. Note that this repository also works on
-	 * the sys_file_reference table when returning FileReference objects.
+	 * Main processed file object storage table.
 	 *
 	 * @var string
 	 */
@@ -74,14 +73,20 @@ class ProcessedFileRepository extends AbstractRepository {
 	/**
 	 * Creates a ProcessedFile object from a file object and a processing configuration
 	 *
-	 * @param FileInterface $originalFile
+	 * @param BasicFileInterface $originalFile
 	 * @param string $taskType
 	 * @param array $configuration
 	 * @return ProcessedFile
 	 */
-	public function createNewProcessedFileObject(FileInterface $originalFile, $taskType, array $configuration) {
+	public function createNewProcessedFileObject(BasicFileInterface $originalFile, $taskType, array $configuration) {
+		if ($originalFile instanceof SimpleFileInterface) {
+			$objectType = 'TYPO3\\CMS\\Core\\Resource\\Processing\\SimpleProcessedFile';
+		} else {
+			$objectType = $this->objectType;
+		}
+
 		return Utility\GeneralUtility::makeInstance(
-			$this->objectType,
+			$objectType,
 			$originalFile,
 			$taskType,
 			$configuration
@@ -142,13 +147,17 @@ class ProcessedFileRepository extends AbstractRepository {
 	}
 
 	/**
-	 * @param \TYPO3\CMS\Core\Resource\File|\TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $taskType The task that should be executed on the file
 	 * @param array $configuration
 	 *
 	 * @return ProcessedFile
 	 */
-	public function findOneByOriginalFileAndTaskTypeAndConfiguration(FileInterface $file, $taskType, array $configuration) {
+	public function findOneByOriginalFileAndTaskTypeAndConfiguration(BasicFileInterface $file, $taskType, array $configuration) {
+		if ($file instanceof SimpleFileInterface) {
+			return $this->createNewProcessedFileObject($file, $taskType, $configuration);
+		}
+
 		$databaseRow = $this->databaseConnection->exec_SELECTgetSingleRow(
 			'*',
 			$this->table,

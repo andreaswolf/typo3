@@ -78,7 +78,7 @@ class FileProcessingService {
 	/**
 	 * Processes a file
 	 *
-	 * @param Resource\FileInterface $fileObject The file object
+	 * @param Resource\BasicFileInterface $fileObject The file object
 	 * @param Resource\ResourceStorage $targetStorage The storage to store the processed file in
 	 * @param string $taskType
 	 * @param array $configuration
@@ -86,7 +86,7 @@ class FileProcessingService {
 	 * @return Resource\ProcessedFile
 	 * @throws \InvalidArgumentException
 	 */
-	public function processFile(Resource\FileInterface $fileObject, Resource\ResourceStorage $targetStorage, $taskType, $configuration) {
+	public function processFile(Resource\BasicFileInterface $fileObject, Resource\ResourceStorage $targetStorage, $taskType, $configuration) {
 		/** @var $processedFileRepository Resource\ProcessedFileRepository */
 		$processedFileRepository = Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\ProcessedFileRepository');
 
@@ -112,12 +112,12 @@ class FileProcessingService {
 	/**
 	 * Processes the file
 	 *
-	 * @param Resource\ProcessedFile $processedFile
+	 * @param Resource\Processing\ProcessedFileInterface $processedFile
 	 * @param Resource\ResourceStorage $targetStorage The storage to put the processed file into
 	 *
 	 * @throws \RuntimeException
 	 */
-	protected function process(Resource\ProcessedFile $processedFile, Resource\ResourceStorage $targetStorage) {
+	protected function process(Resource\Processing\ProcessedFileInterface $processedFile, Resource\ResourceStorage $targetStorage) {
 		$targetFolder = $targetStorage->getProcessingFolder();
 		if (!is_object($targetFolder)) {
 			throw new \RuntimeException('Could not get processing folder for storage ' . $this->storage->getName(), 1350514301);

@@ -26,6 +26,7 @@ namespace TYPO3\CMS\Core\Resource;
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Resource\Processing\ProcessedFileInterface;
 
 /**
  * Representation of a specific processed version of a file. These are created by the FileProcessingService,
@@ -50,7 +51,7 @@ namespace TYPO3\CMS\Core\Resource;
  *
  * @author Benjamin Mack <benni@typo3.org>
  */
-class ProcessedFile extends AbstractFile {
+class ProcessedFile extends AbstractFile implements ProcessedFileInterface {
 
 	/*********************************************
 	 * FILE PROCESSING CONTEXTS
@@ -124,14 +125,16 @@ class ProcessedFile extends AbstractFile {
 	 * @param array $processingConfiguration
 	 * @param array $databaseRow
 	 */
-	public function __construct(File $originalFile, $taskType, array $processingConfiguration, array $databaseRow = NULL) {
+	public function __construct(BasicFileInterface $originalFile, $taskType, array $processingConfiguration, array $databaseRow = NULL) {
 		$this->originalFile = $originalFile;
 		$this->storage = $originalFile->getStorage();
 		$this->taskType = $taskType;
 		$this->processingConfiguration = $processingConfiguration;
+
 		if (is_array($databaseRow)) {
 			$this->reconstituteFromDatabaseRecord($databaseRow);
 		}
+
 		$this->taskTypeRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Resource\\Processing\\TaskTypeRegistry');
 	}
 
@@ -160,8 +163,8 @@ class ProcessedFile extends AbstractFile {
 	 *
 	 * @return string
 	 */
-	// TODO replace these usages with direct calls to the task object
 	public function calculateChecksum() {
+		// TODO replace these usages with direct calls to the task object
 		return $this->getTask()->getConfigurationChecksum();
 	}
 
@@ -357,6 +360,10 @@ class ProcessedFile extends AbstractFile {
 			$properties['name'] = $this->getName();
 		}
 
+		if (!$this->originalFile->isIndexed()) {
+			throw new \RuntimeException('Can only return array for indexed processed file. ' . $this->originalFile->getCombinedIdentifier());
+		}
+
 		return array_merge($properties, array(
 			'storage' => $this->getStorage()->getUid(),
 			'checksum' => $this->calculateChecksum(),
@@ -517,6 +524,14 @@ class ProcessedFile extends AbstractFile {
 		return $name;
 	}
 
+	public function isPubliclyAvailable() {
+		// TODO *really* implement
+		return TRUE;
+	}
+
+	public function moveToFolder(FolderInterface $folder, $newName = NULL) {
+		// TODO: Implement moveToFolder() method.
+	}
 }
 
 ?>

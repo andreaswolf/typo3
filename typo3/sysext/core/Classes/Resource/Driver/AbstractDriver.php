@@ -214,10 +214,10 @@ abstract class AbstractDriver {
 	/**
 	 * Returns a temporary path for a given file, including the file extension.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return string
 	 */
-	protected function getTemporaryPathForFile(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	protected function getTemporaryPathForFile(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		return \TYPO3\CMS\Core\Utility\GeneralUtility::tempnam('fal-tempfile-') . '.' . $file->getExtension();
 	}
 
@@ -244,11 +244,11 @@ abstract class AbstractDriver {
 	 * Creates a (cryptographic) hash for a file.
 	 *
 	 * @abstract
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $hashAlgorithm The hash algorithm to use
 	 * @return string
 	 */
-	abstract public function hash(\TYPO3\CMS\Core\Resource\FileInterface $file, $hashAlgorithm);
+	abstract public function hash(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $hashAlgorithm);
 
 	/**
 	 * Creates a new file and returns the matching file object for it.
@@ -266,20 +266,20 @@ abstract class AbstractDriver {
 	 * external location. So this might be an expensive operation (both in terms
 	 * of processing resources and money) for large files.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return string The file contents
 	 */
-	abstract public function getFileContents(\TYPO3\CMS\Core\Resource\FileInterface $file);
+	abstract public function getFileContents(\TYPO3\CMS\Core\Resource\BasicFileInterface $file);
 
 	/**
 	 * Sets the contents of a file to the specified value.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $contents
 	 * @return integer The number of bytes written to the file
 	 * @throws \RuntimeException if the operation failed
 	 */
-	abstract public function setFileContents(\TYPO3\CMS\Core\Resource\FileInterface $file, $contents);
+	abstract public function setFileContents(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $contents);
 
 	/**
 	 * Adds a file from the local server hard disk to a given path in TYPO3s virtual file system.
@@ -290,7 +290,7 @@ abstract class AbstractDriver {
 	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
 	 * @param string $fileName The name to add the file under
 	 * @param \TYPO3\CMS\Core\Resource\AbstractFile $updateFileObject Optional file object to update (instead of creating a new object). With this parameter, this function can be used to "populate" a dummy file object with a real file underneath.
-	 * @return \TYPO3\CMS\Core\Resource\FileInterface
+	 * @return \TYPO3\CMS\Core\Resource\BasicFileInterface
 	 */
 	abstract public function addFile($localFilePath, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName, \TYPO3\CMS\Core\Resource\AbstractFile $updateFileObject = NULL);
 
@@ -326,21 +326,21 @@ abstract class AbstractDriver {
 	 * file, you have to take care of replacing the current version yourself!
 	 *
 	 * @abstract
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param bool $writable Set this to FALSE if you only need the file for read operations. This might speed up things, e.g. by using a cached local version. Never modify the file if you have set this flag!
 	 * @return string The path to the file on the local disk
 	 */
 	// TODO decide if this should return a file handle object
-	abstract public function getFileForLocalProcessing(\TYPO3\CMS\Core\Resource\FileInterface $file, $writable = TRUE);
+	abstract public function getFileForLocalProcessing(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $writable = TRUE);
 
 	/**
 	 * Returns the permissions of a file as an array (keys r, w) of boolean flags
 	 *
 	 * @abstract
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return array
 	 */
-	abstract public function getFilePermissions(\TYPO3\CMS\Core\Resource\FileInterface $file);
+	abstract public function getFilePermissions(\TYPO3\CMS\Core\Resource\BasicFileInterface $file);
 
 	/**
 	 * Returns the permissions of a folder as an array (keys r, w) of boolean flags
@@ -355,12 +355,12 @@ abstract class AbstractDriver {
 	 * Renames a file
 	 *
 	 * @abstract
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $newName
 	 * @return string The new identifier of the file if the operation succeeds
 	 * @throws \RuntimeException if renaming the file failed
 	 */
-	abstract public function renameFile(\TYPO3\CMS\Core\Resource\FileInterface $file, $newName);
+	abstract public function renameFile(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $newName);
 
 	/**
 	 * Replaces the contents (and file-specific metadata) of a file object with a local file.
@@ -383,10 +383,10 @@ abstract class AbstractDriver {
 	/**
 	 * Returns information about a file for a given file object.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return array
 	 */
-	public function getFileInfo(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	public function getFileInfo(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		return $this->getFileInfoByIdentifier($file->getIdentifier());
 	}
 
@@ -394,7 +394,7 @@ abstract class AbstractDriver {
 	 * Returns a file object by its identifier.
 	 *
 	 * @param string $identifier
-	 * @return \TYPO3\CMS\Core\Resource\FileInterface
+	 * @return \TYPO3\CMS\Core\Resource\BasicFileInterface
 	 */
 	public function getFile($identifier) {
 		$fileObject = NULL;
@@ -485,34 +485,34 @@ abstract class AbstractDriver {
 	 * Copies a file to a temporary path and returns that path.
 	 *
 	 * @abstract
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return string The temporary path
 	 */
-	abstract public function copyFileToTemporaryPath(\TYPO3\CMS\Core\Resource\FileInterface $file);
+	abstract public function copyFileToTemporaryPath(\TYPO3\CMS\Core\Resource\BasicFileInterface $file);
 
 	/**
 	 * Moves a file *within* the current storage.
 	 * Note that this is only about an intra-storage move action, where a file is just
 	 * moved to another folder in the same storage.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
 	 * @param string $fileName
 	 * @return string The new identifier of the file
 	 */
-	abstract public function moveFileWithinStorage(\TYPO3\CMS\Core\Resource\FileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName);
+	abstract public function moveFileWithinStorage(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName);
 
 	/**
 	 * Copies a file *within* the current storage.
 	 * Note that this is only about an intra-storage copy action, where a file is just
 	 * copied to another folder in the same storage.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
 	 * @param string $fileName
-	 * @return \TYPO3\CMS\Core\Resource\FileInterface The new (copied) file object.
+	 * @return \TYPO3\CMS\Core\Resource\BasicFileInterface The new (copied) file object.
 	 */
-	abstract public function copyFileWithinStorage(\TYPO3\CMS\Core\Resource\FileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName);
+	abstract public function copyFileWithinStorage(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName);
 
 	/**
 	 * Folder equivalent to moveFileWithinStorage().
@@ -569,10 +569,10 @@ abstract class AbstractDriver {
 	 * this has to be taken care of in the upper layers (e.g. the Storage)!
 	 *
 	 * @abstract
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return boolean TRUE if deleting the file succeeded
 	 */
-	abstract public function deleteFile(\TYPO3\CMS\Core\Resource\FileInterface $file);
+	abstract public function deleteFile(\TYPO3\CMS\Core\Resource\BasicFileInterface $file);
 
 	/**
 	 * Removes a folder from this storage.

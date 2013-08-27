@@ -509,11 +509,11 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Returns the absolute path of a file or folder.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface|\TYPO3\CMS\Core\Resource\Folder|string $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface|\TYPO3\CMS\Core\Resource\Folder|string $file
 	 * @return string
 	 */
 	public function getAbsolutePath($file) {
-		if ($file instanceof \TYPO3\CMS\Core\Resource\FileInterface) {
+		if ($file instanceof \TYPO3\CMS\Core\Resource\BasicFileInterface) {
 			$path = $this->absoluteBasePath . ltrim($file->getIdentifier(), '/');
 		} elseif ($file instanceof \TYPO3\CMS\Core\Resource\Folder) {
 			// We can assume a trailing slash here because it is added by the folder object on construction.
@@ -529,10 +529,10 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Returns metadata of a file (size, times, mimetype)
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return array
 	 */
-	public function getLowLevelFileInfo(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	public function getLowLevelFileInfo(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		// TODO define which data should be returned
 		// TODO write unit test
 		// TODO cache this info. Registry?
@@ -571,11 +571,11 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Creates a (cryptographic) hash for a file.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $hashAlgorithm The hash algorithm to use
 	 * @return string
 	 */
-	public function hash(\TYPO3\CMS\Core\Resource\FileInterface $file, $hashAlgorithm) {
+	public function hash(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $hashAlgorithm) {
 		if (!in_array($hashAlgorithm, $this->getSupportedHashAlgorithms())) {
 			throw new \InvalidArgumentException('Hash algorithm "' . $hashAlgorithm . '" is not supported.', 1304964032);
 		}
@@ -601,8 +601,8 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
 	 * @param string $fileName The name to add the file under
 	 * @param \TYPO3\CMS\Core\Resource\AbstractFile $updateFileObject File object to update (instead of creating a new object). With this parameter, this function can be used to "populate" a dummy file object with a real file underneath.
-	 * @todo \TYPO3\CMS\Core\Resource\File $updateFileObject should be \TYPO3\CMS\Core\Resource\FileInterface, but indexer logic is only in \TYPO3\CMS\Core\Resource\File
-	 * @return \TYPO3\CMS\Core\Resource\FileInterface
+	 * @todo \TYPO3\CMS\Core\Resource\File $updateFileObject should be \TYPO3\CMS\Core\Resource\BasicFileInterface, but indexer logic is only in \TYPO3\CMS\Core\Resource\File
+	 * @return \TYPO3\CMS\Core\Resource\BasicFileInterface
 	 */
 	public function addFile($localFilePath, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName, \TYPO3\CMS\Core\Resource\AbstractFile $updateFileObject = NULL) {
 		// as for the "virtual storage" for backwards-compatibility, this check always fails, as the file probably lies under PATH_site
@@ -763,12 +763,12 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	 * Note that this is only about an intra-storage move action, where a file is just
 	 * moved to another folder in the same storage.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
 	 * @param string $fileName
-	 * @return \TYPO3\CMS\Core\Resource\FileInterface The new (copied) file object.
+	 * @return \TYPO3\CMS\Core\Resource\BasicFileInterface The new (copied) file object.
 	 */
-	public function copyFileWithinStorage(\TYPO3\CMS\Core\Resource\FileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName) {
+	public function copyFileWithinStorage(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName) {
 		// TODO add unit test
 		$sourcePath = $this->getAbsolutePath($file);
 		$targetPath = ltrim($targetFolder->getIdentifier(), '/') . $fileName;
@@ -781,12 +781,12 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	 * Note that this is only about an intra-storage move action, where a file is just
 	 * moved to another folder in the same storage.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param \TYPO3\CMS\Core\Resource\Folder $targetFolder
 	 * @param string $fileName
 	 * @return boolean
 	 */
-	public function moveFileWithinStorage(\TYPO3\CMS\Core\Resource\FileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName) {
+	public function moveFileWithinStorage(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, \TYPO3\CMS\Core\Resource\Folder $targetFolder, $fileName) {
 		$sourcePath = $this->getAbsolutePath($file);
 		$targetIdentifier = $targetFolder->getIdentifier() . $fileName;
 		$result = rename($sourcePath, $this->absoluteBasePath . $targetIdentifier);
@@ -799,10 +799,10 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Copies a file to a temporary path and returns that path.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return string The temporary path
 	 */
-	public function copyFileToTemporaryPath(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	public function copyFileToTemporaryPath(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		$sourcePath = $this->getAbsolutePath($file);
 		$temporaryPath = $this->getTemporaryPathForFile($file);
 		$result = copy($sourcePath, $temporaryPath);
@@ -928,11 +928,11 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Renames a file in this storage.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $newName The target path (including the file name!)
 	 * @return string The identifier of the file after renaming
 	 */
-	public function renameFile(\TYPO3\CMS\Core\Resource\FileInterface $file, $newName) {
+	public function renameFile(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $newName) {
 		// Makes sure the Path given as parameter is valid
 		$newName = $this->sanitizeFileName($newName);
 		$newIdentifier = rtrim(GeneralUtility::fixWindowsFilePath(PathUtility::dirname($file->getIdentifier())), '/') . '/' . $newName;
@@ -984,11 +984,11 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Removes a file from this storage.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return boolean TRUE if deleting the file succeeded
 	 * @throws \RuntimeException
 	 */
-	public function deleteFile(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	public function deleteFile(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		$filePath = $this->getAbsolutePath($file);
 		$result = unlink($filePath);
 		if ($result === FALSE) {
@@ -1036,11 +1036,11 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	 * first when in writable mode, so if you change the file,
 	 * you have to update it yourself afterwards.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param boolean $writable Set this to FALSE if you only need the file for read operations. This might speed up things, e.g. by using a cached local version. Never modify the file if you have set this flag!
 	 * @return string The path to the file on the local disk
 	 */
-	public function getFileForLocalProcessing(\TYPO3\CMS\Core\Resource\FileInterface $file, $writable = TRUE) {
+	public function getFileForLocalProcessing(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $writable = TRUE) {
 		if ($writable === FALSE) {
 			// TODO check if this is ok or introduce additional measures against file changes
 			return $this->getAbsolutePath($file);
@@ -1053,11 +1053,11 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Returns the permissions of a file as an array (keys r, w) of boolean flags
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file The file object to check
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file The file object to check
 	 * @return array
 	 * @throws \RuntimeException If fetching the permissions failed
 	 */
-	public function getFilePermissions(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	public function getFilePermissions(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		$filePath = $this->getAbsolutePath($file);
 		return $this->getPermissions($filePath);
 	}
@@ -1105,7 +1105,7 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 		if ($container->getStorage() != $this->storage) {
 			return FALSE;
 		}
-		if ($content instanceof \TYPO3\CMS\Core\Resource\FileInterface || $content instanceof \TYPO3\CMS\Core\Resource\Folder) {
+		if ($content instanceof \TYPO3\CMS\Core\Resource\BasicFileInterface || $content instanceof \TYPO3\CMS\Core\Resource\Folder) {
 			$content = $container->getIdentifier();
 		}
 		$folderPath = $container->getIdentifier();
@@ -1141,10 +1141,10 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	 * external location. So this might be an expensive operation (both in terms of
 	 * processing resources and money) for large files.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @return string The file contents
 	 */
-	public function getFileContents(\TYPO3\CMS\Core\Resource\FileInterface $file) {
+	public function getFileContents(\TYPO3\CMS\Core\Resource\BasicFileInterface $file) {
 		$filePath = $this->getAbsolutePath($file);
 		return file_get_contents($filePath);
 	}
@@ -1152,12 +1152,12 @@ class LocalDriver extends AbstractHierarchicalFilesystemDriver {
 	/**
 	 * Sets the contents of a file to the specified value.
 	 *
-	 * @param \TYPO3\CMS\Core\Resource\FileInterface $file
+	 * @param \TYPO3\CMS\Core\Resource\BasicFileInterface $file
 	 * @param string $contents
 	 * @return integer The number of bytes written to the file
 	 * @throws \RuntimeException if the operation failed
 	 */
-	public function setFileContents(\TYPO3\CMS\Core\Resource\FileInterface $file, $contents) {
+	public function setFileContents(\TYPO3\CMS\Core\Resource\BasicFileInterface $file, $contents) {
 		$filePath = $this->getAbsolutePath($file);
 		$result = file_put_contents($filePath, $contents);
 		if ($result === FALSE) {

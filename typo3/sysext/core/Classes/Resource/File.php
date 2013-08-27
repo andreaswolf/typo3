@@ -33,6 +33,16 @@ namespace TYPO3\CMS\Core\Resource;
  */
 class File extends AbstractFile {
 
+	public function isPubliclyAvailable() {
+		// TODO: Implement isPubliclyAvailable() method.
+	}
+
+	public function moveToFolder(FolderInterface $folder, $newName = NULL) {
+		// TODO: Implement moveToFolder() method.
+	}
+
+	////////////////////////////////////////////////////////////
+
 	/**
 	 * File indexing status. True, if the file is indexed in the database;
 	 * NULL is the default value, this means that the index status is unknown

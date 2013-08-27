@@ -3,7 +3,8 @@ namespace TYPO3\CMS\Core\Resource\Processing;
 
 use TYPO3\CMS\Core\Resource\BasicFileInterface;
 
-// TODO check if it is good to extend BasicFileInterface here
+// TODO check if it is good to extend BasicFileInterface here -> might lead to problems when processed files are used
+// in places only an original file should be used.
 interface ProcessedFileInterface extends BasicFileInterface {
 	public function getTask();
 

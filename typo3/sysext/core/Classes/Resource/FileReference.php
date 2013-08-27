@@ -39,7 +39,34 @@ namespace TYPO3\CMS\Core\Resource;
  *
  * @author Ingmar Schlecht <ingmar@typo3.org>
  */
-class FileReference implements FileInterface {
+class FileReference implements RichFileInterface {
+	public function isPubliclyAvailable() {
+		// TODO: Implement isPubliclyAvailable() method.
+	}
+
+	public function moveToFolder(FolderInterface $folder, $newName = NULL) {
+		// TODO: Implement moveToFolder() method.
+	}
+
+	public function setProperty($key, $value) {
+		// TODO: Implement setProperty() method.
+	}
+
+	public function getAvailableProperties() {
+		// TODO: Implement getAvailableProperties() method.
+	}
+
+	/**
+	 * Returns the filename without its extension.
+	 *
+	 * WARNING: This might not strip the complete extension, e.g. for .tar.gz (because this is a tarball
+	 * which is gzipped, thus the extension of the file itself is only .gz)
+	 *
+	 * @return string
+	 */
+	public function getNameWithoutExtension() {
+		// TODO: Implement getNameWithoutExtension() method.
+	}
 
 	/**
 	 * Various properties of the FileReference. Note that these information can be different
@@ -47,7 +74,7 @@ class FileReference implements FileInterface {
 	 *
 	 * @var array
 	 */
-	protected $propertiesOfFileReference;
+	protected $referenceProperties;
 
 	/**
 	 * The identifier of this file to identify it on the storage.
@@ -77,7 +104,7 @@ class FileReference implements FileInterface {
 	/**
 	 * Reference to the original File object underlying this FileReference.
 	 *
-	 * @var File
+	 * @var RichFileInterface
 	 */
 	protected $originalFile;
 
@@ -101,7 +128,7 @@ class FileReference implements FileInterface {
 	 * @throws \InvalidArgumentException
 	 */
 	public function __construct(array $fileReferenceData, $factory = NULL) {
-		$this->propertiesOfFileReference = $fileReferenceData;
+		$this->referenceProperties = $fileReferenceData;
 		if (!$fileReferenceData['uid_local']) {
 			throw new \InvalidArgumentException('Incorrect reference to original file given for FileReference.', 1300098528);
 		}
@@ -131,7 +158,8 @@ class FileReference implements FileInterface {
 	}
 
 	/**
-	 * Gets a property, falling back to values of the parent.
+	 * Gets a property, falling back to values of the parent if a property is
+	 * not set for this reference.
 	 *
 	 * @param string $key The property to be looked up
 	 * @return mixed
@@ -153,10 +181,10 @@ class FileReference implements FileInterface {
 	 * @throws \InvalidArgumentException
 	 */
 	public function getReferenceProperty($key) {
-		if (!array_key_exists($key, $this->propertiesOfFileReference)) {
+		if (!array_key_exists($key, $this->referenceProperties)) {
 			throw new \InvalidArgumentException('Property "' . $key . '" of file reference was not found.', 1360684914);
 		}
-		return $this->propertiesOfFileReference[$key];
+		return $this->referenceProperties[$key];
 	}
 
 	/**
@@ -167,7 +195,7 @@ class FileReference implements FileInterface {
 	public function getProperties() {
 		if (empty($this->mergedProperties)) {
 			$this->mergedProperties = \TYPO3\CMS\Core\Utility\GeneralUtility::array_merge_recursive_overrule(
-				$this->propertiesOfFileReference,
+				$this->referenceProperties,
 				$this->originalFile->getProperties(),
 				FALSE,
 				TRUE,
@@ -180,14 +208,14 @@ class FileReference implements FileInterface {
 	}
 
 	/**
-	 * Callback to handle the NULL value feature
+	 * Callback to restore values of
 	 *
 	 * @param mixed $value
 	 * @param mixed $key
 	 */
 	protected function restoreNonNullValuesCallback(&$value, $key) {
-		if (array_key_exists($key, $this->propertiesOfFileReference) && $this->propertiesOfFileReference[$key] !== NULL) {
-			$value = $this->propertiesOfFileReference[$key];
+		if (array_key_exists($key, $this->referenceProperties) && $this->referenceProperties[$key] !== NULL) {
+			$value = $this->referenceProperties[$key];
 		}
 	}
 
@@ -197,7 +225,7 @@ class FileReference implements FileInterface {
 	 * @return array
 	 */
 	public function getReferenceProperties() {
-		return $this->propertiesOfFileReference;
+		return $this->referenceProperties;
 	}
 
 	/**
@@ -250,7 +278,7 @@ class FileReference implements FileInterface {
 	 * @return string
 	 */
 	public function getLink() {
-		return $this->propertiesOfFileReference['link'];
+		return $this->getProperty('link');
 	}
 
 	/**
@@ -259,7 +287,7 @@ class FileReference implements FileInterface {
 	 * @return integer
 	 */
 	public function getUid() {
-		return (int) $this->propertiesOfFileReference['uid'];
+		return (int) $this->referenceProperties['uid'];
 	}
 
 	/**
@@ -453,7 +481,7 @@ class FileReference implements FileInterface {
 	 * @return array Array of main data of the file. Don't rely on all data to be present here, it's just a selection of the most relevant information.
 	 */
 	public function toArray() {
-		$array = array_merge($this->originalFile->toArray(), $this->propertiesOfFileReference);
+		$array = array_merge($this->originalFile->toArray(), $this->referenceProperties);
 		return $array;
 	}
 
@@ -464,6 +492,17 @@ class FileReference implements FileInterface {
 	 */
 	public function getOriginalFile() {
 		return $this->originalFile;
+	}
+
+	/**
+	 * Returns a modified version of the file.
+	 *
+	 * @param string $taskType The task type of this processing
+	 * @param array $configuration the processing configuration, see manual for that
+	 * @return ProcessedFile The processed file
+	 */
+	public function process($taskType, array $configuration) {
+		return $this->originalFile->process($taskType, $configuration);
 	}
 
 }

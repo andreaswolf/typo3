@@ -571,7 +571,7 @@ class ResourceStorage {
 	 * @param FileInterface $file
 	 * @return boolean
 	 */
-	public function checkFileActionPermission($action, FileInterface $file) {
+	public function checkFileActionPermission($action, BasicFileInterface $file) {
 		$isProcessedFile = $file instanceof ProcessedFile;
 		// Check 1: Does the user have permission to perform the action? e.g. "readFile"
 		if (!$isProcessedFile && $this->checkUserActionPermission($action, 'File') === FALSE) {
@@ -749,7 +749,7 @@ class ResourceStorage {
 	 * @param $hash
 	 * @return string
 	 */
-	public function hashFile(FileInterface $fileObject, $hash) {
+	public function hashFile(BasicFileInterface $fileObject, $hash) {
 		return $this->driver->hash($fileObject, $hash);
 	}
 
@@ -779,14 +779,14 @@ class ResourceStorage {
 	/**
 	 * Passes a file to the File Processing Services and returns the resulting ProcessedFile object.
 	 *
-	 * @param FileInterface $fileObject The file object
+	 * @param BasicFileInterface $fileObject The file object
 	 * @param string $context
 	 * @param array $configuration
 	 *
 	 * @return ProcessedFile
 	 * @throws \InvalidArgumentException
 	 */
-	public function processFile(FileInterface $fileObject, $context, array $configuration) {
+	public function processFile(BasicFileInterface $fileObject, $context, array $configuration) {
 		if ($fileObject->getStorage() !== $this) {
 			throw new \InvalidArgumentException('Cannot process files of foreign storage', 1353401835);
 		}
@@ -798,11 +798,11 @@ class ResourceStorage {
 	/**
 	 * Copies a file from the storage for local processing.
 	 *
-	 * @param FileInterface $fileObject
+	 * @param BasicFileInterface $fileObject
 	 * @param bool $writable
 	 * @return string Path to local file (either original or copied to some temporary local location)
 	 */
-	public function getFileForLocalProcessing(FileInterface $fileObject, $writable = TRUE) {
+	public function getFileForLocalProcessing(BasicFileInterface $fileObject, $writable = TRUE) {
 		$filePath = $this->driver->getFileForLocalProcessing($fileObject, $writable);
 		// @todo: shouldn't this go in the driver? this function is called from the indexing service
 		// @todo: and recursively calls itself over and over again, this is left out for now with getModificationTime()
@@ -814,7 +814,7 @@ class ResourceStorage {
 	 * Get file by identifier
 	 *
 	 * @param string $identifier
-	 * @return FileInterface
+	 * @return BasicFileInterface
 	 */
 	public function getFile($identifier) {
 		return $this->driver->getFile($identifier);
@@ -823,10 +823,10 @@ class ResourceStorage {
 	/**
 	 * Get information about a file
 	 *
-	 * @param FileInterface $fileObject
+	 * @param BasicFileInterface $fileObject
 	 * @return array
 	 */
-	public function getFileInfo(FileInterface $fileObject) {
+	public function getFileInfo(BasicFileInterface $fileObject) {
 		return $this->driver->getFileInfo($fileObject);
 	}
 
@@ -933,7 +933,7 @@ class ResourceStorage {
 	/**
 	 * Get contents of a file object
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 *
 	 * @throws Exception\InsufficientFileReadPermissionsException
 	 * @return string
@@ -987,7 +987,7 @@ class ResourceStorage {
 	 * @param Folder $targetFolderObject
 	 *
 	 * @throws Exception\InsufficientFolderWritePermissionsException
-	 * @return FileInterface The file object
+	 * @return BasicFileInterface The file object
 	 */
 	public function createFile($fileName, Folder $targetFolderObject) {
 		if ($this->checkFileExtensionPermission($fileName) === FALSE) {
@@ -1002,7 +1002,7 @@ class ResourceStorage {
 	/**
 	 * Previously in \TYPO3\CMS\Core\Utility\File\ExtendedFileUtility::deleteFile()
 	 *
-	 * @param $fileObject FileInterface
+	 * @param $fileObject BasicFileInterface
 	 * @throws Exception\InsufficientFileAccessPermissionsException
 	 * @throws Exception\FileOperationErrorException
 	 * @return boolean TRUE if deletion succeeded
@@ -1031,16 +1031,16 @@ class ResourceStorage {
 	 * copies a source file (from any location) in to the target
 	 * folder, the latter has to be part of this storage
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @param string $targetFileName an optional destination fileName
 	 * @param string $conflictMode "overrideExistingFile", "renameNewFile", "cancel
 	 *
 	 * @throws \Exception|Exception\AbstractFileOperationException
 	 * @throws Exception\ExistingTargetFileNameException
-	 * @return FileInterface
+	 * @return BasicFileInterface
 	 */
-	public function copyFile(FileInterface $file, Folder $targetFolder, $targetFileName = NULL, $conflictMode = 'renameNewFile') {
+	public function copyFile(BasicFileInterface $file, Folder $targetFolder, $targetFileName = NULL, $conflictMode = 'renameNewFile') {
 		$this->emitPreFileCopySignal($file, $targetFolder);
 		$this->checkFileCopyPermissions($file, $targetFolder, $targetFileName);
 		if ($targetFileName === NULL) {
@@ -1111,7 +1111,7 @@ class ResourceStorage {
 	 * Check if a file has the permission to be copied on a File/Folder/Storage,
 	 * if not throw an exception
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @param string $targetFileName
 	 *
@@ -1122,7 +1122,7 @@ class ResourceStorage {
 	 * @throws Exception\InsufficientUserPermissionsException
 	 * @return void
 	 */
-	protected function checkFileCopyPermissions(FileInterface $file, Folder $targetFolder, $targetFileName) {
+	protected function checkFileCopyPermissions(BasicFileInterface $file, Folder $targetFolder, $targetFileName) {
 		// Check if targetFolder is within this storage, this should never happen
 		if ($this->getUid() != $targetFolder->getStorage()->getUid()) {
 			throw new Exception('The operation of the folder cannot be called by this storage "' . $this->getUid() . '"', 1319550405);
@@ -1151,13 +1151,13 @@ class ResourceStorage {
 	 *
 	 * previously in \TYPO3\CMS\Core\Utility\File\ExtendedFileUtility::func_move()
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @param string $targetFileName an optional destination fileName
 	 * @param string $conflictMode "overrideExistingFile", "renameNewFile", "cancel
 	 *
 	 * @throws Exception\ExistingTargetFileNameException
-	 * @return FileInterface
+	 * @return BasicFileInterface
 	 */
 	public function moveFile($file, $targetFolder, $targetFileName = NULL, $conflictMode = 'renameNewFile') {
 		$this->checkFileMovePermissions($file, $targetFolder);
@@ -1232,11 +1232,11 @@ class ResourceStorage {
 	 * @throws Exception\InsufficientFileWritePermissionsException
 	 * @throws Exception\InsufficientFolderAccessPermissionsException
 	 * @throws Exception\InsufficientUserPermissionsException
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @return void
 	 */
-	protected function checkFileMovePermissions(FileInterface $file, Folder $targetFolder) {
+	protected function checkFileMovePermissions(BasicFileInterface $file, Folder $targetFolder) {
 		// Check if targetFolder is within this storage
 		if ($this->getUid() != $targetFolder->getStorage()->getUid()) {
 			throw new \RuntimeException();
@@ -1262,13 +1262,13 @@ class ResourceStorage {
 	/**
 	 * Previously in \TYPO3\CMS\Core\Utility\File\ExtendedFileUtility::func_rename()
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param string $targetFileName
 	 *
 	 * @throws Exception\InsufficientFileWritePermissionsException
 	 * @throws Exception\InsufficientFileReadPermissionsException
 	 * @throws Exception\InsufficientUserPermissionsException
-	 * @return FileInterface
+	 * @return BasicFileInterface
 	 */
 	// TODO add $conflictMode setting
 	public function renameFile($file, $targetFileName) {
@@ -1313,13 +1313,13 @@ class ResourceStorage {
 	/**
 	 * Replaces a file with a local file (e.g. a freshly uploaded file)
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param string $localFilePath
 	 *
 	 * @throws \InvalidArgumentException
-	 * @return FileInterface
+	 * @return BasicFileInterface
 	 */
-	public function replaceFile(FileInterface $file, $localFilePath) {
+	public function replaceFile(BasicFileInterface $file, $localFilePath) {
 		if (!file_exists($localFilePath)) {
 			throw new \InvalidArgumentException('File "' . $localFilePath . '" does not exist.', 1325842622);
 		}
@@ -1337,7 +1337,7 @@ class ResourceStorage {
 	 * @param Folder $targetFolder the target folder
 	 * @param string $targetFileName the file name to be written
 	 * @param string $conflictMode possible value are 'cancel', 'replace'
-	 * @return FileInterface The file object
+	 * @return BasicFileInterface The file object
 	 */
 	public function addUploadedFile(array $uploadedFileData, Folder $targetFolder = NULL, $targetFileName = NULL, $conflictMode = 'cancel') {
 		$localFilePath = $uploadedFileData['tmp_name'];
@@ -1702,108 +1702,108 @@ class ResourceStorage {
 	/**
 	 * Emits file pre-copy signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @return void
 	 */
-	protected function emitPreFileCopySignal(FileInterface $file, Folder $targetFolder) {
+	protected function emitPreFileCopySignal(BasicFileInterface $file, Folder $targetFolder) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PreFileCopy, array($file, $targetFolder));
 	}
 
 	/**
 	 * Emits the file post-copy signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @return void
 	 */
-	protected function emitPostFileCopySignal(FileInterface $file, Folder $targetFolder) {
+	protected function emitPostFileCopySignal(BasicFileInterface $file, Folder $targetFolder) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PostFileCopy, array($file, $targetFolder));
 	}
 
 	/**
 	 * Emits the file pre-move signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @return void
 	 */
-	protected function emitPreFileMoveSignal(FileInterface $file, Folder $targetFolder) {
+	protected function emitPreFileMoveSignal(BasicFileInterface $file, Folder $targetFolder) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PreFileMove, array($file, $targetFolder));
 	}
 
 	/**
 	 * Emits the file post-move signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param Folder $targetFolder
 	 * @return void
 	 */
-	protected function emitPostFileMoveSignal(FileInterface $file, Folder $targetFolder) {
+	protected function emitPostFileMoveSignal(BasicFileInterface $file, Folder $targetFolder) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PostFileMove, array($file, $targetFolder));
 	}
 
 	/**
 	 * Emits the file pre-rename signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param $targetFolder
 	 * @return void
 	 */
-	protected function emitPreFileRenameSignal(FileInterface $file, $targetFolder) {
+	protected function emitPreFileRenameSignal(BasicFileInterface $file, $targetFolder) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PreFileRename, array($file, $targetFolder));
 	}
 
 	/**
 	 * Emits the file post-rename signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param $targetFolder
 	 * @return void
 	 */
-	protected function emitPostFileRenameSignal(FileInterface $file, $targetFolder) {
+	protected function emitPostFileRenameSignal(BasicFileInterface $file, $targetFolder) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PostFileRename, array($file, $targetFolder));
 	}
 
 	/**
 	 * Emits the file pre-replace signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param $localFilePath
 	 * @return void
 	 */
-	protected function emitPreFileReplaceSignal(FileInterface $file, $localFilePath) {
+	protected function emitPreFileReplaceSignal(BasicFileInterface $file, $localFilePath) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PreFileReplace, array($file, $localFilePath));
 	}
 
 	/**
 	 * Emits the file post-replace signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @param $localFilePath
 	 * @return void
 	 */
-	protected function emitPostFileReplaceSignal(FileInterface $file, $localFilePath) {
+	protected function emitPostFileReplaceSignal(BasicFileInterface $file, $localFilePath) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PostFileReplace, array($file, $localFilePath));
 	}
 
 	/**
 	 * Emits the file pre-deletion signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @return void
 	 */
-	protected function emitPreFileDeleteSignal(FileInterface $file) {
+	protected function emitPreFileDeleteSignal(BasicFileInterface $file) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PreFileDelete, array($file));
 	}
 
 	/**
 	 * Emits the file post-deletion signal
 	 *
-	 * @param FileInterface $file
+	 * @param BasicFileInterface $file
 	 * @return void
 	 */
-	protected function emitPostFileDeleteSignal(FileInterface $file) {
+	protected function emitPostFileDeleteSignal(BasicFileInterface $file) {
 		$this->getSignalSlotDispatcher()->dispatch('TYPO3\\CMS\\Core\\Resource\\ResourceStorage', self::SIGNAL_PostFileDelete, array($file));
 	}
 

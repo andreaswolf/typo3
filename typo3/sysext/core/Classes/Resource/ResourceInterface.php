@@ -53,6 +53,16 @@ interface ResourceInterface {
 	 */
 	public function getStorage();
 
+	/**
+	 * Returns an installation-unique idenifier for a file, consisting of the
+	 * storage id and the file identifier within that storage, separated by a
+	 * colon.
+	 *
+	 * Example: 1:/folder/my_image.png
+	 *
+	 * @return string
+	 */
+	public function getCombinedIdentifier();
 }
 
 ?>
