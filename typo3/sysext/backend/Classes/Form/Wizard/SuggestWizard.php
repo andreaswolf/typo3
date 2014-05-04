@@ -14,6 +14,8 @@ namespace TYPO3\CMS\Backend\Form\Wizard;
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Backend\Form\Suggest\HtmlListResultRenderer;
+use TYPO3\CMS\Backend\Form\Suggest\SearchResult;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -59,7 +61,7 @@ class SuggestWizard {
 		<div class="' . $containerCssClass . '" id="' . $suggestId . '">
 			<div class="input-group">
 				<span class="input-group-addon"><i class="fa fa-search"></i></span>
-				<input type="search" id="' . htmlspecialchars($fieldname) . 'Suggest" value="' . $languageService->sL('LLL:EXT:lang/locallang_core.xlf:labels.findRecord') . '" class="form-control ' . $this->cssClass . '-search" />
+				<input type="search" id="' . htmlspecialchars($fieldname) . 'Suggest" placeholder="' . $languageService->sL('LLL:EXT:lang/locallang_core.xlf:labels.findRecord') . '" class="form-control ' . $this->cssClass . '-search" />
 				<div class="' . $this->cssClass . '-indicator" style="display: none;" id="' . htmlspecialchars($fieldname) . 'SuggestIndicator">
 					<span class="fa fa-spin fa-spinner" title="' . $languageService->sL('LLL:EXT:lang/locallang_core.xlf:alttext.suggestSearching', TRUE) . '"></span>
 				</div>
@@ -144,6 +146,8 @@ class SuggestWizard {
 		$uid = GeneralUtility::_GP('uid');
 		$pageId = GeneralUtility::_GP('pid');
 		$newRecordRow = GeneralUtility::_GP('newRecordRow');
+		$searchResults = new SearchResult($search);
+
 		// If the $uid is numeric, we have an already existing element, so get the
 		// TSconfig of the page itself or the element container (for non-page elements)
 		// otherwise it's a new element, so use given id of parent page (i.e., don't modify it here)
@@ -222,16 +226,17 @@ class SuggestWizard {
 		$maxItems = $config['maxItemsInResultList'] ? : 10;
 		$maxItems = min(count($resultRows), $maxItems);
 
-		$rowIdSuffix = '-' . $table . '-' . $uid . '-' . $field;
-		$listItems = $this->createListItemsFromResultRow($resultRows, $maxItems, $rowIdSuffix);
+		$resultRows = array_slice($resultRows, 0, $maxItems);
+		$searchResults->setRecords($resultRows);
 
-		if (!empty($listItems)) {
-			$list = implode('', $listItems);
-		} else {
-			$list = '<li class="suggest-noresults"><i>' . $this->getLanguageService()->sL('LLL:EXT:lang/locallang_core.xlf:labels.noRecordFound') . '</i></li>';
-		}
-		$list = '<ul class="' . $this->cssClass . '-resultlist">' . $list . '</ul>';
-		$ajaxObj->addContent(0, $list);
+		$rowIdSuffix = '-' . $table . '-' . $uid . '-' . $field;
+
+		$resultRenderer = new HtmlListResultRenderer($searchResults);
+		$resultRenderer->setListCssClass($this->cssClass);
+		$resultRenderer->setRowIdSuffix($rowIdSuffix);
+
+		$renderedResults = $resultRenderer->render($resultRows);
+		$ajaxObj->addContent(0, $renderedResults);
 	}
 
 	/**
@@ -361,38 +366,6 @@ class SuggestWizard {
 		}
 
 		return $config;
-	}
-
-	/**
-	 * Creates a list of <li> elements from a list of results returned by the receiver.
-	 *
-	 * @param array $resultRows
-	 * @param int $maxItems
-	 * @param string $rowIdSuffix
-	 * @return array
-	 */
-	protected function createListItemsFromResultRow($resultRows, $maxItems, $rowIdSuffix) {
-		if (empty($resultRows)) {
-			return array();
-		}
-		$listItems = array();
-
-		// traverse all found records and sort them
-		$rowsSort = array();
-		foreach ($resultRows as $key => $row) {
-			$rowsSort[$key] = $row['text'];
-		}
-		asort($rowsSort);
-		$rowsSort = array_keys($rowsSort);
-
-		// put together the selector entries
-		for ($i = 0; $i < $maxItems; ++$i) {
-			$row = $resultRows[$rowsSort[$i]];
-			$rowId = $row['table'] . '-' . $row['uid'] . $rowIdSuffix;
-			$listItems[] = '<li' . ($row['class'] != '' ? ' class="' . $row['class'] . '"' : '') . ' id="' . $rowId . '"' . ($row['style'] != '' ? ' style="' . $row['style'] . '"' : '') . '>' . $row['sprite'] . $row['text'] . '</li>';
-		}
-
-		return $listItems;
 	}
 
 	/**

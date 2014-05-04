@@ -1169,6 +1169,8 @@ class FormEngine {
 			$arr[$k] = str_replace(
 				array(
 					'###PAGE_TITLE###',
+					'###RECORD_TABLE###',
+					'###RECORD_ID###',
 					'###ID_NEW_INDICATOR###',
 					'###RECORD_LABEL###',
 					'###TABLE_TITLE###',
@@ -1176,6 +1178,8 @@ class FormEngine {
 				),
 				array(
 					$pageTitle,
+					$table,
+					$rec['uid'],
 					$newLabel,
 					$rLabel,
 					htmlspecialchars($languageService->sL($GLOBALS['TCA'][$table]['ctrl']['title'])),

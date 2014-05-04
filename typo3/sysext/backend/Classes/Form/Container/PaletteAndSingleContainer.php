@@ -371,7 +371,7 @@ class PaletteAndSingleContainer extends AbstractContainer {
 		$label = BackendUtility::wrapInHelp($this->globalOptions['table'], $fieldName, htmlspecialchars($element['fieldLabel']));
 
 		$content = array();
-		$content[] = '<div class="' . implode(' ', $paletteFieldClasses) . '">';
+		$content[] = '<div class="' . implode(' ', $paletteFieldClasses) . '" data-field="' . $fieldName . '">';
 		$content[] = 	'<label class="t3js-formengine-label">';
 		$content[] = 		$label;
 		$content[] = 		'<img name="req_' . $this->globalOptions['table'] . '_' . $this->globalOptions['databaseRow']['uid'] . '_' . $fieldName . '" src="clear.gif" class="t3js-formengine-field-required" alt="" />';

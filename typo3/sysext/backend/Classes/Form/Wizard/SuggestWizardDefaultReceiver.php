@@ -147,26 +147,54 @@ class SuggestWizardDefaultReceiver {
 		$start = $recursionCounter * 50;
 		$this->prepareSelectStatement();
 		$this->prepareOrderByStatement();
+
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $this->table, $this->selectClause, '', $this->orderByStatement, $start . ', 50');
+
 		$allRowsCount = $GLOBALS['TYPO3_DB']->sql_num_rows($res);
+
 		if ($allRowsCount) {
-			while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-				// check if we already have collected the maximum number of records
-				if (count($rows) > $this->maxItems) {
-					break;
-				}
-				$this->manipulateRecord($row);
-				$this->makeWorkspaceOverlay($row);
-				// check if the user has access to the record
-				if (!$this->checkRecordAccess($row, $row['uid'])) {
-					continue;
-				}
-				$spriteIcon = IconUtility::getSpriteIconForRecord(
-					$this->table, $row, array('style' => 'margin: 0 4px 0 -20px; padding: 0;')
-				);
-				$uid = $row['t3ver_oid'] > 0 ? $row['t3ver_oid'] : $row['uid'];
-				$path = $this->getRecordPath($row, $uid);
-				if (strlen($path) > 30) {
+			// for now, we always use $this->maxItems; this could later on be changed if we convert the recursion
+			// to a loop.
+			$rows = $this->processQueryResult($res, $this->maxItems);
+		}
+
+		$GLOBALS['TYPO3_DB']->sql_free_result($res);
+
+		// if there are less records than we need, call this function again to get more records
+		if (count($rows) < $this->maxItems && $allRowsCount >= 50 && $recursionCounter < $this->maxItems) {
+			$tmp = self::queryTable($params, ++$recursionCounter);
+			$rows = array_merge($tmp, $rows);
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Processes the results of a SQL query,
+	 *
+	 * @param \resource $res The SQL query result
+	 * @param int $maxItems The maximum number of items to extract
+	 * @return array
+	 */
+	protected function processQueryResult($res, $maxItems) {
+		$rows = array();
+		while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+			// check if we already have collected the maximum number of records
+			if (count($rows) > $maxItems) {
+				break;
+			}
+			$this->manipulateRecord($row);
+			$this->makeWorkspaceOverlay($row);
+			// check if the user has access to the record
+			if (!$this->checkRecordAccess($row, $row['uid'])) {
+				continue;
+			}
+			$spriteIcon = IconUtility::getSpriteIconForRecord(
+				$this->table, $row, array('style' => 'margin: 0 4px 0 -20px; padding: 0;')
+			);
+			$uid = $row['t3ver_oid'] > 0 ? $row['t3ver_oid'] : $row['uid'];
+			$path = $this->getRecordPath($row, $uid);
+			if (strlen($path) > 30) {
 					$languageService = $this->getLanguageService();
 					$croppedPath = '<abbr title="' . htmlspecialchars($path) . '">' .
 						htmlspecialchars(
@@ -175,30 +203,27 @@ class SuggestWizardDefaultReceiver {
 								. $languageService->csConvObj->crop($languageService->charSet, $path, -20)
 						) .
 						'</abbr>';
-				} else {
-					$croppedPath = htmlspecialchars($path);
-				}
-				$label = $this->getLabel($row);
-				$entry = array(
-					'text' => '<span class="suggest-label">' . $label . '</span><span class="suggest-uid">[' . $uid . ']</span><br />
-								<span class="suggest-path">' . $croppedPath . '</span>',
-					'table' => $this->mmForeignTable ? $this->mmForeignTable : $this->table,
-					'label' => $label,
-					'path' => $path,
-					'uid' => $uid,
-					'style' => '',
-					'class' => isset($this->config['cssClass']) ? $this->config['cssClass'] : '',
-					'sprite' => $spriteIcon
-				);
-				$rows[$this->table . '_' . $uid] = $this->renderRecord($row, $entry);
+			} else {
+				$croppedPath = htmlspecialchars($path);
 			}
-			$GLOBALS['TYPO3_DB']->sql_free_result($res);
-			// if there are less records than we need, call this function again to get more records
-			if (count($rows) < $this->maxItems && $allRowsCount >= 50 && $recursionCounter < $this->maxItems) {
-				$tmp = self::queryTable($params, ++$recursionCounter);
-				$rows = array_merge($tmp, $rows);
-			}
+			$label = $this->getLabel($row);
+			$entry = array(
+				'text' => '<div class="suggest-table-' . $this->table . '">' . $spriteIcon . '<span class="suggest-label">'
+					. $label . '</span><span class="suggest-uid">[' . $uid . ']</span><br />'
+					. '<span class="suggest-path">' . $croppedPath . '</span></div>',
+				'table' => $this->mmForeignTable ? $this->mmForeignTable : $this->table,
+				'label' => $label,
+				'path' => $path,
+				'uid' => $uid,
+				'style' => '',
+				'class' => isset($this->config['cssClass']) ? $this->config['cssClass'] : '',
+				'sprite' => $spriteIcon
+			);
+			$rows[$this->table . '_' . $uid] = $this->renderRecord($row, $entry);
 		}
+
+		$GLOBALS['TYPO3_DB']->sql_free_result($res);
+
 		return $rows;
 	}
 

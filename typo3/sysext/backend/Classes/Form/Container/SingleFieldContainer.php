@@ -230,7 +230,7 @@ class SingleFieldContainer extends AbstractContainer {
 				);
 
 				$nullValueWrap = array();
-				$nullValueWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '">';
+				$nullValueWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '" data-field="' . $fieldName . '">';
 				$nullValueWrap[] = 	'<div class="t3-form-field-disable"></div>';
 				$nullValueWrap[] = 	'<div class="checkbox">';
 				$nullValueWrap[] = 		'<label>';
