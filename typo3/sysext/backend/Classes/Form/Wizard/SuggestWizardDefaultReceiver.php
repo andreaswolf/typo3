@@ -144,27 +144,27 @@ class SuggestWizardDefaultReceiver {
 	public function queryTable(&$params, $recursionCounter = 0) {
 		$rows = array();
 		$this->params = &$params;
-		$start = $recursionCounter * 50;
+
 		$this->prepareSelectStatement();
 		$this->prepareOrderByStatement();
 
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $this->table, $this->selectClause, '', $this->orderByStatement, $start . ', 50');
+		$i = 0;
+		do {
+			$start = $i * 50;
 
-		$allRowsCount = $GLOBALS['TYPO3_DB']->sql_num_rows($res);
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $this->table, $this->selectClause, '', $this->orderByStatement, $start . ', 50');
 
-		if ($allRowsCount) {
-			// for now, we always use $this->maxItems; this could later on be changed if we convert the recursion
-			// to a loop.
-			$rows = $this->processQueryResult($res, $this->maxItems);
-		}
+			$allRowsCount = $GLOBALS['TYPO3_DB']->sql_num_rows($res);
 
-		$GLOBALS['TYPO3_DB']->sql_free_result($res);
+			if ($allRowsCount) {
+				// for now, we always use $this->maxItems; this could later on be changed if we convert the recursion
+				// to a loop.
+				$rows = array_merge($rows, $this->processQueryResult($res, $this->maxItems - count($rows)));
+			}
 
-		// if there are less records than we need, call this function again to get more records
-		if (count($rows) < $this->maxItems && $allRowsCount >= 50 && $recursionCounter < $this->maxItems) {
-			$tmp = self::queryTable($params, ++$recursionCounter);
-			$rows = array_merge($tmp, $rows);
-		}
+			$GLOBALS['TYPO3_DB']->sql_free_result($res);
+			++$i;
+		} while (count($rows) < $this->maxItems && $allRowsCount >= 50 && $i < $this->maxItems);
 
 		return $rows;
 	}
