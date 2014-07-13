@@ -670,7 +670,7 @@ return array(
 				'csrfTokenCheck' => TRUE
 			),
 			't3lib_TCEforms_suggest::searchRecord' => array(
-				'callbackMethod' => \TYPO3\CMS\Backend\Form\Wizard\SuggestWizard::class . '->processAjaxRequest',
+				'callbackMethod' => \TYPO3\CMS\Backend\Form\Element\SuggestAjaxController::class . '->processAjaxRequest',
 				'csrfTokenCheck' => TRUE
 			),
 			'ShortcutMenu::getShortcutEditForm' => array(
