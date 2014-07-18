@@ -39,12 +39,43 @@ class MetaDataRepository implements SingletonInterface {
 	protected $tableFields = array();
 
 	/**
+	 * @var array
+	 */
+	protected $defaultMetadataValues = array();
+
+	function __construct() {
+		$this->loadDefaultValuesFromTca();
+	}
+
+	/**
 	 * Wrapper method for getting DatabaseConnection
 	 *
 	 * @return \TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
 	protected function getDatabaseConnection() {
 		return $GLOBALS['TYPO3_DB'];
+	}
+
+	/**
+	 * Loads default values from the column definitions in the TCA.
+	 */
+	protected function loadDefaultValuesFromTca() {
+		foreach ($GLOBALS['TCA']['sys_file_metadata']['columns'] as $column => $content) {
+			if (isset($content['config']['default'])) {
+				$this->defaultMetadataValues[$column] = $content['config']['default'];
+			}
+		}
+	}
+
+	/**
+	 * Loads additional user-defined overrides (from User TSconfig) for metadata fields.
+	 */
+	public function loadUserTSOverrides() {
+		// Setting default values specific for the user:
+		$TCAdefaultOverride = $GLOBALS['BE_USER']->getTSConfigProp('TCAdefaults');
+		if (is_array($TCAdefaultOverride) && is_array($TCAdefaultOverride['sys_file_metadata'])) {
+			$this->defaultMetadataValues = array_merge($this->defaultMetadataValues, $TCAdefaultOverride['sys_file_metadata']);
+		}
 	}
 
 	/**
@@ -104,7 +135,7 @@ class MetaDataRepository implements SingletonInterface {
 			'tstamp' => $GLOBALS['EXEC_TIME'],
 			'cruser_id' => isset($GLOBALS['BE_USER']->user['uid']) ? (int)$GLOBALS['BE_USER']->user['uid'] : 0
 		);
-		$emptyRecord = array_merge($emptyRecord, $additionalFields);
+		$emptyRecord = array_merge($this->defaultMetadataValues, $emptyRecord, $additionalFields);
 		$this->getDatabaseConnection()->exec_INSERTquery($this->tableName, $emptyRecord);
 		$record = $emptyRecord;
 		$record['uid'] = $this->getDatabaseConnection()->sql_insert_id();
