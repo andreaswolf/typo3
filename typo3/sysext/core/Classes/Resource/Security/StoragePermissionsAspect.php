@@ -60,6 +60,9 @@ class StoragePermissionsAspect {
 	 * @return void
 	 */
 	public function addUserPermissionsToStorage(ResourceFactory $resourceFactory, ResourceStorage $storage) {
+		if (!$this->backendUserAuthentication) {
+			return;
+		}
 		if (!$this->backendUserAuthentication->isAdmin()) {
 			$storage->setEvaluatePermissions(TRUE);
 			if ($storage->getUid() > 0) {
@@ -78,6 +81,9 @@ class StoragePermissionsAspect {
 	 * @return void
 	 */
 	protected function addFileMountsToStorage(ResourceStorage $storage) {
+		if (!$this->backendUserAuthentication) {
+			return;
+		}
 		foreach ($this->backendUserAuthentication->getFileMountRecords() as $fileMountRow) {
 			if ((int)$fileMountRow['base'] === (int)$storage->getUid()) {
 				try {
