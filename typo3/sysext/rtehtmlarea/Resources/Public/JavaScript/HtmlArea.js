@@ -14,11 +14,16 @@
  * Main script of TYPO3 htmlArea RTE
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
-define('TYPO3/CMS/Rtehtmlarea/HtmlArea', function() {
+define('TYPO3/CMS/Rtehtmlarea/HtmlArea', [
+	'TYPO3/CMS/Rtehtmlarea/Utility/TYPO3'
+], function(TYPO3Utility) {
 
 	// Establish HTMLArea name space
 Ext.namespace('HTMLArea.CSS', 'HTMLArea.util.TYPO3', 'HTMLArea.util.Tips', 'HTMLArea.util.Color', 'Ext.ux.form', 'Ext.ux.menu', 'Ext.ux.Toolbar');
 Ext.apply(HTMLArea, {
+	util: {
+		TYPO3: TYPO3Utility
+	},
 	/***************************************************
 	 * COMPILED REGULAR EXPRESSIONS                    *
 	 ***************************************************/

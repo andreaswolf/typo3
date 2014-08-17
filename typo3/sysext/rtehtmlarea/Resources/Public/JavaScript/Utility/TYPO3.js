@@ -11,12 +11,12 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Utility/TYPO3', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Utility/TYPO3', function() {
 
 /***************************************************
  * HTMLArea.util.TYPO3: Utility functions for dealing with tabs and inline elements in TYPO3 forms
  ***************************************************/
-HTMLArea.util.TYPO3 = function () {
+var TYPO3 = function () {
 	return {
 		/*
 		 * Simplify the array of nested levels. Create an indexed array with the correct names of the elements.
@@ -129,4 +129,5 @@ HTMLArea.util.TYPO3 = function () {
 	}
 }();
 
+	return TYPO3;
 });
