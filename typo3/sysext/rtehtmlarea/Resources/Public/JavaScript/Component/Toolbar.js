@@ -66,6 +66,10 @@ HTMLArea.Toolbar = Ext.extend(Ext.Container, {
 	 */
 	addItems: function () {
 		var editor = this.getEditor();
+		if (editor.config.toolbar.count == 0) {
+			return;
+		}
+
 			// Walk through the editor toolbar configuration nested arrays: [ toolbar [ row [ group ] ] ]
 		var firstOnRow = true;
 		var firstInGroup = true;
