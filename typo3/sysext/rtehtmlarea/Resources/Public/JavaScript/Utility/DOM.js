@@ -11,12 +11,12 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Utility/DOM', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Utility/DOM', function() {
 
 /*****************************************************************
  * HTMLArea.DOM: Utility functions for dealing with the DOM tree *
  *****************************************************************/
-HTMLArea.DOM = function () {
+var DOM = function () {
 	return {
 		/***************************************************
 		*  DOM-RELATED CONSTANTS
@@ -430,7 +430,7 @@ HTMLArea.DOM = function () {
 /***************************************************
  *  HTMLArea.DOM.Walker: DOM tree walk
  ***************************************************/
-HTMLArea.DOM.Walker = function (config) {
+DOM.Walker = function (config) {
 	var configDefaults = {
 		keepComments: false,
 		keepCDATASections: false,
@@ -443,7 +443,7 @@ HTMLArea.DOM.Walker = function (config) {
 	};
 	Ext.apply(this, config, configDefaults);
 };
-HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
+DOM.Walker = Ext.extend(DOM.Walker, {
 	/*
 	 * Walk the DOM tree
 	 *
@@ -654,9 +654,9 @@ HTMLArea.DOM.Walker = Ext.extend(HTMLArea.DOM.Walker, {
 /***************************************************
  *  HTMLArea.DOM.Selection: Selection object
  ***************************************************/
-HTMLArea.DOM.Selection = function (config) {
+DOM.Selection = function (config) {
 };
-HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
+DOM.Selection = Ext.extend(DOM.Selection, {
 	/*
 	 * Reference to the editor MUST be set in config
 	 */
@@ -1679,9 +1679,9 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 /***************************************************
  *  HTMLArea.DOM.BookMark: BookMark object
  ***************************************************/
-HTMLArea.DOM.BookMark = function (config) {
+DOM.BookMark = function (config) {
 };
-HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
+DOM.BookMark = Ext.extend(DOM.BookMark, {
 	/*
 	 * Reference to the editor MUST be set in config
 	 */
@@ -1986,9 +1986,9 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 /***************************************************
  *  HTMLArea.DOM.Node: Node object
  ***************************************************/
-HTMLArea.DOM.Node = function (config) {
+DOM.Node = function (config) {
 };
-HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
+DOM.Node = Ext.extend(DOM.Node, {
 	/*
 	 * Reference to the editor MUST be set in config
 	 */
@@ -2180,5 +2180,6 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 	}
 });
 
+return DOM;
 
 });

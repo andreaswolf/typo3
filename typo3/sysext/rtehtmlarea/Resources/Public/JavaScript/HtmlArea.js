@@ -16,8 +16,9 @@
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
 define('TYPO3/CMS/Rtehtmlarea/HtmlArea', [
 	'TYPO3/CMS/Rtehtmlarea/Component/Ajax',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM',
 	'TYPO3/CMS/Rtehtmlarea/Utility/TYPO3'
-], function(Ajax, TYPO3Utility) {
+], function(Ajax, DOM, TYPO3Utility) {
 
 	// Establish HTMLArea name space
 Ext.namespace('HTMLArea.CSS', 'HTMLArea.util.TYPO3', 'HTMLArea.util.Tips', 'HTMLArea.util.Color', 'Ext.ux.form', 'Ext.ux.menu', 'Ext.ux.Toolbar');
@@ -26,6 +27,7 @@ Ext.apply(HTMLArea, {
 		TYPO3: TYPO3Utility
 	},
 	Ajax: Ajax,
+	DOM: DOM,
 	/***************************************************
 	 * COMPILED REGULAR EXPRESSIONS                    *
 	 ***************************************************/
