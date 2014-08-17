@@ -13,7 +13,12 @@
 /*
  * Table Operations Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TableOperations', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.TableOperations = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -478,16 +483,16 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 			    case "f_st_float":
 				switch (val) {
 				    case "not set":
-					HTMLArea.DOM.removeClass(table, this.floatRight);
-					HTMLArea.DOM.removeClass(table, this.floatLeft);
+					DOM.removeClass(table, this.floatRight);
+					DOM.removeClass(table, this.floatLeft);
 					break;
 				    case "right":
-					HTMLArea.DOM.removeClass(table, this.floatLeft);
-					HTMLArea.DOM.addClass(table, this.floatRight);
+					DOM.removeClass(table, this.floatLeft);
+					DOM.addClass(table, this.floatRight);
 					break;
 				    case "left":
-					HTMLArea.DOM.removeClass(table, this.floatRight);
-					HTMLArea.DOM.addClass(table, this.floatLeft);
+					DOM.removeClass(table, this.floatRight);
+					DOM.addClass(table, this.floatLeft);
 					break;
 				}
 				break;
@@ -640,7 +645,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 		if (mode === 'wysiwyg' && this.editor.isEditable()) {
 			switch (button.itemId) {
 				case 'TO-toggle-borders':
-					button.setInactive(!HTMLArea.DOM.hasClass(this.editor.document.body, 'htmlarea-showtableborders'));
+					button.setInactive(!DOM.hasClass(this.editor.document.body, 'htmlarea-showtableborders'));
 					break;
 				case 'TO-cell-merge':
 					if (Ext.isGecko) {
@@ -1143,10 +1148,10 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 	 */
 	toggleBorders : function (forceBorders) {
 		var body = this.editor.document.body;
-		if (!HTMLArea.DOM.hasClass(body, 'htmlarea-showtableborders')) {
-			HTMLArea.DOM.addClass(body,'htmlarea-showtableborders');
+		if (!DOM.hasClass(body, 'htmlarea-showtableborders')) {
+			DOM.addClass(body,'htmlarea-showtableborders');
 		} else if (!forceBorders) {
-			HTMLArea.DOM.removeClass(body,'htmlarea-showtableborders');
+			DOM.removeClass(body,'htmlarea-showtableborders');
 		}
 	},
 	/*
@@ -1258,20 +1263,20 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 			odd = oddClass[type];
 			even = evenClass[type];
 			if (remove) {
-				HTMLArea.DOM.removeClass(row, odd);
-				HTMLArea.DOM.removeClass(row, even);
+				DOM.removeClass(row, odd);
+				DOM.removeClass(row, even);
 				// Check if i is even, and apply classes for both possible results
 			} else if (odd && even) {
 				if ((i % 2) == 0) {
-					if (HTMLArea.DOM.hasClass(row, even)) {
-						HTMLArea.DOM.removeClass(row, even);
+					if (DOM.hasClass(row, even)) {
+						DOM.removeClass(row, even);
 					}
-					HTMLArea.DOM.addClass(row, odd);
+					DOM.addClass(row, odd);
 				} else {
-					if (HTMLArea.DOM.hasClass(row, odd)) {
-						HTMLArea.DOM.removeClass(row, odd);
+					if (DOM.hasClass(row, odd)) {
+						DOM.removeClass(row, odd);
 					}
-					HTMLArea.DOM.addClass(row, even);
+					DOM.addClass(row, even);
 				}
 			}
 		}
@@ -1301,20 +1306,20 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 				odd = oddClass[type];
 				even = evenClass[type];
 				if (remove) {
-					if (odd) HTMLArea.DOM.removeClass(cell, odd);
-					if (even) HTMLArea.DOM.removeClass(cell, even);
+					if (odd) DOM.removeClass(cell, odd);
+					if (even) DOM.removeClass(cell, even);
 				} else if (odd && even) {
 						// Check if j+startAt is even, and apply classes for both possible results
 					if ((j % 2) == 0) {
-						if (HTMLArea.DOM.hasClass(cell, even)) {
-							HTMLArea.DOM.removeClass(cell, even);
+						if (DOM.hasClass(cell, even)) {
+							DOM.removeClass(cell, even);
 						}
-						HTMLArea.DOM.addClass(cell, odd);
+						DOM.addClass(cell, odd);
 					} else{
-						if (HTMLArea.DOM.hasClass(cell, odd)) {
-							HTMLArea.DOM.removeClass(cell, odd);
+						if (DOM.hasClass(cell, odd)) {
+							DOM.removeClass(cell, odd);
 						}
-						HTMLArea.DOM.addClass(cell, even);
+						DOM.addClass(cell, even);
 					}
 				}
 			}
@@ -1380,23 +1385,23 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 			lastRowClassName = rowLastClass[type];
 			if (remove) {
 				if (baseClassName) {
-					HTMLArea.DOM.removeClass(row, rowClassName);
+					DOM.removeClass(row, rowClassName);
 				}
 				if (lastRowClassName && i == n-1) {
-					HTMLArea.DOM.removeClass(row, lastRowClassName);
+					DOM.removeClass(row, lastRowClassName);
 				}
 			} else {
 				if (baseClassName) {
-					if (HTMLArea.DOM.hasClass(row, baseClassName, true)) {
-						HTMLArea.DOM.removeClass(row, baseClassName, true);
+					if (DOM.hasClass(row, baseClassName, true)) {
+						DOM.removeClass(row, baseClassName, true);
 					}
-					HTMLArea.DOM.addClass(row, rowClassName);
+					DOM.addClass(row, rowClassName);
 				}
 				if (lastRowClassName) {
 					if (i == n-1) {
-						HTMLArea.DOM.addClass(row, lastRowClassName);
-					} else if (HTMLArea.DOM.hasClass(row, lastRowClassName)) {
-						HTMLArea.DOM.removeClass(row, lastRowClassName);
+						DOM.addClass(row, lastRowClassName);
+					} else if (DOM.hasClass(row, lastRowClassName)) {
+						DOM.removeClass(row, lastRowClassName);
 					}
 				}
 			}
@@ -1429,23 +1434,23 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 				lastColumnClassName = columnLastClass[type];
 				if (remove) {
 					if (baseClassName) {
-						HTMLArea.DOM.removeClass(cell, columnClassName);
+						DOM.removeClass(cell, columnClassName);
 					}
 					if (lastColumnClassName && j == n-1) {
-							HTMLArea.DOM.removeClass(cell, lastColumnClassName);
+							DOM.removeClass(cell, lastColumnClassName);
 					}
 				} else {
 					if (baseClassName) {
-						if (HTMLArea.DOM.hasClass(cell, baseClassName, true)) {
-							HTMLArea.DOM.removeClass(cell, baseClassName, true);
+						if (DOM.hasClass(cell, baseClassName, true)) {
+							DOM.removeClass(cell, baseClassName, true);
 						}
-						HTMLArea.DOM.addClass(cell, columnClassName);
+						DOM.addClass(cell, columnClassName);
 					}
 					if (lastColumnClassName) {
 						if (j == n-1) {
-							HTMLArea.DOM.addClass(cell, lastColumnClassName);
-						} else if (HTMLArea.DOM.hasClass(cell, lastColumnClassName)) {
-							HTMLArea.DOM.removeClass(cell, lastColumnClassName);
+							DOM.addClass(cell, lastColumnClassName);
+						} else if (DOM.hasClass(cell, lastColumnClassName)) {
+							DOM.removeClass(cell, lastColumnClassName);
 						}
 					}
 				}
@@ -1479,7 +1484,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 			} else {
 				var firstRow = thead.rows[0];
 			}
-			HTMLArea.DOM.removeClass(firstRow, this.useHeaderClass);
+			DOM.removeClass(firstRow, this.useHeaderClass);
 		} else {
 			if (thead) {
 				var rows = thead.rows;
@@ -1498,10 +1503,10 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 		}
 		if (headers == "both") {
 			var firstRow = tbody.rows[0];
-			HTMLArea.DOM.addClass(firstRow, this.useHeaderClass);
+			DOM.addClass(firstRow, this.useHeaderClass);
 		} else if (headers != "top") {
 			var firstRow = tbody.rows[0];
-			HTMLArea.DOM.removeClass(firstRow, this.useHeaderClass);
+			DOM.removeClass(firstRow, this.useHeaderClass);
 			this.remapRowCells(firstRow, "td");
 		}
 		if (headers == "top" || headers == "both") {
@@ -1536,7 +1541,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 	 * This function remaps the given cell to the specified node name
 	 */
 	remapCell : function(element, nodeName) {
-		var newCell = HTMLArea.DOM.convertNode(element, nodeName);
+		var newCell = DOM.convertNode(element, nodeName);
 		var attributes = element.attributes, attributeName, attributeValue;
 		for (var i = attributes.length; --i >= 0;) {
 			attributeName = attributes.item(i).nodeName;
@@ -1571,7 +1576,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 				var classNames = newCell.className.trim().split(" ");
 				for (var i = classNames.length; --i >= 0;) {
 					if (!allowedClasses.test(classNames[i])) {
-						HTMLArea.DOM.removeClass(newCell, classNames[i]);
+						DOM.removeClass(newCell, classNames[i]);
 					}
 				}
 			}
@@ -1776,7 +1781,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 				if (thead.length && thead[0].rows.length) {
 					selected = 'top';
 				} else if (tbody.length && tbody[0].rows.length) {
-					if (HTMLArea.DOM.hasClass(tbody[0].rows[0], this.useHeaderClass)) {
+					if (DOM.hasClass(tbody[0].rows[0], this.useHeaderClass)) {
 						selected = 'both';
 					} else if (tbody[0].rows[0].cells.length && tbody[0].rows[0].cells[0].nodeName.toLowerCase() == 'th') {
 						selected = 'left';
@@ -1891,7 +1896,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 				var classNames = new Array();
 				classNames.push(defaultClass);
 			} else {
-				var classNames = HTMLArea.DOM.getClassNames(element);
+				var classNames = DOM.getClassNames(element);
 			}
 			blockStyle.buildDropDownOptions(dropDown, nodeName);
 			blockStyle.setSelectedOption(dropDown, classNames, 'noUnknown', defaultClass);
@@ -2586,7 +2591,7 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 	onKey: function (key, event) {
 		var range = this.editor.getSelection().createRange();
 		var parentElement = this.editor.getSelection().getParentElement();
-		while (parentElement && !HTMLArea.DOM.isBlockElement(parentElement)) {
+		while (parentElement && !DOM.isBlockElement(parentElement)) {
 			parentElement = parentElement.parentNode;
 		}
 		if (/^(td|th)$/i.test(parentElement.nodeName)) {
@@ -2607,4 +2612,6 @@ HTMLArea.TableOperations = Ext.extend(HTMLArea.Plugin, {
 		}
 		return true;
 	}
+});
+
 });

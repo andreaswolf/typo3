@@ -13,7 +13,12 @@
 /*
  * TYPO3Link plugin for htmlArea RTE
  */
-HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TYPO3Link', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.TYPO3Link = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -239,7 +244,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 					// Export trailing br that IE may include in the link
 				if (Ext.isIE) {
 					if (node.lastChild && /^br$/i.test(node.lastChild.nodeName)) {
-						HTMLArea.DOM.removeFromParent(node.lastChild);
+						DOM.removeFromParent(node.lastChild);
 						node.parentNode.insertBefore(this.editor.document.createElement('br'), node.nextSibling);
 					}
 				}
@@ -306,7 +311,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			var nodeInRange = false;
 			if (!HTMLArea.isIEBeforeIE9) {
 				this.editor.focus();
-				nodeInRange = HTMLArea.DOM.rangeIntersectsNode(range, node);
+				nodeInRange = DOM.rangeIntersectsNode(range, node);
 			} else {
 				if (this.editor.getSelection().getType() === 'Control') {
 						// we assume an image is selected
@@ -362,7 +367,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			}
 		} else {
 			for (var i = node.firstChild; i; i = i.nextSibling) {
-				if (i.nodeType === HTMLArea.DOM.ELEMENT_NODE || i.nodeType === HTMLArea.DOM.DOCUMENT_FRAGMENT_NODE) {
+				if (i.nodeType === DOM.ELEMENT_NODE || i.nodeType === DOM.DOCUMENT_FRAGMENT_NODE) {
 					this.setLinkAttributes(i, range, cur_target, cur_class, cur_title, imageNode, addIconAfterLink, additionalValues);
 				}
 			}
@@ -401,7 +406,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			var intersection = false;
 			if (!HTMLArea.isIEBeforeIE9) {
 				this.editor.focus();
-				intersection = HTMLArea.DOM.rangeIntersectsNode(range, node);
+				intersection = DOM.rangeIntersectsNode(range, node);
 			} else {
 				if (this.editor.getSelection().getType() === 'Control') {
 						// we assume an image is selected
@@ -427,7 +432,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			while (child) {
 					// Save next sibling as child may be removed
 				nextSibling = child.nextSibling;
-				if (child.nodeType === HTMLArea.DOM.ELEMENT_NODE || child.nodeType === HTMLArea.DOM.DOCUMENT_FRAGMENT_NODE) {
+				if (child.nodeType === DOM.ELEMENT_NODE || child.nodeType === DOM.DOCUMENT_FRAGMENT_NODE) {
 					this.cleanAllLinks(child, range, keepLinks);
 				}
 				child = nextSibling;
@@ -460,7 +465,7 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 						// Let's see if a link was double-clicked in Firefox
 					if (Ext.isGecko && !selectionEmpty) {
 						var range = this.editor.getSelection().createRange();
-						if (range.startContainer.nodeType === HTMLArea.DOM.ELEMENT_NODE && range.startContainer == range.endContainer && (range.endOffset - range.startOffset == 1)) {
+						if (range.startContainer.nodeType === DOM.ELEMENT_NODE && range.startContainer == range.endContainer && (range.endOffset - range.startOffset == 1)) {
 							var node = range.startContainer.childNodes[range.startOffset];
 							if (node && /^a$/i.test(node.nodeName) && node.textContent == range.toString()) {
 								link = true;
@@ -472,4 +477,6 @@ HTMLArea.TYPO3Link = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

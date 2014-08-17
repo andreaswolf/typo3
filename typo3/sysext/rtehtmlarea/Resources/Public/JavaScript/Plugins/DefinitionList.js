@@ -13,7 +13,12 @@
 /*
  * DefinitionList Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.DefinitionList = Ext.extend(HTMLArea.BlockElements, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/DefinitionList', [
+	'TYPO3/CMS/Rtehtmlarea/Plugins/BlockElements',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(BlockElements, DOM) {
+
+HTMLArea.DefinitionList = Ext.extend(BlockElements, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -98,7 +103,7 @@ HTMLArea.DefinitionList = Ext.extend(HTMLArea.BlockElements, {
 		if (target) {
 			parentElement = target;
 		}
-		while (parentElement && (!HTMLArea.DOM.isBlockElement(parentElement) || /^(li)$/i.test(parentElement.nodeName))) {
+		while (parentElement && (!DOM.isBlockElement(parentElement) || /^(li)$/i.test(parentElement.nodeName))) {
 			parentElement = parentElement.parentNode;
 		}
 		switch (buttonId) {
@@ -135,7 +140,7 @@ HTMLArea.DefinitionList = Ext.extend(HTMLArea.BlockElements, {
 	 * This function remaps a node to the specified node name
 	 */
 	remapNode: function (node, nodeName) {
-		var newNode = HTMLArea.DOM.convertNode(node, nodeName);
+		var newNode = DOM.convertNode(node, nodeName);
 		var attributes = node.attributes, attributeName, attributeValue;
 		for (var i = attributes.length; --i >= 0;) {
 			attributeName = attributes.item(i).nodeName;
@@ -165,7 +170,7 @@ HTMLArea.DefinitionList = Ext.extend(HTMLArea.BlockElements, {
 				var classNames = newNode.className.trim().split(' ');
 				for (var i = classNames.length; --i >= 0;) {
 					if (!allowedClasses.test(classNames[i])) {
-						HTMLArea.DOM.removeClass(newNode, classNames[i]);
+						DOM.removeClass(newNode, classNames[i]);
 					}
 				}
 			}
@@ -234,7 +239,7 @@ HTMLArea.DefinitionList = Ext.extend(HTMLArea.BlockElements, {
 					while (list.firstChild) {
 						list.previousSibling.appendChild(list.firstChild);
 					}
-					HTMLArea.DOM.removeFromParent(list);
+					DOM.removeFromParent(list);
 				}
 			} else if (/^dt$/i.test(sibling.nodeName)) {
 				var definition = this.editor.document.createElement('dd');
@@ -315,4 +320,6 @@ HTMLArea.DefinitionList = Ext.extend(HTMLArea.BlockElements, {
 			}
 		}
 	}
+});
+
 });

@@ -14,7 +14,10 @@
  * Block Style Plugin for TYPO3 htmlArea RTE
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Plugins/BlockStyle', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/BlockStyle', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
 
 HTMLArea.BlockStyle = Ext.extend(Plugin, {
 	/*
@@ -95,7 +98,7 @@ HTMLArea.BlockStyle = Ext.extend(Plugin, {
 		var blocks = this.editor.getSelection().getElements();
 		for (var k = 0; k < blocks.length; ++k) {
 			var parent = blocks[k];
-			while (parent && !HTMLArea.DOM.isBlockElement(parent) && !/^(img)$/i.test(parent.nodeName)) {
+			while (parent && !DOM.isBlockElement(parent) && !/^(img)$/i.test(parent.nodeName)) {
 				parent = parent.parentNode;
 			}
 			if (!k) {
@@ -114,7 +117,7 @@ HTMLArea.BlockStyle = Ext.extend(Plugin, {
 			var classNames = node.className.trim().split(" ");
 			for (var i = classNames.length; --i >= 0;) {
 				if (!HTMLArea.reservedClassNames.test(classNames[i])) {
-					HTMLArea.DOM.removeClass(node, classNames[i]);
+					DOM.removeClass(node, classNames[i]);
 					if (node.nodeName.toLowerCase() === "table" && this.getPluginInstance('TableOperations')) {
 						this.getPluginInstance('TableOperations').removeAlternatingClasses(node, classNames[i]);
 						this.getPluginInstance('TableOperations').removeCountingClasses(node, classNames[i]);
@@ -126,14 +129,14 @@ HTMLArea.BlockStyle = Ext.extend(Plugin, {
 			var nodeName = node.nodeName.toLowerCase();
 			if (this.tags && this.tags[nodeName] && this.tags[nodeName].allowedClasses) {
 				if (this.tags[nodeName].allowedClasses.test(className)) {
-					HTMLArea.DOM.addClass(node, className);
+					DOM.addClass(node, className);
 				}
 			} else if (this.tags && this.tags.all && this.tags.all.allowedClasses) {
 				if (this.tags.all.allowedClasses.test(className)) {
-					HTMLArea.DOM.addClass(node, className);
+					DOM.addClass(node, className);
 				}
 			} else {
-				HTMLArea.DOM.addClass(node, className);
+				DOM.addClass(node, className);
 			}
 			if (nodeName === "table" && this.getPluginInstance('TableOperations')) {
 				this.getPluginInstance('TableOperations').reStyleTable(node);
@@ -200,12 +203,12 @@ HTMLArea.BlockStyle = Ext.extend(Plugin, {
 			var tagName = null;
 			var statusBarSelection = this.editor.statusBar ? this.editor.statusBar.getSelection() : null;
 			var parent = statusBarSelection ? statusBarSelection : this.editor.getSelection().getParentElement();
-			while (parent && !HTMLArea.DOM.isBlockElement(parent) && !/^(img)$/i.test(parent.nodeName)) {
+			while (parent && !DOM.isBlockElement(parent) && !/^(img)$/i.test(parent.nodeName)) {
 				parent = parent.parentNode;
 			}
 			if (parent) {
 				tagName = parent.nodeName.toLowerCase();
-				classNames = HTMLArea.DOM.getClassNames(parent);
+				classNames = DOM.getClassNames(parent);
 			}
 			if (tagName && tagName !== "body"){
 				this.buildDropDownOptions(dropDown, tagName);

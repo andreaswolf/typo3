@@ -244,7 +244,7 @@ HTMLArea.ContextMenu = Ext.extend(Plugin, {
 			} else if (previousSibling) {
 				this.editor.getSelection().selectNode(previousSibling, false);
 			}
-			HTMLArea.DOM.removeFromParent(this.deleteTarget);
+			DOM.removeFromParent(this.deleteTarget);
 			this.editor.updateToolbar();
 		}
 	},

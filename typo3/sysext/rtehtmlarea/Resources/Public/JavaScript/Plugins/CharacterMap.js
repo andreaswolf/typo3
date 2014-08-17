@@ -13,7 +13,10 @@
 /*
  * Character Map Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.CharacterMap = Ext.extend(HTMLArea.Plugin, {
+
+define('TYPO3/CMS/Rtehtmlarea/Plugins/CharacterMap', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
+
+HTMLArea.CharacterMap = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -474,4 +477,6 @@ HTMLArea.CharacterMap = Ext.extend(HTMLArea.Plugin, {
 	resetFocus: function () {
 		this.restoreSelection();
 	}
+});
+
 });

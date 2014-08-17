@@ -13,7 +13,11 @@
 /*
  * Quick Tag Editor Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.QuickTag = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/QuickTag', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin'
+], function(Plugin) {
+
+HTMLArea.QuickTag = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -756,4 +760,6 @@ HTMLArea.QuickTag = Ext.extend(HTMLArea.Plugin, {
 			'close': '</td></tr></tbody>'
 		}
 	}
+});
+
 });

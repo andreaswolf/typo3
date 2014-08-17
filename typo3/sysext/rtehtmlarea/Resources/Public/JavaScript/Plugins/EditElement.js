@@ -13,7 +13,12 @@
 /*
  * EditElement plugin for htmlArea RTE
  */
-HTMLArea.EditElement = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/EditElement', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.EditElement = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -287,9 +292,9 @@ HTMLArea.EditElement = Ext.extend(HTMLArea.Plugin, {
 	 */
 	setStyleOptions: function (comboBox, element) {
 		var nodeName = element.nodeName.toLowerCase();
-		this.stylePlugin = this.getPluginInstance(HTMLArea.DOM.isBlockElement(element) ? 'BlockStyle' : 'TextStyle');
+		this.stylePlugin = this.getPluginInstance(DOM.isBlockElement(element) ? 'BlockStyle' : 'TextStyle');
 		if (comboBox && this.stylePlugin) {
-			var classNames = HTMLArea.DOM.getClassNames(element);
+			var classNames = DOM.getClassNames(element);
 			this.stylePlugin.buildDropDownOptions(comboBox, nodeName);
 			this.stylePlugin.setSelectedOption(comboBox, classNames, 'noUnknown');
 		}
@@ -434,7 +439,7 @@ HTMLArea.EditElement = Ext.extend(HTMLArea.Plugin, {
 			var value = field.getValue();
 			switch (itemId) {
 				case 'className':
-					if (HTMLArea.DOM.isBlockElement(this.element)) {
+					if (DOM.isBlockElement(this.element)) {
 						this.stylePlugin.applyClassChange(this.element, value);
 					} else {
 							// Do not remove the span element if the language attribute is to be removed
@@ -463,7 +468,7 @@ HTMLArea.EditElement = Ext.extend(HTMLArea.Plugin, {
 		this.restoreSelection();
 		if (this.element) {
 				// Delete the element
-			HTMLArea.DOM.removeFromParent(this.element);
+			DOM.removeFromParent(this.element);
 		}
 		this.close();
 		event.stopEvent();
@@ -480,4 +485,6 @@ HTMLArea.EditElement = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

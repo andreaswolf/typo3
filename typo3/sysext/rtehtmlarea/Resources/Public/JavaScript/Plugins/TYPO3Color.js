@@ -13,7 +13,12 @@
 /*
  * TYPO3 Color Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.TYPO3Color = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TYPO3Color', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.TYPO3Color = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -356,7 +361,7 @@ HTMLArea.TYPO3Color = Ext.extend(HTMLArea.Plugin, {
 				// Set the color in the style attribute
 			element.style[this.styleProperty[buttonId]] = color;
 				// Remove the span tag if it has no more attribute
-			if (/^span$/i.test(element.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
+			if (/^span$/i.test(element.nodeName) && !DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
 				this.editor.getDomNode().removeMarkup(element);
 			}
 		} else if (statusBarSelection) {
@@ -364,7 +369,7 @@ HTMLArea.TYPO3Color = Ext.extend(HTMLArea.Plugin, {
 				// Set the color in the style attribute
 			element.style[this.styleProperty[buttonId]] = color;
 				// Remove the span tag if it has no more attribute
-			if (/^span$/i.test(element.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
+			if (/^span$/i.test(element.nodeName) && !DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
 				this.editor.getDomNode().removeMarkup(element);
 			}
 		} else if (color && this.editor.getSelection().endPointsInSameBlock()) {
@@ -388,4 +393,6 @@ HTMLArea.TYPO3Color = Ext.extend(HTMLArea.Plugin, {
 			button.setDisabled(disabled);
 		}
 	}
+});
+
 });

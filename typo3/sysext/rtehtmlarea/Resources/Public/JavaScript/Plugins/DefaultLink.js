@@ -13,7 +13,12 @@
 /*
  * Default Link Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.DefaultLink = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/DefaultLink', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.DefaultLink = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -306,7 +311,7 @@ HTMLArea.DefaultLink = Ext.extend(HTMLArea.Plugin, {
 			a = this.editor.getSelection().getParentElement();
 			if (!HTMLArea.isIEBeforeIE9 && !/^a$/i.test(a.nodeName)) {
 				var range = this.editor.getSelection().createRange();
-				if (range.startContainer.nodeType !== HTMLArea.DOM.TEXT_NODE) {
+				if (range.startContainer.nodeType !== DOM.TEXT_NODE) {
 					a = range.startContainer.childNodes[range.startOffset];
 				} else {
 					a = range.startContainer.nextSibling;
@@ -384,7 +389,7 @@ HTMLArea.DefaultLink = Ext.extend(HTMLArea.Plugin, {
 						// Let's see if a link was double-clicked in Firefox
 					if (Ext.isGecko && !selectionEmpty) {
 						var range = this.editor.getSelection().createRange();
-						if (range.startContainer.nodeType === HTMLArea.DOM.ELEMENT_NODE && range.startContainer == range.endContainer && (range.endOffset - range.startOffset == 1)) {
+						if (range.startContainer.nodeType === DOM.ELEMENT_NODE && range.startContainer == range.endContainer && (range.endOffset - range.startOffset == 1)) {
 							var node = range.startContainer.childNodes[range.startOffset];
 							if (node && /^a$/i.test(node.nodeName) && node.textContent == range.toString()) {
 								link = true;
@@ -396,4 +401,6 @@ HTMLArea.DefaultLink = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

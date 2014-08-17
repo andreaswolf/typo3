@@ -13,7 +13,12 @@
 /**
  * Microdata Schema Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.MicrodataSchema = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/MicrodataSchema', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.MicrodataSchema = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -169,10 +174,10 @@ HTMLArea.MicrodataSchema = Ext.extend(HTMLArea.Plugin, {
 	 */
 	toggleMicrodata: function (forceMicrodata) {
 		var body = this.editor.document.body;
-		if (!HTMLArea.DOM.hasClass(body, 'htmlarea-show-microdata')) {
-			HTMLArea.DOM.addClass(body,'htmlarea-show-microdata');
+		if (!DOM.hasClass(body, 'htmlarea-show-microdata')) {
+			DOM.addClass(body,'htmlarea-show-microdata');
 		} else if (!forceMicrodata) {
-			HTMLArea.DOM.removeClass(body,'htmlarea-show-microdata');
+			DOM.removeClass(body,'htmlarea-show-microdata');
 		}
 	},
 	/*
@@ -351,11 +356,13 @@ HTMLArea.MicrodataSchema = Ext.extend(HTMLArea.Plugin, {
 		if (this.getEditorMode() === 'wysiwyg' && this.editor.isEditable()) {
 			switch (button.itemId) {
 				case 'ShowMicrodata':
-					button.setInactive(!HTMLArea.DOM.hasClass(this.editor.document.body, 'htmlarea-show-microdata'));
+					button.setInactive(!DOM.hasClass(this.editor.document.body, 'htmlarea-show-microdata'));
 					break;
 				default:
 					break;
 			}
 		}
 	}
+});
+
 });

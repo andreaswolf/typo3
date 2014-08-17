@@ -13,7 +13,12 @@
 /*
  * TYPO3Image plugin for htmlArea RTE
  */
-HTMLArea.TYPO3Image = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TYPO3Image', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.TYPO3Image = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -117,4 +122,6 @@ HTMLArea.TYPO3Image = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

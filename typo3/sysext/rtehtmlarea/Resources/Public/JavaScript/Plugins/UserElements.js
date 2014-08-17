@@ -13,7 +13,11 @@
 /*
  * User Elements Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.UserElements = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/UserElements', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin'
+], function(Plugin) {
+
+HTMLArea.UserElements = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -74,4 +78,6 @@ HTMLArea.UserElements = Ext.extend(HTMLArea.Plugin, {
 		);
 		return false;
 	}
+});
+
 });

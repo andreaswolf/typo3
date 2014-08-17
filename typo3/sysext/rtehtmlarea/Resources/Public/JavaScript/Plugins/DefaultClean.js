@@ -13,7 +13,10 @@
 /**
  * Default Clean Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.DefaultClean = Ext.extend(HTMLArea.Plugin, {
+
+define('TYPO3/CMS/Rtehtmlarea/Plugins/DefaultClean', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
+
+HTMLArea.DefaultClean = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -106,7 +109,7 @@ HTMLArea.DefaultClean = Ext.extend(HTMLArea.Plugin, {
 			if (HTMLArea.isIEBeforeIE9) {
 				el.outerHTML = HTMLArea.util.htmlEncode(el.innerText);
 			} else {
-				var txt = document.createTextNode(HTMLArea.DOM.getInnerText(el));
+				var txt = document.createTextNode(DOM.getInnerText(el));
 				el.parentNode.insertBefore(txt,el);
 				el.parentNode.removeChild(el);
 			}
@@ -119,15 +122,15 @@ HTMLArea.DefaultClean = Ext.extend(HTMLArea.Plugin, {
 		function parseTree(root) {
 			var tag = root.nodeName.toLowerCase(), next;
 			switch (root.nodeType) {
-				case HTMLArea.DOM.ELEMENT_NODE:
+				case DOM.ELEMENT_NODE:
 					if (/^(meta|style|title|link)$/.test(tag)) {
 						root.parentNode.removeChild(root);
 						return false;
 						break;
 					}
-				case HTMLArea.DOM.TEXT_NODE:
-				case HTMLArea.DOM.DOCUMENT_NODE:
-				case HTMLArea.DOM.DOCUMENT_FRAGMENT_NODE:
+				case DOM.TEXT_NODE:
+				case DOM.DOCUMENT_NODE:
+				case DOM.DOCUMENT_FRAGMENT_NODE:
 					if ((HTMLArea.isIEBeforeIE9 && root.scopeName != 'HTML') || (!HTMLArea.isIEBeforeIE9 && /:/.test(tag)) || /o:p/.test(tag)) {
 						stripTag(root);
 						return false;
@@ -136,7 +139,7 @@ HTMLArea.DefaultClean = Ext.extend(HTMLArea.Plugin, {
 						clearStyle(root);
 						for (var i = root.firstChild; i; i = next) {
 							next = i.nextSibling;
-							if (i.nodeType !== HTMLArea.DOM.TEXT_NODE && parseTree(i)) {
+							if (i.nodeType !== DOM.TEXT_NODE && parseTree(i)) {
 								checkEmpty(i);
 							}
 						}
@@ -160,4 +163,6 @@ HTMLArea.DefaultClean = Ext.extend(HTMLArea.Plugin, {
 	wordCleanHandler: function (event) {
 		this.clean.defer(250, this);
 	}
+});
+
 });

@@ -13,7 +13,11 @@
 /*
  * Insert Smiley Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.InsertSmiley = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/InsertSmiley', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin'
+], function(Plugin) {
+
+HTMLArea.InsertSmiley = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -143,4 +147,6 @@ HTMLArea.InsertSmiley = Ext.extend(HTMLArea.Plugin, {
 		this.close();
 		return false;
 	}
+});
+
 });

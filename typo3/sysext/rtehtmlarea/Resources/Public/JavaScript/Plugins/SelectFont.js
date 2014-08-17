@@ -13,7 +13,12 @@
 /*
  * SelectFont Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.SelectFont = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/SelectFont', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.SelectFont = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -145,7 +150,7 @@ HTMLArea.SelectFont = Ext.extend(HTMLArea.Plugin, {
 				// Set the style attribute
 			this.setStyle(element, combo.itemId, param);
 				// Remove the span tag if it has no more attribute
-			if (/^span$/i.test(element.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
+			if (/^span$/i.test(element.nodeName) && !DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
 				editor.getDomNode().removeMarkup(element);
 			}
 		} else if (statusBarSelection) {
@@ -153,7 +158,7 @@ HTMLArea.SelectFont = Ext.extend(HTMLArea.Plugin, {
 				// Set the style attribute
 			this.setStyle(element, combo.itemId, param);
 				// Remove the span tag if it has no more attribute
-			if (/^span$/i.test(element.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
+			if (/^span$/i.test(element.nodeName) && !DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
 				editor.getDomNode().removeMarkup(element);
 			}
 		} else if (editor.getSelection().endPointsInSameBlock()) {
@@ -229,4 +234,6 @@ HTMLArea.SelectFont = Ext.extend(HTMLArea.Plugin, {
 			select.setDisabled(!endPointsInSameBlock || (selectionEmpty && /^body$/i.test(parentElement.nodeName)));
 		}
 	}
+});
+
 });

@@ -13,7 +13,12 @@
 /*
  * Paste as Plain Text Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/PlainText', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.PlainText = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -91,7 +96,7 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 					this.cleanerConfig[behaviour].removeAttributes = new RegExp( '^(' + this.pasteBehaviourConfiguration[behaviour].removeAttributes.split(',').join('|') + ')$', 'i');
 				}
 			}
-			this.cleaners[behaviour] = new HTMLArea.DOM.Walker(this.cleanerConfig[behaviour]);
+			this.cleaners[behaviour] = new DOM.Walker(this.cleanerConfig[behaviour]);
 		}, this);
 			// Initial behaviour
 		this.currentBehaviour = 'plainText';
@@ -314,7 +319,7 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 		this.bookmark = this.editor.getBookMark().get(this.editor.getSelection().createRange());
 			// Create and append hidden section
 		var hiddenSection = this.editor.document.createElement('div');
-		HTMLArea.DOM.addClass(hiddenSection, 'htmlarea-paste-hidden-section');
+		DOM.addClass(hiddenSection, 'htmlarea-paste-hidden-section');
 		hiddenSection.setAttribute('style', 'position: absolute; left: -10000px; top: ' + this.editor.document.body.scrollTop + 'px; overflow: hidden;');
 		hiddenSection = this.editor.document.body.appendChild(hiddenSection);
 		if (Ext.isWebKit) {
@@ -336,7 +341,7 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 		var hiddenSection = divs[0];
 			// Delete any other hidden sections
 		for (var i = divs.length; --i >= 1;) {
-			HTMLArea.DOM.removeFromParent(divs[i]);
+			DOM.removeFromParent(divs[i]);
 		}
 		var content = '';
 		switch (this.currentBehaviour) {
@@ -351,7 +356,7 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 				break;
 		}
 			// Remove the hidden section from the document
-		HTMLArea.DOM.removeFromParent(hiddenSection);
+		DOM.removeFromParent(hiddenSection);
 			// Restore the selection
 		this.editor.getSelection().selectRange(this.editor.getBookMark().moveTo(this.bookmark));
 			// Insert the cleaned content
@@ -488,4 +493,6 @@ HTMLArea.PlainText = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

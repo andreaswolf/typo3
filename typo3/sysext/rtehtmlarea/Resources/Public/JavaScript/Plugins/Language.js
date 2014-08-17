@@ -13,7 +13,12 @@
 /*
  * Language Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/Language', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.Language = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -207,10 +212,10 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 	 */
 	toggleLanguageMarks: function (forceLanguageMarks) {
 		var body = this.editor.document.body;
-		if (!HTMLArea.DOM.hasClass(body, 'htmlarea-show-language-marks')) {
-			HTMLArea.DOM.addClass(body,'htmlarea-show-language-marks');
+		if (!DOM.hasClass(body, 'htmlarea-show-language-marks')) {
+			DOM.addClass(body,'htmlarea-show-language-marks');
 		} else if (!forceLanguageMarks) {
-			HTMLArea.DOM.removeClass(body,'htmlarea-show-language-marks');
+			DOM.removeClass(body,'htmlarea-show-language-marks');
 		}
 	},
 	/*
@@ -302,7 +307,7 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 					element.removeAttribute('xml:lang');
 				} catch(e) { }
 					// Remove the span tag if it has no more attribute
-				if (/^span$/i.test(element.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
+				if (/^span$/i.test(element.nodeName) && !DOM.hasAllowedAttributes(element, this.allowedAttributes)) {
 					this.editor.getDomNode().removeMarkup(element);
 				}
 			} else {
@@ -325,8 +330,8 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 	 */
 	getLanguageAttributeFromBlockElements: function () {
 		var endBlocks = this.editor.getSelection().getEndBlocks();
-		var startAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.start);
-		var endAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.end);
+		var startAncestors = DOM.getBlockAncestors(endBlocks.start);
+		var endAncestors = DOM.getBlockAncestors(endBlocks.end);
 		var index = 0;
 		while (index < startAncestors.length && index < endAncestors.length && startAncestors[index] === endAncestors[index]) {
 			++index;
@@ -336,7 +341,7 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 		}
 		var language = this.getLanguageAttribute(startAncestors[index]);
 		for (var block = startAncestors[index]; block; block = block.nextSibling) {
-			if (HTMLArea.DOM.isBlockElement(block)) {
+			if (DOM.isBlockElement(block)) {
 				if (this.getLanguageAttribute(block) != language || this.getLanguageAttribute(block) == 'none') {
 					language = 'none';
 					break;
@@ -353,8 +358,8 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 	 */
 	setLanguageAttributeOnBlockElements: function (language) {
 		var endBlocks = this.editor.getSelection().getEndBlocks();
-		var startAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.start);
-		var endAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.end);
+		var startAncestors = DOM.getBlockAncestors(endBlocks.start);
+		var endAncestors = DOM.getBlockAncestors(endBlocks.end);
 		var index = 0;
 		while (index < startAncestors.length && index < endAncestors.length && startAncestors[index] === endAncestors[index]) {
 			++index;
@@ -363,7 +368,7 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 			--index;
 		}
 		for (var block = startAncestors[index]; block; block = block.nextSibling) {
-			if (HTMLArea.DOM.isBlockElement(block)) {
+			if (DOM.isBlockElement(block)) {
 				this.setLanguageAttributes(block, language);
 			}
 			if (block == endAncestors[index]) {
@@ -392,7 +397,7 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 					}
 					break;
 				case 'ShowLanguageMarks':
-					button.setInactive(!HTMLArea.DOM.hasClass(this.editor.document.body, 'htmlarea-show-language-marks'));
+					button.setInactive(!DOM.hasClass(this.editor.document.body, 'htmlarea-show-language-marks'));
 					break;
 				case 'Language':
 						// Updating the language drop-down
@@ -446,4 +451,6 @@ HTMLArea.Language = Ext.extend(HTMLArea.Plugin, {
 		}
 		select.setDisabled(!(store.getCount()>1) || (selectionEmpty && /^body$/i.test(this.editor.getSelection().getParentElement().nodeName)));
 	}
+});
+
 });

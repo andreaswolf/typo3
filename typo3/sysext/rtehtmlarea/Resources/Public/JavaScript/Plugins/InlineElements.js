@@ -16,7 +16,12 @@
 /*
  * Creation of the class of InlineElements plugins
  */
-HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/InlineElements', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.InlineElements = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the base constructor
 	 */
@@ -156,7 +161,7 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 	 * Function to check if an element is an inline elment
 	 */
 	isInlineElement: function (el) {
-		return el && (el.nodeType === HTMLArea.DOM.ELEMENT_NODE) && this.REInlineElements.test(el.nodeName.toLowerCase());
+		return el && (el.nodeType === DOM.ELEMENT_NODE) && this.REInlineElements.test(el.nodeName.toLowerCase());
 	},
 	/*
 	 * This function adds an attribute to the array of allowed attributes on inline elements
@@ -204,7 +209,7 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 		}
 			// Check if the chosen element is among the ancestors
 		for (var i = 0; i < ancestors.length; ++i) {
-			if ((ancestors[i].nodeType === HTMLArea.DOM.ELEMENT_NODE) && (ancestors[i].nodeName.toLowerCase() == element)) {
+			if ((ancestors[i].nodeType === DOM.ELEMENT_NODE) && (ancestors[i].nodeName.toLowerCase() == element)) {
 				elementIsAncestor = true;
 				var elementAncestorIndex = i;
 				break;
@@ -273,7 +278,7 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 			}
 		} else {
 				// Remove or remap markup when the selection is collapsed
-			if (parent && !HTMLArea.DOM.isBlockElement(parent)) {
+			if (parent && !DOM.isBlockElement(parent)) {
 				if ((element === 'none') || elementIsAncestor) {
 					if (elementIsAncestor) {
 						parent = ancestors[elementAncestorIndex];
@@ -292,7 +297,7 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 	 */
 	remapMarkup: function (element, tagName) {
 		var attributeValue;
-		var newElement = HTMLArea.DOM.convertNode(element, tagName);
+		var newElement = DOM.convertNode(element, tagName);
 		if (tagName === 'bdo') {
 			newElement.setAttribute('dir', 'ltr');
 		}
@@ -325,7 +330,7 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 				classNames = newElement.className.trim().split(" ");
 				for (var i = 0; i < classNames.length; ++i) {
 					if (!allowedClasses.test(classNames[i])) {
-						HTMLArea.DOM.removeClass(newElement, classNames[i]);
+						DOM.removeClass(newElement, classNames[i]);
 					}
 				}
 			}
@@ -342,7 +347,7 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 				fullNodeSelected = false;
 			var range = editor.getSelection().createRange();
 			var parent = editor.getSelection().getParentElement();
-			if (parent && !HTMLArea.DOM.isBlockElement(parent)) {
+			if (parent && !DOM.isBlockElement(parent)) {
 				tagName = parent.nodeName.toLowerCase();
 			}
 			if (!selectionEmpty) {
@@ -397,3 +402,4 @@ HTMLArea.InlineElements = Ext.extend(HTMLArea.Plugin, {
 	}
 });
 
+});

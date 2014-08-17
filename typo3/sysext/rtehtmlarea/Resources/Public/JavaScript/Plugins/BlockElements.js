@@ -290,10 +290,10 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 		if (target) {
 			parentElement = target;
 		}
-		while (parentElement && (!HTMLArea.DOM.isBlockElement(parentElement) || /^li$/i.test(parentElement.nodeName))) {
+		while (parentElement && (!DOM.isBlockElement(parentElement) || /^li$/i.test(parentElement.nodeName))) {
 			parentElement = parentElement.parentNode;
 		}
-		var blockAncestors = HTMLArea.DOM.getBlockAncestors(parentElement);
+		var blockAncestors = DOM.getBlockAncestors(parentElement);
 		var tableCell = null;
 		if (id === "TAB" || id === "SHIFT-TAB") {
 			for (var i = blockAncestors.length; --i >= 0;) {
@@ -357,10 +357,10 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 						this.appendToLog('onButtonPress', e + '\n\nby execCommand(' + buttonId + ');', 'error');
 					}
 				} else if (this.isAllowedBlockElement("div")) {
-					if (/^div$/i.test(parentElement.nodeName) && !HTMLArea.DOM.hasClass(parentElement, this.useClass[buttonId])) {
-						HTMLArea.DOM.addClass(parentElement, this.useClass[buttonId]);
-					} else if (!/^div$/i.test(parentElement.nodeName) && /^div$/i.test(parentElement.parentNode.nodeName) && !HTMLArea.DOM.hasClass(parentElement.parentNode, this.useClass[buttonId])) {
-						HTMLArea.DOM.addClass(parentElement.parentNode, this.useClass[buttonId]);
+					if (/^div$/i.test(parentElement.nodeName) && !DOM.hasClass(parentElement, this.useClass[buttonId])) {
+						DOM.addClass(parentElement, this.useClass[buttonId]);
+					} else if (!/^div$/i.test(parentElement.nodeName) && /^div$/i.test(parentElement.parentNode.nodeName) && !DOM.hasClass(parentElement.parentNode, this.useClass[buttonId])) {
+						DOM.addClass(parentElement.parentNode, this.useClass[buttonId]);
 					} else {
 						var bookmark = this.editor.getBookMark().get(range);
 						var newBlock = this.wrapSelectionInBlockElement('div', this.useClass[buttonId], null, true);
@@ -371,7 +371,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 				}
 				break;
 			case "Outdent" :
-				if (/^(ol|ul)$/i.test(parentElement.nodeName) && !HTMLArea.DOM.hasClass(parentElement, this.useClass.Indent)) {
+				if (/^(ol|ul)$/i.test(parentElement.nodeName) && !DOM.hasClass(parentElement, this.useClass.Indent)) {
 					if (/^(li)$/i.test(parentElement.parentNode.nodeName)) {
 						if (Ext.isOpera) {
 							try {
@@ -417,7 +417,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 					}
 				} else if (this.isAllowedBlockElement("div")) {
 					for (var i = blockAncestors.length; --i >= 0;) {
-						if (HTMLArea.DOM.hasClass(blockAncestors[i], this.useClass.Indent)) {
+						if (DOM.hasClass(blockAncestors[i], this.useClass.Indent)) {
 							var bookmark = this.editor.getBookMark().get(range);
 							var newBlock = this.wrapSelectionInBlockElement('div', false, blockAncestors[i]);
 								// If not directly under the div, we need to backtrack
@@ -431,10 +431,10 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 								newBlock.appendChild(parent);
 							}
 							newBlock.className = blockAncestors[i].className;
-							HTMLArea.DOM.removeClass(newBlock, this.useClass.Indent);
+							DOM.removeClass(newBlock, this.useClass.Indent);
 							if (!newBlock.previousSibling) {
 								while (newBlock.hasChildNodes()) {
-									if (newBlock.firstChild.nodeType === HTMLArea.DOM.ELEMENT_NODE) {
+									if (newBlock.firstChild.nodeType === DOM.ELEMENT_NODE) {
 										newBlock.firstChild.className = newBlock.className;
 									}
 									blockAncestors[i].parentNode.insertBefore(newBlock.firstChild, blockAncestors[i]);
@@ -442,14 +442,14 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 							} else if (!newBlock.nextSibling) {
 								if (blockAncestors[i].nextSibling) {
 									while (newBlock.hasChildNodes()) {
-										if (newBlock.firstChild.nodeType === HTMLArea.DOM.ELEMENT_NODE) {
+										if (newBlock.firstChild.nodeType === DOM.ELEMENT_NODE) {
 											newBlock.lastChild.className = newBlock.className;
 										}
 										blockAncestors[i].parentNode.insertBefore(newBlock.lastChild, blockAncestors[i].nextSibling);
 									}
 								} else {
 									while (newBlock.hasChildNodes()) {
-										if (newBlock.firstChild.nodeType === HTMLArea.DOM.ELEMENT_NODE) {
+										if (newBlock.firstChild.nodeType === DOM.ELEMENT_NODE) {
 											newBlock.firstChild.className = newBlock.className;
 										}
 										blockAncestors[i].parentNode.appendChild(newBlock.firstChild);
@@ -466,7 +466,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 									clone.appendChild(newBlock.nextSibling);
 								}
 								while (newBlock.hasChildNodes()) {
-									if (newBlock.firstChild.nodeType === HTMLArea.DOM.ELEMENT_NODE) {
+									if (newBlock.firstChild.nodeType === DOM.ELEMENT_NODE) {
 										newBlock.firstChild.className = newBlock.className;
 									}
 									blockAncestors[i].parentNode.insertBefore(newBlock.firstChild, clone);
@@ -558,8 +558,8 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 	 */
 	wrapSelectionInBlockElement: function (blockName, useClass, withinBlock, keepValid) {
 		var endBlocks = this.editor.getSelection().getEndBlocks();
-		var startAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.start, withinBlock);
-		var endAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.end, withinBlock);
+		var startAncestors = DOM.getBlockAncestors(endBlocks.start, withinBlock);
+		var endAncestors = DOM.getBlockAncestors(endBlocks.end, withinBlock);
 		var i = 0;
 		while (i < startAncestors.length && i < endAncestors.length && startAncestors[i] === endAncestors[i]) {
 			++i;
@@ -581,7 +581,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 		}
 		var blockElement = this.editor.document.createElement(blockName);
 		if (useClass) {
-			HTMLArea.DOM.addClass(blockElement, useClass);
+			DOM.addClass(blockElement, useClass);
 		}
 		var contextElement = endAncestors[0];
 		if (i) {
@@ -621,8 +621,8 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 	 */
 	addClassOnBlockElements: function (buttonId, className) {
 		var endBlocks = this.editor.getSelection().getEndBlocks();
-		var startAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.start);
-		var endAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.end);
+		var startAncestors = DOM.getBlockAncestors(endBlocks.start);
+		var endAncestors = DOM.getBlockAncestors(endBlocks.end);
 		var index = 0;
 		while (index < startAncestors.length && index < endAncestors.length && startAncestors[index] === endAncestors[index]) {
 			++index;
@@ -632,16 +632,16 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 		}
 		if (!/^(body)$/i.test(startAncestors[index].nodeName)) {
 			for (var block = startAncestors[index]; block; block = block.nextSibling) {
-				if (HTMLArea.DOM.isBlockElement(block)) {
+				if (DOM.isBlockElement(block)) {
 					switch (buttonId) {
 						case "Indent" :
-							if (!HTMLArea.DOM.hasClass(block, this.useClass[buttonId])) {
-								HTMLArea.DOM.addClass(block, this.useClass[buttonId]);
+							if (!DOM.hasClass(block, this.useClass[buttonId])) {
+								DOM.addClass(block, this.useClass[buttonId]);
 							}
 							break;
 						case "Outdent" :
-							if (HTMLArea.DOM.hasClass(block, this.useClass["Indent"])) {
-								HTMLArea.DOM.removeClass(block, this.useClass["Indent"]);
+							if (DOM.hasClass(block, this.useClass["Indent"])) {
+								DOM.removeClass(block, this.useClass["Indent"]);
 							}
 							break;
 						case "JustifyLeft"   :
@@ -654,7 +654,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 							if (this.standardBlockElements.test(buttonId.toLowerCase()) && buttonId.toLowerCase() == block.nodeName.toLowerCase()) {
 								this.cleanClasses(block);
 								if (className) {
-									HTMLArea.DOM.addClass(block, className);
+									DOM.addClass(block, className);
 								}
 							}
 							break;
@@ -672,14 +672,14 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 	toggleAlignmentClass: function (block, buttonId) {
 		for (var alignmentButtonId in this.useClass) {
 			if (this.useClass.hasOwnProperty(alignmentButtonId) && alignmentButtonId !== "Indent") {
-				if (HTMLArea.DOM.hasClass(block, this.useClass[alignmentButtonId])) {
-					HTMLArea.DOM.removeClass(block, this.useClass[alignmentButtonId]);
+				if (DOM.hasClass(block, this.useClass[alignmentButtonId])) {
+					DOM.removeClass(block, this.useClass[alignmentButtonId]);
 				} else if (alignmentButtonId === buttonId) {
-					HTMLArea.DOM.addClass(block, this.useClass[alignmentButtonId]);
+					DOM.addClass(block, this.useClass[alignmentButtonId]);
 				}
 			}
 		}
-		if (/^div$/i.test(block.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(block, this.allowedAttributes)) {
+		if (/^div$/i.test(block.nodeName) && !DOM.hasAllowedAttributes(block, this.allowedAttributes)) {
 			this.editor.getDomNode().removeMarkup(block);
 		}
 	},
@@ -720,13 +720,13 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 			var child = last.firstChild, next;
 			while (child) {
 				next = child.nextSibling;
-				if (!HTMLArea.DOM.rangeIntersectsNode(range, child)) {
+				if (!DOM.rangeIntersectsNode(range, child)) {
 					indentedList.appendChild(child);
 				}
 				child = next;
 			}
 			if (!last.hasChildNodes()) {
-				HTMLArea.DOM.removeFromParent(last);
+				DOM.removeFromParent(last);
 			}
 		}
 		if (indentedList.previousSibling && indentedList.previousSibling.hasChildNodes()) {
@@ -834,7 +834,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 				} else {
 					this.indentedList = previous.appendChild(this.indentedList);
 				}
-				HTMLArea.DOM.removeFromParent(i);
+				DOM.removeFromParent(i);
 				this.makeNestedList(el);
 				break;
 			}
@@ -845,7 +845,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 	 */
 	insertParagraph: function (after) {
 		var endBlocks = this.editor.getSelection().getEndBlocks();
-		var ancestors = after ? HTMLArea.DOM.getBlockAncestors(endBlocks.end) : HTMLArea.DOM.getBlockAncestors(endBlocks.start);
+		var ancestors = after ? DOM.getBlockAncestors(endBlocks.end) : DOM.getBlockAncestors(endBlocks.start);
 		var endElement = ancestors[ancestors.length-1];
 		for (var i = ancestors.length; --i >= 0;) {
 			if (/^(table|div|ul|ol|dl|blockquote|address|pre)$/i.test(ancestors[i].nodeName) && !/^(li)$/i.test(ancestors[i].parentNode.nodeName)) {
@@ -882,14 +882,14 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 				startContainer.normalize();
 				var ruler = startContainer.childNodes[range.startOffset-1];
 				if (ruler.nextSibling) {
-					if (ruler.nextSibling.nodeType === HTMLArea.DOM.TEXT_NODE) {
+					if (ruler.nextSibling.nodeType === DOM.TEXT_NODE) {
 						if (/\S/.test(ruler.nextSibling.textContent)) {
 							var paragraph = this.editor.document.createElement('p');
 							paragraph = startContainer.appendChild(paragraph);
 							paragraph = startContainer.insertBefore(paragraph, ruler.nextSibling);
 							paragraph.appendChild(ruler.nextSibling);
 						} else {
-							HTMLArea.DOM.removeFromParent(ruler.nextSibling);
+							DOM.removeFromParent(ruler.nextSibling);
 							var paragraph = ruler.nextSibling;
 						}
 					} else {
@@ -939,7 +939,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 		if (this.editor.getSelection().isEmpty()) {
 			var range = this.editor.getSelection().createRange();
 			var parentElement = this.editor.getSelection().getParentElement();
-			while (parentElement && !HTMLArea.DOM.isBlockElement(parentElement)) {
+			while (parentElement && !DOM.isBlockElement(parentElement)) {
 				parentElement = parentElement.parentNode;
 			}
 			if (/^(dt|dd)$/i.test(parentElement.nodeName)) {
@@ -976,15 +976,15 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 			if (!HTMLArea.reservedClassNames.test(classNames[i])) {
 				if (this.tags && this.tags[nodeName] && this.tags[nodeName].allowedClasses) {
 					if (!this.tags[nodeName].allowedClasses.test(classNames[i])) {
-						HTMLArea.DOM.removeClass(node, classNames[i]);
+						DOM.removeClass(node, classNames[i]);
 					}
 				} else if (this.tags && this.tags.all && this.tags.all.allowedClasses) {
 					if (!this.tags.all.allowedClasses.test(classNames[i])) {
-						HTMLArea.DOM.removeClass(node, classNames[i]);
+						DOM.removeClass(node, classNames[i]);
 					}
 				}
 				if (this.formatBlockItems[nodeName] && this.formatBlockItems[nodeName].classList && this.formatBlockItems[nodeName].classList.test(classNames[i])) {
-					HTMLArea.DOM.removeClass(node, classNames[i]);
+					DOM.removeClass(node, classNames[i]);
 				}
 			}
 		}
@@ -997,13 +997,13 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 			var statusBarSelection = this.editor.statusBar ? this.editor.statusBar.getSelection() : null;
 			var parentElement = statusBarSelection ? statusBarSelection : this.editor.getSelection().getParentElement();
 			if (!/^body$/i.test(parentElement.nodeName)) {
-				while (parentElement && !HTMLArea.DOM.isBlockElement(parentElement) || /^li$/i.test(parentElement.nodeName)) {
+				while (parentElement && !DOM.isBlockElement(parentElement) || /^li$/i.test(parentElement.nodeName)) {
 					parentElement = parentElement.parentNode;
 				}
-				var blockAncestors = HTMLArea.DOM.getBlockAncestors(parentElement);
+				var blockAncestors = DOM.getBlockAncestors(parentElement);
 				var endBlocks = this.editor.getSelection().getEndBlocks();
-				var startAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.start);
-				var endAncestors = HTMLArea.DOM.getBlockAncestors(endBlocks.end);
+				var startAncestors = DOM.getBlockAncestors(endBlocks.start);
+				var endAncestors = DOM.getBlockAncestors(endBlocks.end);
 				var index = 0;
 				while (index < startAncestors.length && index < endAncestors.length && startAncestors[index] === endAncestors[index]) {
 					++index;
@@ -1028,7 +1028,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 							commandState = true;
 						} else {
 							for (var j = blockAncestors.length; --j >= 0;) {
-								if (HTMLArea.DOM.hasClass(blockAncestors[j], this.useClass.Indent) || /^(td|th)$/i.test(blockAncestors[j].nodeName)) {
+								if (DOM.hasClass(blockAncestors[j], this.useClass.Indent) || /^(td|th)$/i.test(blockAncestors[j].nodeName)) {
 									commandState = true;
 									break;
 								}
@@ -1068,7 +1068,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 								button.setDisabled(false);
 								commandState = true;
 								for (var block = startAncestors[index]; block; block = block.nextSibling) {
-									commandState = commandState && HTMLArea.DOM.hasClass(block, this.useClass[button.itemId]);
+									commandState = commandState && DOM.hasClass(block, this.useClass[button.itemId]);
 									if (block == endAncestors[index]) {
 										break;
 									}
@@ -1136,7 +1136,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 				// Could be a custom item ...
 			index = store.findBy(function(record, id) {
 				var item = this.formatBlockItems[record.get('value')];
-				return item && item.tagName == nodeName && item.addClass && HTMLArea.DOM.hasClass(deepestBlockAncestor, item.addClass);
+				return item && item.tagName == nodeName && item.addClass && DOM.hasClass(deepestBlockAncestor, item.addClass);
 			}, this);
 			if (index == -1) {
 					// ... or a standard one
@@ -1173,5 +1173,7 @@ HTMLArea.BlockElements = Ext.extend(Plugin, {
 		return true;
 	}
 });
+
+return HTMLArea.BlockElements;
 
 });

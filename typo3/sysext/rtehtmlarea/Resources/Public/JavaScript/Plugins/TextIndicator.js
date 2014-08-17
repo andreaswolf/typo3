@@ -13,7 +13,11 @@
 /*
  * TextIndicator Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.TextIndicator = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TextIndicator', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin'
+], function(Plugin) {
+
+HTMLArea.TextIndicator = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -111,4 +115,6 @@ HTMLArea.TextIndicator = Ext.extend(HTMLArea.Plugin, {
 			button.getEl().setStyle(style);
 		}
 	}
+});
+
 });

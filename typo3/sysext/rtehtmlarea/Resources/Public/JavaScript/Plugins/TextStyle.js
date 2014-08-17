@@ -16,7 +16,12 @@
 /*
  * Creation of the class of TextStyle plugins
  */
-HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TextStyle', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.TextStyle = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -97,7 +102,7 @@ HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
 		return true;
 	},
 	isInlineElement: function (el) {
-		return el && (el.nodeType === HTMLArea.DOM.ELEMENT_NODE) && this.REInlineTags.test(el.nodeName.toLowerCase());
+		return el && (el.nodeType === DOM.ELEMENT_NODE) && this.REInlineTags.test(el.nodeName.toLowerCase());
 	},
 	/*
 	 * This function adds an attribute to the array of allowed attributes on inline elements
@@ -140,12 +145,12 @@ HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
 				parent = statusBarSelection;
 			}
 		}
-		if (!selectionEmpty && !fullNodeSelected || (!selectionEmpty && fullNodeSelected && parent && HTMLArea.DOM.isBlockElement(parent))) {
+		if (!selectionEmpty && !fullNodeSelected || (!selectionEmpty && fullNodeSelected && parent && DOM.isBlockElement(parent))) {
 				// The selection is not empty, nor full element, or the selection is full block element
 			if (className !== "none") {
 					// Add span element with class attribute
 				var newElement = editor.document.createElement('span');
-				HTMLArea.DOM.addClass(newElement, className);
+				DOM.addClass(newElement, className);
 				editor.getDomNode().wrapWithInlineElement(newElement, range);
 				if (!HTMLArea.isIEBeforeIE9) {
 					range.detach();
@@ -166,16 +171,16 @@ HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
 	 */
 	applyClassChange: function (node, className, noRemove) {
 			// Add or remove class
-		if (node && !HTMLArea.DOM.isBlockElement(node)) {
+		if (node && !DOM.isBlockElement(node)) {
 			if (className === 'none' && node.className && /\S/.test(node.className)) {
 				classNames = node.className.trim().split(' ');
-				HTMLArea.DOM.removeClass(node, classNames[classNames.length-1]);
+				DOM.removeClass(node, classNames[classNames.length-1]);
 			}
 			if (className !== 'none') {
-				HTMLArea.DOM.addClass(node, className);
+				DOM.addClass(node, className);
 			}
 				// Remove the span tag if it has no more attribute
-			if (/^span$/i.test(node.nodeName) && !HTMLArea.DOM.hasAllowedAttributes(node, this.allowedAttributes) && !noRemove) {
+			if (/^span$/i.test(node.nodeName) && !DOM.hasAllowedAttributes(node, this.allowedAttributes) && !noRemove) {
 				this.editor.getDomNode().removeMarkup(node);
 			}
 		}
@@ -242,7 +247,7 @@ HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
 			var range = editor.getSelection().createRange();
 			var parent = editor.getSelection().getParentElement();
 			var ancestors = editor.getSelection().getAllAncestors();
-			if (parent && !HTMLArea.DOM.isBlockElement(parent)) {
+			if (parent && !DOM.isBlockElement(parent)) {
 				tagName = parent.nodeName.toLowerCase();
 				if (parent.className && /\S/.test(parent.className)) {
 					classNames = parent.className.trim().split(" ");
@@ -254,7 +259,7 @@ HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
 					fullNodeSelected = (statusBarSelection === ancestors[i])
 						&& ((!HTMLArea.isIEBeforeIE9 && ancestors[i].textContent === range.toString()) || (HTMLArea.isIEBeforeIE9 && ancestors[i].innerText === range.text));
 					if (fullNodeSelected) {
-						if (!HTMLArea.DOM.isBlockElement(ancestors[i])) {
+						if (!DOM.isBlockElement(ancestors[i])) {
 							tagName = ancestors[i].nodeName.toLowerCase();
 							if (ancestors[i].className && /\S/.test(ancestors[i].className)) {
 								classNames = ancestors[i].className.trim().split(" ");
@@ -372,4 +377,6 @@ HTMLArea.TextStyle = Ext.extend(HTMLArea.Plugin, {
 			dropDown.setDisabled(!store.getCount() || (store.getCount() == 1 && dropDown.getValue() == 'none') || disabled);
 		}
 	}
+});
+
 });

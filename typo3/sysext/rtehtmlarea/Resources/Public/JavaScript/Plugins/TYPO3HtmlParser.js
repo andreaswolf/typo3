@@ -13,7 +13,11 @@
 /**
  * TYPO3HtmlParser Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.TYPO3HtmlParser = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/TYPO3HtmlParser', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin'
+], function(Plugin) {
+
+HTMLArea.TYPO3HtmlParser = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -99,4 +103,6 @@ HTMLArea.TYPO3HtmlParser = Ext.extend(HTMLArea.Plugin, {
 	wordCleanHandler: function (event) {
 		this.clean.defer(50, this);
 	}
+});
+
 });

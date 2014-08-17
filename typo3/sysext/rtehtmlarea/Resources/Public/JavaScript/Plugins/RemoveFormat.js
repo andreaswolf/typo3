@@ -13,7 +13,11 @@
 /*
  * Remove Format Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.RemoveFormat = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/RemoveFormat', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin'
+], function(Plugin) {
+
+HTMLArea.RemoveFormat = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -281,4 +285,6 @@ HTMLArea.RemoveFormat = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

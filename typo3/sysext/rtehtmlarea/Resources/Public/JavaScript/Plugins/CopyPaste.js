@@ -13,7 +13,13 @@
 /*
  * Copy Paste for TYPO3 htmlArea RTE
  */
-HTMLArea.CopyPaste = Ext.extend(HTMLArea.Plugin, {
+
+define('TYPO3/CMS/Rtehtmlarea/Plugins/CopyPaste', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.CopyPaste = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -208,7 +214,7 @@ HTMLArea.CopyPaste = Ext.extend(HTMLArea.Plugin, {
 						this.editor.getSelection().selectNodeContents(container, true);
 					}
 				} else {
-					HTMLArea.DOM.removeFromParent(parent);
+					DOM.removeFromParent(parent);
 				}
 			}
 		}
@@ -255,7 +261,7 @@ HTMLArea.CopyPaste = Ext.extend(HTMLArea.Plugin, {
 		if (Ext.isGecko) {
 			var range = this.editor.getSelection().createRange();
 			cell = range.startContainer.childNodes[range.startOffset];
-			while (cell && !HTMLArea.DOM.isBlockElement(cell)) {
+			while (cell && !DOM.isBlockElement(cell)) {
 				cell = cell.parentNode;
 			}
 		}
@@ -484,4 +490,6 @@ HTMLArea.CopyPaste = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

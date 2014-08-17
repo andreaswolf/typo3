@@ -13,7 +13,12 @@
 /*
  * Spell Checker Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/SpellChecker', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.SpellChecker = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -456,13 +461,13 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 			element.onclick = null;
 			element.onmouseover = null;
 			element.onmouseout = null;
-			if (!leaveFixed || !HTMLArea.DOM.hasClass(element, 'htmlarea-spellcheck-fixed')) {
+			if (!leaveFixed || !DOM.hasClass(element, 'htmlarea-spellcheck-fixed')) {
 				element.parentNode.insertBefore(element.firstChild, element);
 				element.parentNode.removeChild(element);
 			} else {
-				HTMLArea.DOM.removeClass(element, 'htmlarea-spellcheck-error');
-				HTMLArea.DOM.removeClass(element, 'htmlarea-spellcheck-same');
-				HTMLArea.DOM.removeClass(element, 'htmlarea-spellcheck-current');
+				DOM.removeClass(element, 'htmlarea-spellcheck-error');
+				DOM.removeClass(element, 'htmlarea-spellcheck-same');
+				DOM.removeClass(element, 'htmlarea-spellcheck-current');
 			}
 		}, this);
 			// Cleanup event handlers on links
@@ -492,11 +497,11 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 		var id = 0;
 		var self = this;
 		Ext.each(contentWindow.document.getElementsByTagName('span'), function (span) {
-			if (HTMLArea.DOM.hasClass(span, 'htmlarea-spellcheck-error')) {
+			if (DOM.hasClass(span, 'htmlarea-spellcheck-error')) {
 				this.misspelledWords.push(span);
 				span.onclick = function (event) { self.setCurrentWord(this, false); };
-				span.onmouseover = function (event) { HTMLArea.DOM.addClass(this, 'htmlarea-spellcheck-hover'); };
-				span.onmouseout = function (event) { HTMLArea.DOM.removeClass(this, 'htmlarea-spellcheck-hover'); };
+				span.onmouseover = function (event) { DOM.addClass(this, 'htmlarea-spellcheck-hover'); };
+				span.onmouseout = function (event) { DOM.removeClass(this, 'htmlarea-spellcheck-hover'); };
 				span.htmlareaId = id++;
 				span.htmlareaOriginalWord = span.firstChild.data;
 				span.htmlareaFixed = false;
@@ -504,7 +509,7 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 					this.allWords[span.htmlareaOriginalWord] = [];
 				}
 				this.allWords[span.htmlareaOriginalWord].push(span);
-			} else if (HTMLArea.DOM.hasClass(span, 'htmlarea-spellcheck-fixed')) {
+			} else if (DOM.hasClass(span, 'htmlarea-spellcheck-fixed')) {
 				this.correctedWords.push(span);
 			}
 		}, this);
@@ -595,18 +600,18 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 		}
 			// De-highlight all occurrences of current word
 		if (this.currentElement) {
-			HTMLArea.DOM.removeClass(this.currentElement, 'htmlarea-spellcheck-current');
+			DOM.removeClass(this.currentElement, 'htmlarea-spellcheck-current');
 			Ext.each(this.allWords[this.currentElement.htmlareaOriginalWord], function (word) {
-				HTMLArea.DOM.removeClass(word, 'htmlarea-spellcheck-same');
+				DOM.removeClass(word, 'htmlarea-spellcheck-same');
 			});
 		}
 			// Highlight all occurrences of new current word
 		this.currentElement = element;
-		HTMLArea.DOM.addClass(this.currentElement, 'htmlarea-spellcheck-current');
+		DOM.addClass(this.currentElement, 'htmlarea-spellcheck-current');
 		var occurrences = this.allWords[this.currentElement.htmlareaOriginalWord];
 		Ext.each(occurrences, function (word) {
 			if (word != this.currentElement) {
-				HTMLArea.DOM.addClass(word, 'htmlarea-spellcheck-same');
+				DOM.addClass(word, 'htmlarea-spellcheck-same');
 			}
 		}, this);
 		this.dialog.find('itemId', 'replaceAll')[0].setDisabled(occurrences.length <= 1);
@@ -656,13 +661,13 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 	 * Handler invoked when the mouse moves over a misspelled word
 	 */
 	onWordMouseOver: function (event, element) {
-		HTMLArea.DOM.addClass(element, 'htmlarea-spellcheck-hover');
+		DOM.addClass(element, 'htmlarea-spellcheck-hover');
 	},
 	/*
 	 * Handler invoked when the mouse moves out of a misspelled word
 	 */
 	onWordMouseOut: function (event, element) {
-		HTMLArea.DOM.removeClass(element, 'htmlarea-spellcheck-hover');
+		DOM.removeClass(element, 'htmlarea-spellcheck-hover');
 	},
 	/*
 	 * Handler invoked when a suggestion is selected
@@ -682,17 +687,17 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 	onRevertClick: function () {
 		this.dialog.find('itemId', 'replacement')[0].setValue(this.currentElement.htmlareaOriginalWord);
 		this.replaceWord(this.currentElement);
-		HTMLArea.DOM.removeClass(this.currentElement, 'htmlarea-spellcheck-fixed');
-		HTMLArea.DOM.addClass(this.currentElement, 'htmlarea-spellcheck-error');
-		HTMLArea.DOM.addClass(this.currentElement, 'htmlarea-spellcheck-current');
+		DOM.removeClass(this.currentElement, 'htmlarea-spellcheck-fixed');
+		DOM.addClass(this.currentElement, 'htmlarea-spellcheck-error');
+		DOM.addClass(this.currentElement, 'htmlarea-spellcheck-current');
 		return false;
 	},
 	/*
 	 * Replace the word contained in the element
 	 */
 	replaceWord: function (element) {
-		HTMLArea.DOM.removeClass(element, 'htmlarea-spellcheck-hover');
-		HTMLArea.DOM.addClass(element, 'htmlarea-spellcheck-fixed');
+		DOM.removeClass(element, 'htmlarea-spellcheck-hover');
+		DOM.addClass(element, 'htmlarea-spellcheck-fixed');
 		element.htmlareaFixed = true;
 		var replacement = this.dialog.find('itemId', 'replacement')[0].getValue();
 		if (element.innerHTML != replacement) {
@@ -796,4 +801,6 @@ HTMLArea.SpellChecker = Ext.extend(HTMLArea.Plugin, {
 		}
 		return false;
 	}
+});
+
 });

@@ -13,7 +13,9 @@
 /*
  * Default Inline Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.DefaultInline = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/DefaultInline', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
+
+HTMLArea.DefaultInline = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -93,3 +95,4 @@ HTMLArea.DefaultInline = Ext.extend(HTMLArea.Plugin, {
 	}
 });
 
+});

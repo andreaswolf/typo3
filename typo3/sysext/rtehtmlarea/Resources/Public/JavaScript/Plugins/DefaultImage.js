@@ -13,7 +13,9 @@
 /*
  * Image Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.DefaultImage = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/DefaultImage', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
+
+HTMLArea.DefaultImage = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -506,4 +508,6 @@ HTMLArea.DefaultImage = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

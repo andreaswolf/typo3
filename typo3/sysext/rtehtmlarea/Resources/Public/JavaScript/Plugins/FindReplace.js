@@ -13,7 +13,12 @@
 /*
  * Find and Replace Plugin for TYPO3 htmlArea RTE
  */
-HTMLArea.FindReplace = Ext.extend(HTMLArea.Plugin, {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/FindReplace', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM'
+], function(Plugin, DOM) {
+
+HTMLArea.FindReplace = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */
@@ -484,4 +489,6 @@ HTMLArea.FindReplace = Ext.extend(HTMLArea.Plugin, {
 		}
 		HTMLArea.FindReplace.superclass.onClose.call(this);
 	}
+});
+
 });
