@@ -14,9 +14,9 @@
  * About Plugin for TYPO3 htmlArea RTE
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Plugins/AboutEditor', ['TYPO3/CMS/Rtehtmlarea/HtmlArea', 'TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/AboutEditor', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
 
-HTMLArea.AboutEditor = Ext.extend(HTMLArea.Plugin, {
+HTMLArea.AboutEditor = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */

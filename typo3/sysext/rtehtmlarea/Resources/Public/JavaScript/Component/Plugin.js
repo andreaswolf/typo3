@@ -11,7 +11,7 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Component/Plugin', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Component/Plugin', function() {
 
 /**
  * HTMLArea.plugin class
@@ -19,9 +19,9 @@ define('TYPO3/CMS/Rtehtmlarea/Component/Plugin', ['TYPO3/CMS/Rtehtmlarea/HtmlAre
  * Every plugin should be a subclass of this class
  *
  */
-HTMLArea.Plugin = function (editor, pluginName) {
+var Plugin = function (editor, pluginName) {
 };
-HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
+Plugin = Ext.extend(Plugin, {
 	/**
 	 * HTMLArea.Plugin constructor
 	 *
@@ -615,5 +615,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 		};
 	}
 });
+
+return Plugin;
 
 });

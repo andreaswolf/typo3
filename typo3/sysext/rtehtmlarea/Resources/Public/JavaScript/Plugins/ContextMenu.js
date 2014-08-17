@@ -14,9 +14,9 @@
  * Context Menu Plugin for TYPO3 htmlArea RTE
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Plugins/ContextMenu', ['TYPO3/CMS/Rtehtmlarea/HtmlArea', 'TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Plugins/ContextMenu', ['TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(Plugin) {
 
-HTMLArea.ContextMenu = Ext.extend(HTMLArea.Plugin, {
+HTMLArea.ContextMenu = Ext.extend(Plugin, {
 	/*
 	 * This function gets called by the class constructor
 	 */

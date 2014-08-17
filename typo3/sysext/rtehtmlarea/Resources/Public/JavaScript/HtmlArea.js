@@ -17,9 +17,10 @@
 define('TYPO3/CMS/Rtehtmlarea/HtmlArea', [
 	'TYPO3/CMS/Rtehtmlarea/I18N',
 	'TYPO3/CMS/Rtehtmlarea/Component/Ajax',
+	'TYPO3/CMS/Rtehtmlarea/Component/Plugin',
 	'TYPO3/CMS/Rtehtmlarea/Utility/DOM',
 	'TYPO3/CMS/Rtehtmlarea/Utility/TYPO3'
-], function(I18N, Ajax, DOM, TYPO3Utility) {
+], function(I18N, Ajax, Plugin, DOM, TYPO3Utility) {
 
 	// Establish HTMLArea name space
 Ext.namespace('HTMLArea.CSS', 'HTMLArea.util.TYPO3', 'HTMLArea.util.Tips', 'HTMLArea.util.Color', 'Ext.ux.form', 'Ext.ux.menu', 'Ext.ux.Toolbar');
@@ -30,6 +31,7 @@ Ext.apply(HTMLArea, {
 	Ajax: Ajax,
 	DOM: DOM,
 	I18N: I18N,
+	Plugin: Plugin,
 	/***************************************************
 	 * COMPILED REGULAR EXPRESSIONS                    *
 	 ***************************************************/
