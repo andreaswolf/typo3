@@ -11,18 +11,25 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Component/Editor', ['TYPO3/CMS/Rtehtmlarea/HtmlArea', 'TYPO3/CMS/Rtehtmlarea/Utility/DOM'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Component/Editor', [
+	'TYPO3/CMS/Rtehtmlarea/Component/Framework',
+	'TYPO3/CMS/Rtehtmlarea/Component/Ajax',
+	'TYPO3/CMS/Rtehtmlarea/Utility/TYPO3',
+	'TYPO3/CMS/Rtehtmlarea/Utility/DOM',
+	// we don’t need the iframe component directly, it just has to be registered in Ext when the editor is instantiated
+	'TYPO3/CMS/Rtehtmlarea/Component/Iframe'
+], function(Framework, Ajax, TYPO3, DOM) {
 
 
 /***************************************************
  *  HTMLArea.Editor extends Ext.util.Observable
  ***************************************************/
-HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
+var Editor = Ext.extend(Ext.util.Observable, {
 	/*
 	 * HTMLArea.Editor constructor
 	 */
 	constructor: function (config) {
-		HTMLArea.Editor.superclass.constructor.call(this, {});
+		Editor.superclass.constructor.call(this, {});
 			// Save the config
 		this.config = config;
 			// Establish references to this editor
@@ -32,26 +39,26 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		this.textArea = Ext.get(this.config.id);
 		this.textAreaInitialSize = {
 			width: this.config.RTEWidthOverride ? this.config.RTEWidthOverride : this.textArea.getStyle('width'),
-			height: this.config.fullScreen ? HTMLArea.util.TYPO3.getWindowSize().height - 20 : this.textArea.getStyle('height'),
+			height: this.config.fullScreen ? TYPO3.getWindowSize().height - 20 : this.textArea.getStyle('height'),
 			wizardsWidth: 0
 		};
 			// TYPO3 Inline elements and tabs
 		this.nestedParentElements = {
 			all: this.config.tceformsNested,
-			sorted: HTMLArea.util.TYPO3.simplifyNested(this.config.tceformsNested)
+			sorted: TYPO3.simplifyNested(this.config.tceformsNested)
 		};
 		this.isNested = !Ext.isEmpty(this.nestedParentElements.sorted);
 			// If in BE, get width of wizards
 		if (Ext.get('typo3-docheader')) {
 			this.wizards = this.textArea.parent().parent().next();
 			if (this.wizards) {
-				if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+				if (!this.isNested || TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
 					this.textAreaInitialSize.wizardsWidth = this.wizards.getWidth();
 				} else {
-						// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+						// Clone the array of nested tabs and inline levels instead of using a reference as TYPO3.accessParentElements will modify the array
 					var parentElements = [].concat(this.nestedParentElements.sorted);
 						// Walk through all nested tabs and inline levels to get correct size
-					this.textAreaInitialSize.wizardsWidth = HTMLArea.util.TYPO3.accessParentElements(parentElements, 'args[0].getWidth()', [this.wizards]);
+					this.textAreaInitialSize.wizardsWidth = TYPO3.accessParentElements(parentElements, 'args[0].getWidth()', [this.wizards]);
 				}
 					// Hide the wizards so that they do not move around while the editor framework is being sized
 				this.wizards.hide();
@@ -69,7 +76,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 			}
 		}, this);
 			// Create Ajax object
-		this.ajax = new HTMLArea.Ajax({
+		this.ajax = new Ajax({
 			editor: this
 		});
 			// Initialize keyboard input inhibit flag
@@ -114,7 +121,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	selection: null,
 	getSelection: function () {
 		if (!this.selection) {
-			this.selection = new HTMLArea.DOM.Selection({
+			this.selection = new DOM.Selection({
 				editor: this
 			});
 		}
@@ -126,7 +133,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	bookMark: null,
 	getBookMark: function () {
 		if (!this.bookMark) {
-			this.bookMark = new HTMLArea.DOM.BookMark({
+			this.bookMark = new DOM.BookMark({
 				editor: this
 			});
 		}
@@ -138,7 +145,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	domNode: null,
 	getDomNode: function () {
 		if (!this.domNode) {
-			this.domNode = new HTMLArea.DOM.Node({
+			this.domNode = new DOM.Node({
 				editor: this
 			});
 		}
@@ -149,7 +156,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	 */
 	generate: function () {
 			// Create the editor framework
-		this.htmlArea = new HTMLArea.Framework({
+		this.htmlArea = new Framework({
 			id: this.editorId + '-htmlArea',
 			layout: 'anchor',
 			baseCls: 'htmlarea',
@@ -260,7 +267,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		}
 			// Focus on the first editor that is not hidden
 		Ext.iterate(RTEarea, function (editorId, RTE) {
-			if (!Ext.isDefined(RTE.editor) || (RTE.editor.isNested && !HTMLArea.util.TYPO3.allElementsAreDisplayed(RTE.editor.nestedParentElements.sorted))) {
+			if (!Ext.isDefined(RTE.editor) || (RTE.editor.isNested && !TYPO3.allElementsAreDisplayed(RTE.editor.nestedParentElements.sorted))) {
 				return true;
 			} else {
 				RTE.editor.focus();
@@ -270,7 +277,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 
 		this.ready = true;
 		this.fireEvent('HTMLAreaEventEditorReady');
-		this.appendToLog('HTMLArea.Editor', 'onFrameworkReady', 'Editor ready.', 'info');
+		this.appendToLog('HTMLArea.Editor', 'onPluginsReady', 'Editor ready.', 'info');
 	},
 	/*
 	 * Set editor mode
@@ -373,7 +380,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	/*
 	 * Get the node given its position in the document tree.
 	 * Adapted from FCKeditor
-	 * See HTMLArea.DOM.Node::getPositionWithinTree
+	 * See DOM.Node::getPositionWithinTree
 	 *
 	 * @param	array		position: the position of the node in the document tree
 	 * @param	boolean		normalized: if true, a normalized position is given
@@ -389,9 +396,9 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 				for (var j = 0, m = current.childNodes.length; j < m; j++) {
 					var candidate = current.childNodes[j];
 					if (
-						candidate.nodeType == HTMLArea.DOM.TEXT_NODE
+						candidate.nodeType == DOM.TEXT_NODE
 						&& candidate.previousSibling
-						&& candidate.previousSibling.nodeType == HTMLArea.DOM.TEXT_NODE
+						&& candidate.previousSibling.nodeType == DOM.TEXT_NODE
 					) {
 						continue;
 					}
@@ -570,7 +577,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.forceRedraw = function() {
+Editor.prototype.forceRedraw = function() {
 	this.appendToLog('HTMLArea.Editor', 'forceRedraw', 'Reference to deprecated method', 'warn');
 	this.htmlArea.doLayout();
 };
@@ -582,7 +589,7 @@ HTMLArea.Editor.prototype.forceRedraw = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.surroundHTML = function(startTag,endTag) {
+Editor.prototype.surroundHTML = function(startTag,endTag) {
 	this.appendToLog('HTMLArea.Editor', 'surroundHTML', 'Reference to deprecated method', 'warn');
 	this.getSelection().surroundHtml(startTag, endTag);
 };
@@ -594,9 +601,9 @@ HTMLArea.Editor.prototype.surroundHTML = function(startTag,endTag) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.convertNode = function(el,newTagName) {
+Editor.prototype.convertNode = function(el,newTagName) {
 	this.appendToLog('HTMLArea.Editor', 'surroundHTML', 'Reference to deprecated method', 'warn');
-	return HTMLArea.DOM.convertNode(el, newTagName);
+	return DOM.convertNode(el, newTagName);
 };
 
 /*
@@ -610,7 +617,7 @@ HTMLArea.Editor.prototype.convertNode = function(el,newTagName) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.removeMarkup = function(element) {
+Editor.prototype.removeMarkup = function(element) {
 	this.appendToLog('HTMLArea.Editor', 'removeMarkup', 'Reference to deprecated method', 'warn');
 	this.getDomNode().removeMarkup(element);
 };
@@ -621,7 +628,7 @@ HTMLArea.Editor.prototype.removeMarkup = function(element) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.hasSelectedText = function() {
+Editor.prototype.hasSelectedText = function() {
 	this.appendToLog('HTMLArea.Editor', 'hasSelectedText', 'Reference to deprecated method', 'warn');
 	return !this.getSelection().isEmpty();
 };
@@ -633,7 +640,7 @@ HTMLArea.Editor.prototype.hasSelectedText = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getAllAncestors = function() {
+Editor.prototype.getAllAncestors = function() {
 	this.appendToLog('HTMLArea.Editor', 'getAllAncestors', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getAllAncestors();
 };
@@ -645,7 +652,7 @@ HTMLArea.Editor.prototype.getAllAncestors = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getEndBlocks = function(selection) {
+Editor.prototype.getEndBlocks = function(selection) {
 	this.appendToLog('HTMLArea.Editor', 'getEndBlocks', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getEndBlocks();
 };
@@ -659,7 +666,7 @@ HTMLArea.Editor.prototype.getEndBlocks = function(selection) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.endPointsInSameBlock = function() {
+Editor.prototype.endPointsInSameBlock = function() {
 	this.appendToLog('HTMLArea.Editor', 'endPointsInSameBlock', 'Reference to deprecated method', 'warn');
 	return this.getSelection().endPointsInSameBlock();
 };
@@ -672,7 +679,7 @@ HTMLArea.Editor.prototype.endPointsInSameBlock = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype._getFirstAncestor = function(sel,types) {
+Editor.prototype._getFirstAncestor = function(sel,types) {
 	this.appendToLog('HTMLArea.Editor', '_getFirstAncestor', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getFirstAncestorOfType(types);
 };
@@ -689,7 +696,7 @@ HTMLArea.Editor.prototype._getFirstAncestor = function(sel,types) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getFullySelectedNode = function (selection, range, ancestors) {
+Editor.prototype.getFullySelectedNode = function (selection, range, ancestors) {
 	this.appendToLog('HTMLArea.Editor', 'getFullySelectedNode', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getFullySelectedNode();
 };
@@ -700,7 +707,7 @@ HTMLArea.Editor.prototype.getFullySelectedNode = function (selection, range, anc
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.execCommand = function(cmdID, UI, param) {
+Editor.prototype.execCommand = function(cmdID, UI, param) {
 	this.appendToLog('HTMLArea.Editor', 'execCommand', 'Reference to deprecated method', 'warn');
 	return this.getSelection().execCommand(cmdID, UI, param);
 };
@@ -711,7 +718,7 @@ HTMLArea.Editor.prototype.execCommand = function(cmdID, UI, param) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype._getSelection = function() {
+Editor.prototype._getSelection = function() {
 	this.appendToLog('HTMLArea.Editor', '_getSelection', 'Reference to deprecated method', 'warn');
 	return this.getSelection().get().selection;
 };
@@ -722,7 +729,7 @@ HTMLArea.Editor.prototype._getSelection = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.emptySelection = function (selection) {
+Editor.prototype.emptySelection = function (selection) {
 	this.appendToLog('HTMLArea.Editor', 'emptySelection', 'Reference to deprecated method', 'warn');
 	this.getSelection().empty();
 };
@@ -733,7 +740,7 @@ HTMLArea.Editor.prototype.emptySelection = function (selection) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.addRangeToSelection = function(selection, range) {
+Editor.prototype.addRangeToSelection = function(selection, range) {
 	this.appendToLog('HTMLArea.Editor', 'addRangeToSelection', 'Reference to deprecated method', 'warn');
 	this.getSelection().addRange(range);
 };
@@ -744,7 +751,7 @@ HTMLArea.Editor.prototype.addRangeToSelection = function(selection, range) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype._createRange = function(sel) {
+Editor.prototype._createRange = function(sel) {
 	this.appendToLog('HTMLArea.Editor', '_createRange', 'Reference to deprecated method', 'warn');
 	return this.getSelection().createRange();
 };
@@ -755,7 +762,7 @@ HTMLArea.Editor.prototype._createRange = function(sel) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.selectNode = function(node, endPoint) {
+Editor.prototype.selectNode = function(node, endPoint) {
 	this.appendToLog('HTMLArea.Editor', 'selectNode', 'Reference to deprecated method', 'warn');
 	this.getSelection().selectNode(node, endPoint);
 };
@@ -766,7 +773,7 @@ HTMLArea.Editor.prototype.selectNode = function(node, endPoint) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.selectNodeContents = function(node, endPoint) {
+Editor.prototype.selectNodeContents = function(node, endPoint) {
 	this.appendToLog('HTMLArea.Editor', 'selectNodeContents', 'Reference to deprecated method', 'warn');
 	this.getSelection().selectNodeContents(node, endPoint);
 };
@@ -775,10 +782,10 @@ HTMLArea.Editor.prototype.selectNodeContents = function(node, endPoint) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.rangeIntersectsNode = function(range, node) {
+Editor.prototype.rangeIntersectsNode = function(range, node) {
 	this.appendToLog('HTMLArea.Editor', 'rangeIntersectsNode', 'Reference to deprecated method', 'warn');
 	this.focus();
-	return HTMLArea.DOM.rangeIntersectsNode(range, node);
+	return DOM.rangeIntersectsNode(range, node);
 };
 /*
  * Get the selection type
@@ -787,7 +794,7 @@ HTMLArea.Editor.prototype.rangeIntersectsNode = function(range, node) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getSelectionType = function(selection) {
+Editor.prototype.getSelectionType = function(selection) {
 	this.appendToLog('HTMLArea.Editor', 'getSelectionType', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getType();
 };
@@ -798,7 +805,7 @@ HTMLArea.Editor.prototype.getSelectionType = function(selection) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getSelectionRanges = function(selection) {
+Editor.prototype.getSelectionRanges = function(selection) {
 	this.appendToLog('HTMLArea.Editor', 'getSelectionRanges', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getRanges();
 };
@@ -809,7 +816,7 @@ HTMLArea.Editor.prototype.getSelectionRanges = function(selection) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.setSelectionRanges = function(ranges, selection) {
+Editor.prototype.setSelectionRanges = function(ranges, selection) {
 	this.appendToLog('HTMLArea.Editor', 'setSelectionRanges', 'Reference to deprecated method', 'warn');
 	this.getSelection().setRanges(ranges);
 };
@@ -820,7 +827,7 @@ HTMLArea.Editor.prototype.setSelectionRanges = function(ranges, selection) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getSelectedElement = function(selection) {
+Editor.prototype.getSelectedElement = function(selection) {
 	this.appendToLog('HTMLArea.Editor', 'getSelectedElement', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getElement();
 };
@@ -831,7 +838,7 @@ HTMLArea.Editor.prototype.getSelectedElement = function(selection) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getSelectedHTML = function() {
+Editor.prototype.getSelectedHTML = function() {
 	this.appendToLog('HTMLArea.Editor', 'getSelectedHTML', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getHtml();
 };
@@ -842,7 +849,7 @@ HTMLArea.Editor.prototype.getSelectedHTML = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getSelectedHTMLContents = function() {
+Editor.prototype.getSelectedHTMLContents = function() {
 	this.appendToLog('HTMLArea.Editor', 'getSelectedHTMLContents', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getHtml();
 };
@@ -853,7 +860,7 @@ HTMLArea.Editor.prototype.getSelectedHTMLContents = function() {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getParentElement = function(selection, range) {
+Editor.prototype.getParentElement = function(selection, range) {
 	this.appendToLog('HTMLArea.Editor', 'getParentElement', 'Reference to deprecated method', 'warn');
 	return this.getSelection().getParentElement();
 };
@@ -864,7 +871,7 @@ HTMLArea.Editor.prototype.getParentElement = function(selection, range) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype._selectionEmpty = function(sel) {
+Editor.prototype._selectionEmpty = function(sel) {
 	this.appendToLog('HTMLArea.Editor', '_selectionEmpty', 'Reference to deprecated method', 'warn');
 	return this.getSelection().isEmpty();
 };
@@ -879,7 +886,7 @@ HTMLArea.Editor.prototype._selectionEmpty = function(sel) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getBookmark = function (range) {
+Editor.prototype.getBookmark = function (range) {
 	this.appendToLog('HTMLArea.Editor', 'getBookmark', 'Reference to deprecated method', 'warn');
 	return this.getBookMark().get(range);
 };
@@ -891,7 +898,7 @@ HTMLArea.Editor.prototype.getBookmark = function (range) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getBookmarkNode = function(bookmark, endPoint) {
+Editor.prototype.getBookmarkNode = function(bookmark, endPoint) {
 	this.appendToLog('HTMLArea.Editor', 'getBookmarkNode', 'Reference to deprecated method', 'warn');
 	return this.getBookMark().getEndPoint(bookmark, endPoint);
 };
@@ -903,7 +910,7 @@ HTMLArea.Editor.prototype.getBookmarkNode = function(bookmark, endPoint) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.moveToBookmark = function (bookmark) {
+Editor.prototype.moveToBookmark = function (bookmark) {
 	this.appendToLog('HTMLArea.Editor', 'moveToBookmark', 'Reference to deprecated method', 'warn');
 	return this.getBookMark().moveTo(bookmark);
 };
@@ -914,7 +921,7 @@ HTMLArea.Editor.prototype.moveToBookmark = function (bookmark) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.selectRange = function (range) {
+Editor.prototype.selectRange = function (range) {
 	this.appendToLog('HTMLArea.Editor', 'selectRange', 'Reference to deprecated method', 'warn');
 	this.selection.selectRange(range);
 };
@@ -927,7 +934,7 @@ HTMLArea.Editor.prototype.selectRange = function (range) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.insertNodeAtSelection = function(toBeInserted) {
+Editor.prototype.insertNodeAtSelection = function(toBeInserted) {
 	this.appendToLog('HTMLArea.Editor', 'insertNodeAtSelection', 'Reference to deprecated method', 'warn');
 	this.getSelection().insertNode(toBeInserted);
 };
@@ -939,7 +946,7 @@ HTMLArea.Editor.prototype.insertNodeAtSelection = function(toBeInserted) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.insertHTML = function(html) {
+Editor.prototype.insertHTML = function(html) {
 	this.appendToLog('HTMLArea.Editor', 'insertHTML', 'Reference to deprecated method', 'warn');
 	this.getSelection().insertHtml(html);
 };
@@ -955,7 +962,7 @@ HTMLArea.Editor.prototype.insertHTML = function(html) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.wrapWithInlineElement = function(element, selection,range) {
+Editor.prototype.wrapWithInlineElement = function(element, selection,range) {
 	this.appendToLog('HTMLArea.Editor', 'wrapWithInlineElement', 'Reference to deprecated method', 'warn');
 	this.getDomNode().wrapWithInlineElement(element, range);
 };
@@ -970,7 +977,7 @@ HTMLArea.Editor.prototype.wrapWithInlineElement = function(element, selection,ra
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.cleanAppleStyleSpans = function(node) {
+Editor.prototype.cleanAppleStyleSpans = function(node) {
 	this.appendToLog('HTMLArea.Editor', 'cleanAppleStyleSpans', 'Reference to deprecated method', 'warn');
 	this.getDomNode().cleanAppleStyleSpans(node);
 };
@@ -982,6 +989,8 @@ HTMLArea.Editor.prototype.cleanAppleStyleSpans = function(node) {
  * THIS FUNCTION IS DEPRECATED AS OF TYPO3 4.7 *
  ***********************************************
  */
-HTMLArea.Editor.prototype.getBlockAncestors = HTMLArea.DOM.getBlockAncestors;
+Editor.prototype.getBlockAncestors = DOM.getBlockAncestors;
+
+return Editor;
 
 });

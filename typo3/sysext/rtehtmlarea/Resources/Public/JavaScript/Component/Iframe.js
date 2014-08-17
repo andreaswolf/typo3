@@ -11,17 +11,19 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Component/Editor', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Component/Iframe', [
+	'TYPO3/CMS/Rtehtmlarea/Utility/TYPO3'
+], function(TYPO3) {
 
 /*
  * HTMLArea.Iframe extends Ext.BoxComponent
  */
-HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
+var Iframe = Ext.extend(Ext.BoxComponent, {
 	/*
 	 * Constructor
 	 */
 	initComponent: function () {
-		HTMLArea.Iframe.superclass.initComponent.call(this);
+		Iframe.superclass.initComponent.call(this);
 		this.addEvents(
 			/*
 			 * @event HTMLAreaEventIframeReady
@@ -275,7 +277,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 	 		if (!Ext.isIE) {
 				if (Ext.isGecko) {
 						// In Firefox, we can't set designMode when we are in a hidden TYPO3 tab or inline element
-					if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+					if (!this.isNested || TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
 						this.document.designMode = 'on';
 						this.setOptions();
 					}
@@ -336,7 +338,7 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		}
 		if (styleEvent && (this.nestedParentElements.sorted.indexOf(target.id) != -1 || this.nestedParentElements.sorted.indexOf(target.id.replace('_div', '_fields')) != -1)) {
 				// Check if all container nested elements are displayed
-			if (HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+			if (TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
 				if (this.getEditor().getMode() === 'wysiwyg') {
 					if (Ext.isGecko) {
 						this.setDesignMode(true);
@@ -668,7 +670,8 @@ HTMLArea.Iframe = Ext.extend(Ext.BoxComponent, {
 		return true;
 	}
 });
+Ext.reg('htmlareaiframe', Iframe);
 
-Ext.reg('htmlareaiframe', HTMLArea.Iframe);
+return Iframe;
 
 });

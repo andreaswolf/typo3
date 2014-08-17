@@ -11,17 +11,19 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Component/Framework', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Component/Framework', [
+    'TYPO3/CMS/Rtehtmlarea/Utility/TYPO3'
+], function(TYPO3) {
 
 /*
  * HTMLArea.Framework extends Ext.Panel
  */
-HTMLArea.Framework = Ext.extend(Ext.Panel, {
+var Framework = Ext.extend(Ext.Panel, {
 	/*
 	 * Constructor
 	 */
 	initComponent: function () {
-		HTMLArea.Framework.superclass.initComponent.call(this);
+		Framework.superclass.initComponent.call(this);
 			// Set some references
 		this.toolbar = this.getTopToolbar();
 		this.statusBar = this.getBottomToolbar();
@@ -43,13 +45,13 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 			// Monitor iframe becoming ready
 		this.mon(this.iframe, 'HTMLAreaEventIframeReady', this.onIframeReady, this, {single: true});
 			// Let the framefork render itself, but it will fail to do so if inside a hidden tab or inline element
-		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+		if (!this.isNested || TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
 			this.render(this.textArea.parent(), this.textArea.id);
 		} else {
-				// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+				// Clone the array of nested tabs and inline levels instead of using a reference as TYPO3.accessParentElements will modify the array
 			var parentElements = [].concat(this.nestedParentElements.sorted);
 				// Walk through all nested tabs and inline levels to get correct sizes
-			HTMLArea.util.TYPO3.accessParentElements(parentElements, 'args[0].render(args[0].textArea.parent(), args[0].textArea.id)', [this]);
+			TYPO3.accessParentElements(parentElements, 'args[0].render(args[0].textArea.parent(), args[0].textArea.id)', [this]);
 		}
 	},
 	/*
@@ -133,26 +135,26 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 	 * doLayout will fail if inside a hidden tab or inline element
 	 */
 	doLayout: function () {
-		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
-			HTMLArea.Framework.superclass.doLayout.call(this);
+		if (!this.isNested || TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+			Framework.superclass.doLayout.call(this);
 		} else {
-				// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+				// Clone the array of nested tabs and inline levels instead of using a reference as TYPO3.accessParentElements will modify the array
 			var parentElements = [].concat(this.nestedParentElements.sorted);
 				// Walk through all nested tabs and inline levels to get correct sizes
-			HTMLArea.util.TYPO3.accessParentElements(parentElements, 'HTMLArea.Framework.superclass.doLayout.call(args[0])', [this]);
+			TYPO3.accessParentElements(parentElements, 'HTMLArea.Framework.superclass.doLayout.call(args[0])', [this]);
 		}
 	},
 	/*
 	 * onLayout will fail if inside a hidden tab or inline element
 	 */
 	onLayout: function () {
-		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
-			HTMLArea.Framework.superclass.onLayout.call(this);
+		if (!this.isNested || TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+			Framework.superclass.onLayout.call(this);
 		} else {
-				// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+				// Clone the array of nested tabs and inline levels instead of using a reference as TYPO3.accessParentElements will modify the array
 			var parentElements = [].concat(this.nestedParentElements.sorted);
 				// Walk through all nested tabs and inline levels to get correct sizes
-				HTMLArea.util.TYPO3.accessParentElements(parentElements, 'HTMLArea.Framework.superclass.onLayout.call(args[0])', [this]);
+				TYPO3.accessParentElements(parentElements, 'HTMLArea.Framework.superclass.onLayout.call(args[0])', [this]);
 		}
 	},
 	/*
@@ -183,13 +185,13 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 	 * Size the iframe according to initial textarea size as set by Page and User TSConfig
 	 */
 	onWindowResize: function (width, height) {
-		if (!this.isNested || HTMLArea.util.TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
+		if (!this.isNested || TYPO3.allElementsAreDisplayed(this.nestedParentElements.sorted)) {
 			this.resizeFramework(width, height);
 		} else {
-				// Clone the array of nested tabs and inline levels instead of using a reference as HTMLArea.util.TYPO3.accessParentElements will modify the array
+				// Clone the array of nested tabs and inline levels instead of using a reference as TYPO3.accessParentElements will modify the array
 			var parentElements = [].concat(this.nestedParentElements.sorted);
 				// Walk through all nested tabs and inline levels to get correct sizes
-			HTMLArea.util.TYPO3.accessParentElements(parentElements, 'args[0].resizeFramework(args[1], args[2])', [this, width, height]);
+			TYPO3.accessParentElements(parentElements, 'args[0].resizeFramework(args[1], args[2])', [this, width, height]);
 		}
 	},
 	/*
@@ -207,7 +209,7 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 				var frameworkWidth = parseInt(((width - this.textAreaInitialSize.wizardsWidth - (this.fullScreen ? 10 : Ext.getScrollBarWidth()) - this.getBox().x - 15) * parseInt(this.textAreaInitialSize.width))/100);
 			} else {
 					// Initial framework sizing
-				var frameworkWidth = parseInt(((HTMLArea.util.TYPO3.getWindowSize().width - this.textAreaInitialSize.wizardsWidth - (this.fullScreen ? 10 : Ext.getScrollBarWidth()) - this.getBox().x - 15) * parseInt(this.textAreaInitialSize.width))/100);
+				var frameworkWidth = parseInt(((TYPO3.getWindowSize().width - this.textAreaInitialSize.wizardsWidth - (this.fullScreen ? 10 : Ext.getScrollBarWidth()) - this.getBox().x - 15) * parseInt(this.textAreaInitialSize.width))/100);
 			}
 		}
 		if (this.resizable) {
@@ -304,7 +306,8 @@ HTMLArea.Framework = Ext.extend(Ext.Panel, {
 		return true;
 	}
 });
+Ext.reg('htmlareaframework', Framework);
 
-Ext.reg('htmlareaframework', HTMLArea.Framework);
+return Framework;
 
 });
