@@ -11,12 +11,12 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-define('TYPO3/CMS/Rtehtmlarea/Component/Ajax', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+define('TYPO3/CMS/Rtehtmlarea/Component/Ajax', function() {
 
-HTMLArea.Ajax = function (config) {
+var Ajax = function (config) {
 	Ext.apply(this, config);
 };
-HTMLArea.Ajax = Ext.extend(HTMLArea.Ajax, {
+var Ajax = Ext.extend(Ajax, {
 	/*
 	 * Load a Javascript file asynchronously
 	 *
@@ -86,5 +86,7 @@ HTMLArea.Ajax = Ext.extend(HTMLArea.Ajax, {
 		return success;
 	}
 });
+
+return Ajax;
 
 });
