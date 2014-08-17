@@ -14,7 +14,8 @@
  * Main script of TYPO3 htmlArea RTE
  */
 	// Avoid re-initialization on AJax call when HTMLArea object was already initialized
-if (typeof(HTMLArea) == 'undefined') {
+define('TYPO3/CMS/Rtehtmlarea/HtmlArea', function() {
+
 	// Establish HTMLArea name space
 Ext.namespace('HTMLArea.CSS', 'HTMLArea.util.TYPO3', 'HTMLArea.util.Tips', 'HTMLArea.util.Color', 'Ext.ux.form', 'Ext.ux.menu', 'Ext.ux.Toolbar');
 Ext.apply(HTMLArea, {
@@ -664,4 +665,7 @@ var lorem_ipsum = function (element, text) {
 	}
 };
 
-}
+
+	return HTMLArea;
+
+});

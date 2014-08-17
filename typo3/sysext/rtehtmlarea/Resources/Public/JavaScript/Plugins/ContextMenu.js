@@ -13,6 +13,9 @@
 /*
  * Context Menu Plugin for TYPO3 htmlArea RTE
  */
+
+define('TYPO3/CMS/Rtehtmlarea/Plugins/ContextMenu', ['TYPO3/CMS/Rtehtmlarea/HtmlArea', 'TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(HTMLArea) {
+
 HTMLArea.ContextMenu = Ext.extend(HTMLArea.Plugin, {
 	/*
 	 * This function gets called by the class constructor
@@ -255,4 +258,6 @@ HTMLArea.ContextMenu = Ext.extend(HTMLArea.Plugin, {
 	 	this.menu.removeAll(true);
 	 	this.menu.destroy();
 	}
+});
+
 });

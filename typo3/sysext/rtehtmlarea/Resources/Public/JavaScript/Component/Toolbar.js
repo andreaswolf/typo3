@@ -31,8 +31,6 @@ HTMLArea.Toolbar = Ext.extend(Ext.Container, {
 		);
 			// Build the deferred toolbar update task
 		this.updateLater = new Ext.util.DelayedTask(this.update, this);
-			// Add the toolbar items
-		this.addItems();
 		this.addListener({
 			afterrender: {
 				fn: this.initEventListeners,

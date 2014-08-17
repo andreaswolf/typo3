@@ -403,7 +403,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	 * @return	boolean		true on success
 	 */
 	postData: function (url, data, callback) {
-	    return this.editor.ajax.postData(url, data, callback, this);
+	 	return this.editor.ajax.postData(url, data, callback, this);
 	},
 	/*
 	 * Open a window with container iframe
@@ -562,7 +562,7 @@ HTMLArea.Plugin = Ext.extend(HTMLArea.Plugin, {
 	onClose: function () {
 		this.editor.focus();
 		this.restoreSelection();
-	    this.editor.updateToolbar();
+	 	this.editor.updateToolbar();
 	},
 	/*
 	 * Handler for window cancel

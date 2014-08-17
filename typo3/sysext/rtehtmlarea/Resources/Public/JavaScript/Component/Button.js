@@ -12,6 +12,7 @@
  */
 
 define('TYPO3/CMS/Rtehtmlarea/Component/Button', ['TYPO3/CMS/Rtehtmlarea/HtmlArea'], function(HTMLArea) {
+
 /*
  * Ext.ux.HTMLAreaButton extends Ext.Button
  */

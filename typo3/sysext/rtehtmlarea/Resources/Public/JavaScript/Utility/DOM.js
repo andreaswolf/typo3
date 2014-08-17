@@ -677,7 +677,7 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 * HTMLArea.DOM.Selection constructor
 	 */
 	constructor: function (config) {
-		    // Apply config
+		 	// Apply config
 		Ext.apply(this, config);
 			// Initialize references
 		this.document = this.editor.document;
@@ -692,8 +692,8 @@ HTMLArea.DOM.Selection = Ext.extend(HTMLArea.DOM.Selection, {
 	 */
 	get: function () {
 		this.editor.focus();
-	    this.selection = this.window.getSelection ? this.window.getSelection() : this.document.selection;
-	    return this;
+	 	this.selection = this.window.getSelection ? this.window.getSelection() : this.document.selection;
+	 	return this;
 	},
 	/*
 	 * Get the type of the current selection
@@ -1698,7 +1698,7 @@ HTMLArea.DOM.BookMark = Ext.extend(HTMLArea.DOM.BookMark, {
 	 * HTMLArea.DOM.Selection constructor
 	 */
 	constructor: function (config) {
-		    // Apply config
+		 	// Apply config
 		Ext.apply(this, config);
 			// Initialize references
 		this.document = this.editor.document;
@@ -2009,7 +2009,7 @@ HTMLArea.DOM.Node = Ext.extend(HTMLArea.DOM.Node, {
 	 * HTMLArea.DOM.Selection constructor
 	 */
 	constructor: function (config) {
-		    // Apply config
+		 	// Apply config
 		Ext.apply(this, config);
 			// Initialize references
 		this.document = this.editor.document;

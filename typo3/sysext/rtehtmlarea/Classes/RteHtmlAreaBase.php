@@ -805,10 +805,11 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	 * @return void
 	 */
 	protected function addRteJsFiles($RTEcounter) {
-		$this->pageRenderer->addJsFile($this->getFullFileName('EXT:' . $this->ID . '/htmlarea/htmlarea.js'));
+		$this->pageRenderer->loadRequireJs();
+		$this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Rtehtmlarea/HtmlArea');
+		$this->pageRenderer->addJsInlineCode('HtmlAreaGlobalObjectInitializer', 'require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) { console.debug("Loading…");window.HTMLArea = HTMLArea; });');
 		foreach ($this->pluginEnabledCumulativeArray[$RTEcounter] as $pluginId) {
 			$extensionKey = is_object($this->registeredPlugins[$pluginId]) ? $this->registeredPlugins[$pluginId]->getExtensionKey() : $this->ID;
-			$this->pageRenderer->addJsFile($this->getFullFileName('EXT:' . $extensionKey . '/htmlarea/plugins/' . $pluginId . '/' . strtolower(preg_replace('/([a-z])([A-Z])([a-z])/', '$1-$2$3', $pluginId)) . '.js'));
 		}
 	}
 
@@ -819,6 +820,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	 */
 	protected function getRteInitJsCode() {
 		return '
+		require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) {
 			if (typeof(RTEarea) == "undefined") {
 				RTEarea = new Object();
 				RTEarea[0] = new Object();
@@ -844,7 +846,8 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 					}
 				};
 			}
-			RTEarea.init();';
+			RTEarea.init();
+		});';
 	}
 
 	/**
@@ -860,6 +863,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	 */
 	public function registerRTEinJS($RTEcounter, $table = '', $uid = '', $field = '', $textAreaId = '') {
 		$configureRTEInJavascriptString = '
+		require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) {
 			if (typeof(configureEditorInstance) == "undefined") {
 				configureEditorInstance = new Object();
 			}
@@ -916,6 +920,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 			$configureRTEInJavascriptString .= '
 			RTEarea[editornumber].plugin.' . $pluginId . ' = true;';
 			if (is_object($this->registeredPlugins[$pluginId])) {
+				$configureRTEInJavascriptString .= 'require(["TYPO3/CMS/Rtehtmlarea/Plugins/' . $pluginId . '"]);';
 				$pathToPluginDirectory = $this->registeredPlugins[$pluginId]->getPathToPluginDirectory();
 				if ($pathToPluginDirectory) {
 					$configureRTEInJavascriptString .= '
@@ -979,7 +984,8 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 			RTEarea.initEditor(editornumber);
 				}
 			};
-			configureEditorInstance["' . $textAreaId . '"]();';
+			configureEditorInstance["' . $textAreaId . '"]();
+		});';
 		return $configureRTEInJavascriptString;
 	}
 
@@ -1156,6 +1162,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 		foreach ($this->pluginEnabledCumulativeArray[$RTEcounter] as $pluginId) {
 			$contents .= $this->buildJSLangArray($pluginId) . LF;
 		}
+		$contents = $this->wrapInRequireJScall($contents);
 		return $this->writeTemporaryFile('', $this->language . '_' . $this->OutputCharset, 'js', $contents, TRUE);
 	}
 
@@ -1181,6 +1188,12 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 			$JSLanguageArray .= 'HTMLArea.I18N["' . $plugin . '"] = ' . json_encode($LOCAL_LANG[$this->language]) . ';' . LF;
 		}
 		return $JSLanguageArray;
+	}
+
+	protected function wrapInRequireJScall($javaScriptCode) {
+		return 'require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) {
+' . $javaScriptCode . '
+});';
 	}
 
 	/**

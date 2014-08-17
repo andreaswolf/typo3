@@ -13,6 +13,8 @@
 /*
  * Acronym plugin for htmlArea RTE
  */
+define('TYPO3/CMS/Rtehtmlarea/Plugins/Acronym', ['TYPO3/CMS/Rtehtmlarea/HtmlArea', 'TYPO3/CMS/Rtehtmlarea/Component/Plugin'], function(HTMLArea) {
+
 HTMLArea.Acronym = Ext.extend(HTMLArea.Plugin, {
 	/*
 	 * This function gets called by the class constructor
@@ -549,4 +551,6 @@ HTMLArea.Acronym = Ext.extend(HTMLArea.Plugin, {
 			}
 		}
 	}
+});
+
 });

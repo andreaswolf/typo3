@@ -59,10 +59,13 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		}
 			// Plugins register
 		this.plugins = {};
+			// List of plugins that are currently loaded
+		this.currentlyLoadingPlugins = [];
+		var that = this;
 			// Register the plugins included in the configuration
 		Ext.iterate(this.config.plugin, function (plugin) {
 			if (this.config.plugin[plugin]) {
-				this.registerPlugin(plugin);
+				that.registerPlugin(plugin);
 			}
 		}, this);
 			// Create Ajax object
@@ -72,6 +75,11 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 			// Initialize keyboard input inhibit flag
 		this.inhibitKeyboardInput = false;
 		this.addEvents(
+			/**
+			 * @event HTMLAreaEventPluginsReady
+			 * Fires when all plugins have been loaded
+			 */
+			'HTMLAreaEventPluginsReady',
 			/*
 			 * @event HTMLAreaEventEditorReady
 			 * Fires when initialization of the editor is complete
@@ -97,8 +105,8 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	 *
 	 * @return	boolean		true, if the document is contentEditable
 	 */
-    isEditable: function () {
-        return Ext.isIE ? this.document.body.contentEditable : (this.document.designMode === 'on');
+ 	isEditable: function () {
+ 		return Ext.isIE ? this.document.body.contentEditable : (this.document.designMode === 'on');
 	},
 	/*
 	 * The selection object
@@ -219,8 +227,9 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		this.iframe = this.htmlArea.getComponent('iframe');
 		this.textAreaContainer = this.htmlArea.getComponent('textAreaContainer');
 			// Get triggered when the framework becomes ready
-		this.relayEvents(this.htmlArea, ['HTMLAreaEventFrameworkReady']);
+		this.relayEvents(this.htmlArea, ['HTMLAreaEventFrameworkReady', 'HTMLAreaEventPluginsReady']);
 		this.on('HTMLAreaEventFrameworkReady', this.onFrameworkReady, this, {single: true});
+		this.on('HTMLAreaEventPluginsReady', this.onPluginsReady, this, {single: true});
 	},
 	/*
 	 * Initialize the editor
@@ -238,6 +247,11 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 		this.initEventsListening();
 			// Generate plugins
 		this.generatePlugins();
+	},
+
+	onPluginsReady: function() {
+			// add the toolbar items
+		this.toolbar.addItems();
 			// Make the editor visible
 		this.show();
 			// Make the wizards visible again
@@ -253,6 +267,7 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 				return false;
 			}
 		}, this);
+
 		this.ready = true;
 		this.fireEvent('HTMLAreaEventEditorReady');
 		this.appendToLog('HTMLArea.Editor', 'onFrameworkReady', 'Editor ready.', 'info');
@@ -400,21 +415,34 @@ HTMLArea.Editor = Ext.extend(Ext.util.Observable, {
 	 * @return	boolean		true if the plugin was successfully registered
 	 */
 	registerPlugin: function (pluginName) {
+		var that = this;
+		this.currentlyLoadingPlugins.push(pluginName);
+		this.appendToLog('HTMLArea.Editor', 'registerPlugin', 'Currently loading plugins: ' + this.currentlyLoadingPlugins, 'debug');
+		require(['TYPO3/CMS/Rtehtmlarea/Plugins/' + pluginName], function(pluginObject) {
+
 		var plugin = HTMLArea[pluginName],
 			isRegistered = false;
 		if (typeof(plugin) !== 'undefined' && Ext.isFunction(plugin)) {
-			var pluginInstance = new plugin(this, pluginName);
+			var pluginInstance = new plugin(that, pluginName);
 			if (pluginInstance) {
 				var pluginInformation = pluginInstance.getPluginInformation();
 				pluginInformation.instance = pluginInstance;
-				this.plugins[pluginName] = pluginInformation;
+				that.plugins[pluginName] = pluginInformation;
 				isRegistered = true;
+				that.currentlyLoadingPlugins.remove(pluginName);
 			}
 		}
 		if (!isRegistered) {
-			this.appendToLog('HTMLArea.Editor', 'registerPlugin', 'Could not register plugin ' + pluginName + '.', 'warn');
+			that.appendToLog('HTMLArea.Editor', 'registerPlugin:require', 'Could not register plugin ' + pluginName + '.', 'warn');
+		} else {
+			that.appendToLog('HTMLArea.Editor', 'registerPlugin:require', 'Successfully registered plugin ' + pluginName + '.', 'info');
 		}
-		return isRegistered;
+		that.appendToLog('HTMLArea.Editor', 'registerPlugin:require', 'Currently loading plugins: ' + that.currentlyLoadingPlugins, 'debug');
+		if (that.currentlyLoadingPlugins.length == 0) {
+			that.appendToLog('HTMLArea.Editor', 'registerPlugin:require', 'Plugins ready.', 'info');
+			that.fireEvent('HTMLAreaEventPluginsReady');
+		}
+		});
 	},
 	/*
 	 * Generate registered plugins
