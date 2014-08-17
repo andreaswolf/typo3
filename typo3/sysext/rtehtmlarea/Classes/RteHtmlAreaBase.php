@@ -1162,8 +1162,13 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 		foreach ($this->pluginEnabledCumulativeArray[$RTEcounter] as $pluginId) {
 			$contents .= $this->buildJSLangArray($pluginId) . LF;
 		}
+		$contents .= '
+		return HTMLArea.I18N;';
 		$contents = $this->wrapInRequireJScall($contents);
-		return $this->writeTemporaryFile('', $this->language . '_' . $this->OutputCharset, 'js', $contents, TRUE);
+		$temporaryFile = $this->writeTemporaryFile('', $this->language . '_' . $this->OutputCharset, 'js', $contents, TRUE);
+		$this->pageRenderer->registerTemporaryRequireJsModule('TYPO3/CMS/Rtehtmlarea/I18N', $temporaryFile);
+
+		return $temporaryFile;
 	}
 
 	/**
