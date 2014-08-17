@@ -18,6 +18,7 @@ use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Backend\Utility\IconUtility;
 use TYPO3\CMS\Core\Database\RelationHandler;
 use TYPO3\CMS\Core\Messaging\FlashMessage;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Versioning\VersionState;
@@ -1152,6 +1153,11 @@ class InlineElement {
 		// if TCEforms has some JavaScript code to be executed, just do it
 		if ($this->fObj->extJSCODE) {
 			$jsonArray['scriptCall'][] = $this->fObj->extJSCODE;
+		}
+		/** @var PageRenderer $pageRenderer */
+		$pageRenderer =  $GLOBALS['SOBE']->doc->getPageRenderer();
+		if (count($pageRenderer->getTemporaryRequireJsModules()) > 0) {
+			$jsonArray['registerRequireJsModules'] = $pageRenderer->getTemporaryRequireJsModules();
 		}
 	}
 

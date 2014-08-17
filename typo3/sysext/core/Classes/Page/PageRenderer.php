@@ -16,6 +16,8 @@ namespace TYPO3\CMS\Core\Page;
 
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Utility\ArrayUtility;
+
 
 /**
  * TYPO3 pageRender class (new in TYPO3 4.3.0)
@@ -1616,6 +1618,7 @@ class PageRenderer implements \TYPO3\CMS\Core\SingletonInterface {
 				'jquery-ui' => 'contrib/jqueryui',
 				'jquery' => 'contrib/jquery'
 			);
+			$this->requireJsConfig['modules'] = array();
 			// get all extensions that are loaded
 			$loadedExtensions = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getLoadedExtensionListArray();
 			foreach ($loadedExtensions as $packageName) {
@@ -1635,6 +1638,18 @@ class PageRenderer implements \TYPO3\CMS\Core\SingletonInterface {
 		}
 
 		$this->addRequireJs = TRUE;
+	}
+
+	public function registerTemporaryRequireJsModule($moduleName, $filePath) {
+		$this->loadRequireJs();
+
+		$filePath = substr($filePath, 0, -3);
+
+		$this->requireJsConfig['modules'][$moduleName] =  $this->backPath . $filePath;
+	}
+
+	public function getTemporaryRequireJsModules() {
+		return $this->requireJsConfig['modules'];
 	}
 
 	/**
@@ -2152,8 +2167,11 @@ class PageRenderer implements \TYPO3\CMS\Core\SingletonInterface {
 
 		// Include RequireJS
 		if ($this->addRequireJs) {
-				// load the paths of the requireJS configuration
-			$out .= GeneralUtility::wrapJS('var require = ' . json_encode($this->requireJsConfig)) . LF;
+			$requireJsConfig = $this->requireJsConfig;
+			$requireJsConfig['paths'] = ArrayUtility::arrayMergeRecursiveOverrule($requireJsConfig['paths'], $requireJsConfig['modules']);
+			unset($requireJsConfig['modules']);
+			// load the paths of the requireJS configuration
+			$out .= GeneralUtility::wrapJS('var require = ' . json_encode($requireJsConfig)) . LF;
 				// directly after that, include the require.js file
 			$out .= '<script src="' . $this->processJsFile(($this->backPath . $this->requireJsPath . 'require.js')) . '" type="text/javascript"></script>' . LF;
 		}

@@ -218,6 +218,10 @@ var inline = {
 		if (!json && xhr) {
 			json = xhr.responseJSON;
 		}
+		// register new (temporary) RequireJS modules
+		if (json.registerRequireJsModules) {
+			require.config({paths: json.registerRequireJsModules});
+		}
 			// If there are elements the should be added to the <HEAD> tag (e.g. for RTEhtmlarea):
 		if (json.headData) {
 			var head = inline.getDomHeadTag();
