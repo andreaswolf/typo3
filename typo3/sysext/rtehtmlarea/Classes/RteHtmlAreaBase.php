@@ -16,6 +16,7 @@ namespace TYPO3\CMS\Rtehtmlarea;
 
 use TYPO3\CMS\Backend\Form\FormEngine;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -243,7 +244,12 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 
 	// Array of registered plugins indexed by their plugin Id's
 	protected $fullScreen = FALSE;
-	// Page renderer object
+
+	/**
+	 * Page renderer object
+	 *
+	 * @var PageRenderer
+	 */
 	protected $pageRenderer;
 
 	/**
@@ -806,8 +812,8 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	 */
 	protected function addRteJsFiles($RTEcounter) {
 		$this->pageRenderer->loadRequireJs();
-		$this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Rtehtmlarea/HtmlArea');
-		$this->pageRenderer->addJsInlineCode('HtmlAreaGlobalObjectInitializer', 'require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) { console.debug("Loading…");window.HTMLArea = HTMLArea; });');
+		$this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Rtehtmlarea/TYPO3RTE');
+		$this->pageRenderer->addJsInlineCode('HtmlAreaGlobalObjectInitializer', 'require(["TYPO3/CMS/Rtehtmlarea/TYPO3RTE"], function (HTMLArea) { console.debug("Loading…");window.HTMLArea = HTMLArea; });');
 		foreach ($this->pluginEnabledCumulativeArray[$RTEcounter] as $pluginId) {
 			$extensionKey = is_object($this->registeredPlugins[$pluginId]) ? $this->registeredPlugins[$pluginId]->getExtensionKey() : $this->ID;
 		}
@@ -820,7 +826,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	 */
 	protected function getRteInitJsCode() {
 		return '
-		require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) {
+		require(["TYPO3/CMS/Rtehtmlarea/TYPO3RTE"], function (HTMLArea) {
 			if (typeof(RTEarea) == "undefined") {
 				RTEarea = new Object();
 				RTEarea[0] = new Object();
@@ -863,7 +869,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	 */
 	public function registerRTEinJS($RTEcounter, $table = '', $uid = '', $field = '', $textAreaId = '') {
 		$configureRTEInJavascriptString = '
-		require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) {
+		require(["TYPO3/CMS/Rtehtmlarea/TYPO3RTE"], function (HTMLArea) {
 			if (typeof(configureEditorInstance) == "undefined") {
 				configureEditorInstance = new Object();
 			}
@@ -1196,7 +1202,7 @@ class RteHtmlAreaBase extends \TYPO3\CMS\Backend\Rte\AbstractRte {
 	}
 
 	protected function wrapInRequireJScall($javaScriptCode) {
-		return 'require(["TYPO3/CMS/Rtehtmlarea/HtmlArea"], function (HTMLArea) {
+		return 'require(["TYPO3/CMS/Rtehtmlarea/TYPO3RTE"], function (HTMLArea) {
 ' . $javaScriptCode . '
 });';
 	}
