@@ -3873,27 +3873,30 @@ class DataHandler {
 		$tscPID = BackendUtility::getTSconfig_pidValue($table, $uid, $destPid);
 		// Get the localized records to be copied
 		$l10nRecords = BackendUtility::getRecordsByField($table, $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], $uid, $where);
-		if (is_array($l10nRecords)) {
-			// If $destPid < 0, then it is the uid of the original language record we are inserting after
-			if ($destPid < 0) {
-				$localizedDestPids = array();
-				// Get the localized records of the record we are inserting after
-				$destL10nRecords = BackendUtility::getRecordsByField($table, $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], abs($destPid), $where);
-				// Index the localized record uids by language
-				if (is_array($destL10nRecords)) {
-					foreach ($destL10nRecords as $record) {
-						$localizedDestPids[$record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]] = -$record['uid'];
-					}
+
+		if (!is_array($l10nRecords)) {
+			return;
+		}
+
+		// If $destPid < 0, then it is the uid of the original language record we are inserting after
+		if ($destPid < 0) {
+			$localizedDestPids = array();
+			// Get the localized records of the record we are inserting after
+			$destL10nRecords = BackendUtility::getRecordsByField($table, $GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], abs($destPid), $where);
+			// Index the localized record uids by language
+			if (is_array($destL10nRecords)) {
+				foreach ($destL10nRecords as $record) {
+					$localizedDestPids[$record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]] = -$record['uid'];
 				}
 			}
-			// Copy the localized records after the corresponding localizations of the destination record
-			foreach ($l10nRecords as $record) {
-				$localizedDestPid = (int)$localizedDestPids[$record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]];
-				if ($localizedDestPid < 0) {
-					$this->copyRecord($table, $record['uid'], $localizedDestPid, $first, $overrideValues, $excludeFields, $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]);
-				} else {
-					$this->copyRecord($table, $record['uid'], $destPid < 0 ? $tscPID : $destPid, $first, $overrideValues, $excludeFields, $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]);
-				}
+		}
+		// Copy the localized records after the corresponding localizations of the destination record
+		foreach ($l10nRecords as $record) {
+			$localizedDestPid = (int)$localizedDestPids[$record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]];
+			if ($localizedDestPid < 0) {
+				$this->copyRecord($table, $record['uid'], $localizedDestPid, $first, $overrideValues, $excludeFields, $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]);
+			} else {
+				$this->copyRecord($table, $record['uid'], $destPid < 0 ? $tscPID : $destPid, $first, $overrideValues, $excludeFields, $record[$GLOBALS['TCA'][$table]['ctrl']['languageField']]);
 			}
 		}
 	}
