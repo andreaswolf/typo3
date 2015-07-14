@@ -17,6 +17,7 @@ namespace TYPO3\CMS\Backend\Form\Wizard;
 use TYPO3\CMS\Backend\Form\Suggest\HtmlListResultRenderer;
 use TYPO3\CMS\Backend\Form\Suggest\SearchResult;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
@@ -50,13 +51,23 @@ class SuggestWizard {
 		$languageService = $this->getLanguageService();
 		$containerCssClass = $this->cssClass . ' ' . $this->cssClass . '-position-right';
 		$suggestId = 'suggest-' . $table . '-' . $field . '-' . $row['uid'];
+		$jsRow = '';
+
 		$isFlexFormField = $GLOBALS['TCA'][$table]['columns'][$field]['config']['type'] === 'flex';
 		if ($isFlexFormField) {
 			$fieldPattern = 'data[' . $table . '][' . $row['uid'] . '][';
 			$flexformField = str_replace($fieldPattern, '', $fieldname);
 			$flexformField = substr($flexformField, 0, -1);
 			$field = str_replace(array(']['), '|', $flexformField);
+
+			if (!MathUtility::canBeInterpretedAsInteger($row['uid'])) {
+				// Ff we have a new record, we hand that row over to JS.
+				// This way we can properly retrieve the configuration of our wizard
+				// if it is shown in a flexform
+				$jsRow = serialize($row);
+			}
 		}
+
 		$selector = '
 		<div class="' . $containerCssClass . '" id="' . $suggestId . '">
 			<div class="input-group">
@@ -85,21 +96,9 @@ class SuggestWizard {
 			$type = $config['fieldConf']['config']['type'];
 		}
 
-		$jsRow = '';
-		if ($isFlexFormField && !MathUtility::canBeInterpretedAsInteger($row['uid'])) {
-			// Ff we have a new record, we hand that row over to JS.
-			// This way we can properly retrieve the configuration of our wizard
-			// if it is shown in a flexform
-			$jsRow = serialize($row);
-		}
-
-		// Replace "-" with ucwords for the JS object name
-		$jsObj = str_replace(' ', '', ucwords(str_replace(array('-', '.'), ' ', GeneralUtility::strtolower($suggestId))));
-		$selector .=
-			'<script type="text/javascript">' . LF .
-				'var ' . $jsObj . ' = new TCEForms.Suggest("' . $fieldname . '", "' . $table . '", "' . $field . '", "' . $row['uid'] . '", ' . $row['pid'] . ', ' . $minChars . ', "' . $type . '", ' . GeneralUtility::quoteJSvalue($jsRow) . ');' . LF .
-				$jsObj . '.defaultValue = "' . GeneralUtility::slashJS($languageService->sL('LLL:EXT:lang/locallang_core.xlf:labels.findRecord')) . '";' . LF .
-			'</script>' . LF;
+		/** @var PageRenderer $pageRenderer */
+		$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
+		$pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/FormEngine/Suggest');
 
 		return $selector;
 	}

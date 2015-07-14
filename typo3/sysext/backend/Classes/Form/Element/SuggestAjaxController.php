@@ -160,8 +160,7 @@ class SuggestAjaxController {
 
 		$rowIdSuffix = '-' . $this->table . '-' . $this->parentRecordUid . '-' . $this->field;
 
-		$resultRenderer = new Suggest\HtmlListResultRenderer($searchResults);
-		$resultRenderer->setListCssClass($this->cssClass);
+		$resultRenderer = new Suggest\JsonResultRenderer($searchResults);
 		$resultRenderer->setRowIdSuffix($rowIdSuffix);
 
 		$renderedResults = $resultRenderer->render($resultRows);

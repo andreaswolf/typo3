@@ -15,7 +15,18 @@ namespace TYPO3\CMS\Backend\Form\Suggest;
  */
 
 
+/**
+ * Interface for a FormEngine suggest result renderer
+ *
+ * @author Andreas Wolf <andreas.wolf@typo3.org>
+ */
 interface ResultRenderer {
+
+	/**
+	 * @param SearchResult $result
+	 * @return ResultRenderer
+	 */
+	public function __construct(SearchResult $result);
 
 	/**
 	 * Renders the results and returns them as a string
@@ -23,4 +34,11 @@ interface ResultRenderer {
 	 * @return string
 	 */
 	public function render();
+
+	/**
+	 * @param $suffix
+	 * @return void
+	 */
+	public function setRowIdSuffix($suffix);
+
 }

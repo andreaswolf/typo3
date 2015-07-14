@@ -12,91 +12,98 @@
  */
 
 /**
- * Class for JS handling of suggest fields in TCEforms.
+ * Class for JS handling of suggest fields in FormEngine.
  *
- * @author  Andreas Wolf <andreas.wolf@ikt-werk.de>
+ * TODO loading indicator, styling
+ *
+ * @author  Andreas Wolf <andreas.wolf@typo3.org>
  * @author  Benni Mack <benni@typo3.org>
  */
-if (!TCEForms) {
-	var TCEForms = {};
-}
+define('TYPO3/CMS/Backend/FormEngine/Suggest', ['jquery', 'jquery/jquery.autocomplete'], function($) {
+	var defaultSettings = {
+		minimumCharacters: 2
+	};
 
-TCEForms.Suggest = Class.create({
-	objectId: '',
-	suggestField: '',
-	suggestResultList: '',
-	minimumCharacters: 2,
-	defaultValue: '',
-	fieldType: '',
+	var PATH_typo3 = top.TS.PATH_typo3 || window.opener.top.TS.PATH_typo3;
 
+	var suggestElementClass = 'typo3-TCEforms-suggest-search';
 	/**
-	 * Wrapper for script.aculo.us' Autocompleter functionality: Assigns a new autocompletion object to
-	 * the input field of a given Suggest selector.
+	 * Constructor for the suggest elements. Invoke with a jQuery'fied field <div> as the parameter and it will
+	 * setup the suggest wizard for the field.
 	 *
-	 * @param  string  objectId  The ID of the object to assign the completer to
-	 * @param  string  table     The table of the record which is currently edited
-	 * @param  string  field     The field which is currently edited
-	 * @param  integer uid       The uid of the record which is currently edited
-	 * @param  integer pid       The pid of the record which is currently edited
-	 * @param  integer minimumCharacters the minimum characters that is need to trigger the initial search
-	 * @param  string  fieldType The TCA type of the field (e.g. group, select, ...)
+	 * @param $element
 	 * @param string newRecordRow JSON encoded new content element. Only set when new record is inside flexform
+	 * @constructor
 	 */
-	initialize: function(objectId, table, field, uid, pid, minimumCharacters, fieldType, newRecordRow) {
-		this.objectId = objectId;
-		this.suggestField = objectId + 'Suggest';
-		this.suggestResultList = objectId + 'SuggestChoices';
-		this.fieldType = fieldType;
+	var FormEngineSuggest = function($element) {
+		this.$element = $element;
+		console.debug("create new suggest for ", this.$element);
 
-		new Ajax.Autocompleter(this.suggestField, this.suggestResultList, TYPO3.settings.ajaxUrls['t3lib_TCEforms_suggest::searchRecord'], {
-				paramName: 'value',
-				minChars: (minimumCharacters ? minimumCharacters : this.minimumCharacters),
-				updateElement: this.addElementToList.bind(this),
-				parameters: 'table=' + table + '&field=' + field + '&uid=' + uid + '&pid=' + pid + '&newRecordRow=' + newRecordRow,
-				indicator: objectId + 'SuggestIndicator'
+		var ajaxEndpointUrl = TYPO3.settings.ajaxUrls['t3lib_TCEforms_suggest::searchRecord'];
+
+		// TODO test this with nested records (IRRE, Flexform)
+		this.$recordElement = this.$element.parents('.typo3-TCEforms').first();
+		this.$fieldContainer = this.$element.parents('.t3js-formengine-field-item').first();
+		console.debug('Parent record ', this.$recordElement);
+		console.debug('Field wrapper ', this.$element.parents('.t3-form-field'));
+
+		this.fieldType = this.$fieldContainer.data('type');
+		this.elementName = this.$fieldContainer.data('element');
+		this.field = this.$fieldContainer.data('field');
+		this.table = this.$recordElement.data('table');
+		this.uid = this.$recordElement.data('id');
+		this.newRecord = this.$recordElement.data('newRecord');
+
+		var autocompleteOptions = {
+			serviceUrl: ajaxEndpointUrl,
+			paramName: 'value',
+			formatResult: this.formatResultValue,
+			onSelect: $.proxy(this.addElementToList, this),
+			deferRequestBy: 200,
+			triggerSelectOnValidInput: false,
+			containerClass: 'typo3-TCEforms-suggest-choices',
+			params: {
+				format: 'json',
+				table: this.table,
+				uid: this.uid,
+				field: this.field // TODO Add newRecordRow
 			}
-		);
+		};
 
-		$(this.suggestField).observe('focus', this.checkDefaultValue.bind(this));
-		$(this.suggestField).observe('keydown', this.checkDefaultValue.bind(this));
-	},
+		this.$suggestElement = this.$element.find('.' + suggestElementClass);
+		console.debug("Suggest element: ", this.$suggestElement);
+		this.$suggestElement.autocomplete(autocompleteOptions);
 
-	/**
-	 * check for default value of the input field and set it to empty once somebody wants to type something in
-	 */
-	checkDefaultValue: function() {
-		if ($(this.suggestField).value == this.defaultValue) {
-			$(this.suggestField).value = '';
+	};
+
+	FormEngineSuggest.prototype = {
+		formatResultValue: function(suggestion, currentValue) {
+			return suggestion.data.label;
+		},
+
+		addElementToList: function(suggestion) {
+			console.debug('selected element', suggestion);
+			var selectedRecordTable = suggestion.data.table, selectedRecordUid = suggestion.data.uid;
+			var label = suggestion.data.label;
+
+			var uidStringToInsert = (this.fieldType == 'select') ? selectedRecordUid : (selectedRecordTable + '_' + selectedRecordUid);
+
+			console.debug('element name', this.elementName);
+			setFormValueFromBrowseWin(this.elementName, uidStringToInsert, label, '');
+			TBE_EDITOR.fieldChanged(this.table, this.uid, this.field, this.elementName);
+
+			this.$suggestElement.val('');
+			console.debug('element', this.$suggestElement);
+			console.debug('element value', this.$element.val());
 		}
-	},
+	};
 
-	/**
-	 * Adds an element to the list of items in a group selector.
-	 *
-	 * @param  object  item  The item to add to the list (usually an li element)
-	 * @return void
-	 */
-	addElementToList: function(item) {
-		if (item.className.indexOf('noresults') == -1) {
-			var arr = item.id.split('-');
-			var ins_table = arr[0];
-			var ins_uid = arr[1];
-			var ins_uid_string = (this.fieldType == 'select') ? ins_uid : (ins_table + '_' + ins_uid);
-			var rec_table = arr[2];
-			var rec_uid = arr[3];
-			var rec_field = arr[4];
+	$(function() {
+		console.debug('Initialize TCEforms suggest.');
+		$('.typo3-TCEforms-suggest').each(function() {
+			new FormEngineSuggest($(this));
+		});
+	});
 
-			var formEl = this.objectId;
-
-			var suggestLabelNode = Element.select(item, '.suggest-label')[0];
-			var label = suggestLabelNode.textContent ? suggestLabelNode.textContent : suggestLabelNode.innerText;
-			var suggestLabelTitleNode = Element.select(suggestLabelNode, '[title]')[0];
-			var title = suggestLabelTitleNode ? suggestLabelTitleNode.readAttribute('title') : '';
-
-			setFormValueFromBrowseWin(formEl, ins_uid_string, label, title);
-			TBE_EDITOR.fieldChanged(rec_table, rec_uid, rec_field, formEl);
-
-			$(this.suggestField).value = this.defaultValue;
-		}
-	}
+	return FormEngineSuggest;
 });

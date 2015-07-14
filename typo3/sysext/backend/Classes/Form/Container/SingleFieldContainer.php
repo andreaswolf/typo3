@@ -137,6 +137,11 @@ class SingleFieldContainer extends AbstractContainer {
 			$alertMsgOnChange = '';
 		}
 
+		$formElementName = 'data[' . $table . '][' . $row['uid'] . '][' . $fieldName . ']';
+
+		$commonWrapProperties = ' data-field="' . $fieldName . '"'
+			. ' data-type="' . $parameterArray['fieldConf']['config']['type'] . '"'
+			. ' data-element="' . $formElementName . '"';
 
 		if (in_array($fieldName, $this->globalOptions['hiddenFieldListArray'], TRUE)) {
 			// Render as a hidden field if this field had a forced value in overrideVals
@@ -224,13 +229,13 @@ class SingleFieldContainer extends AbstractContainer {
 					$checked = '';
 				}
 
-				$formElementName = 'data[' . $table . '][' . $row['uid'] . '][' . $fieldName . ']';
 				$onChange = htmlspecialchars(
 					'typo3form.fieldSetNull(' . GeneralUtility::quoteJSvalue($formElementName) . ', !this.checked)'
 				);
 
 				$nullValueWrap = array();
-				$nullValueWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '" data-field="' . $fieldName . '">';
+				$nullValueWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '"'
+					. $commonWrapProperties . '>';
 				$nullValueWrap[] = 	'<div class="t3-form-field-disable"></div>';
 				$nullValueWrap[] = 	'<div class="checkbox">';
 				$nullValueWrap[] = 		'<label>';
@@ -276,7 +281,7 @@ class SingleFieldContainer extends AbstractContainer {
 				$noneElementHtml = $noneElementResult['html'];
 
 				$placeholderWrap = array();
-				$placeholderWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '">';
+				$placeholderWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '"' . $commonWrapProperties . '">';
 				$placeholderWrap[] = 	'<div class="t3-form-field-disable"></div>';
 				$placeholderWrap[] = 	'<div class="checkbox">';
 				$placeholderWrap[] = 		'<label>';
@@ -297,7 +302,7 @@ class SingleFieldContainer extends AbstractContainer {
 			} elseif ($parameterArray['fieldConf']['config']['type'] !== 'user' || empty($parameterArray['fieldConf']['config']['noTableWrapping'])) {
 				// Add a casual wrap if the field is not of type user with no wrap requested.
 				$standardWrap = array();
-				$standardWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '">';
+				$standardWrap[] = '<div class="' . implode(' ', $fieldItemClasses) . '"' . $commonWrapProperties . '>';
 				$standardWrap[] = 	'<div class="t3-form-field-disable"></div>';
 				$standardWrap[] = 	$html;
 				$standardWrap[] = '</div>';
