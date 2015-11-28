@@ -15,6 +15,8 @@ namespace TYPO3\CMS\Core\Tests;
  */
 
 use TYPO3\CMS\Core\Tests\Functional\Framework\Frontend\Response;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 
 /**
  * Base test case class for functional tests, all TYPO3 CMS
@@ -247,6 +249,8 @@ abstract class FunctionalTestCase extends BaseTestCase
      */
     protected function importDataSet($path)
     {
+        $path = GeneralUtility::getFileAbsFileName($path, false);
+
         if (!is_file($path)) {
             throw new Exception(
                 'Fixture file ' . $path . ' not found',
