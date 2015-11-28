@@ -1,0 +1,42 @@
+default:
+
+    calls:
+        error_reporting: 32759
+
+    suites:
+
+        # EXT:felogin
+        felogin:
+            typo3Setup:
+                coreExtensionsToLoad:
+                    - css_styled_content
+                    - rsaauth
+                    - sv
+                    - saltedpasswords
+                    - felogin
+                testExtensionsToLoad:
+                rootPage:
+                    uid: 1
+                    typoScriptConstants:
+                        - EXT:css_styled_content/static/constants.txt
+                        - EXT:felogin/Tests/Acceptance/Fixtures/TypoScript/Constants.ts
+                    typoScriptSetup:
+                        - EXT:css_styled_content/static/setup.txt
+                        - EXT:felogin/Tests/Acceptance/Fixtures/TypoScript/Setup.ts
+                databaseFixtures:
+                    - EXT:felogin/Tests/Acceptance/Fixtures/Database/login.xml
+
+            paths:
+                - %paths.base%/../../felogin/Tests/Acceptance/Features
+
+            contexts:
+                - TYPO3\CMS\Core\Tests\Acceptance\Typo3SetupContext
+                - TYPO3\CMS\Felogin\Tests\Acceptance\Context\FeatureContext
+
+    extensions:
+
+        Behat\MinkExtension:
+            base_url: 'http://behat.typo3.localsite'
+            #goutte: ~
+            selenium2:
+                browser: phantomjs
