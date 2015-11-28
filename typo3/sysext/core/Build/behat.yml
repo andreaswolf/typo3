@@ -31,7 +31,7 @@ default:
 
             contexts:
                 - TYPO3\CMS\Core\Tests\Acceptance\Typo3SetupContext
-                - TYPO3\CMS\Felogin\Tests\Acceptance\Context\FeatureContext
+                - TYPO3\CMS\Core\Tests\Acceptance\Context\FeatureContext
 
     extensions:
 

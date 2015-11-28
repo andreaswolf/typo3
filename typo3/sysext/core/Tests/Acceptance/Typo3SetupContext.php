@@ -2,14 +2,18 @@
 namespace TYPO3\CMS\Core\Tests\Acceptance;
 
 use Behat\Behat\Context\Context;
-use Behat\Behat\Hook\Scope\AfterStepScope;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use HeikoHardt\Behat\TYPO3Extension\Typo3;
 use TYPO3\CMS\Core\Tests\Exception;
 
 
 /**
+ * Setup context for TYPO3 acceptance tests. This consists of just one method that is run before every scenario
+ * and internally executes the functional tests bootstrap of the TYPO3 core to create an isolated environment for the
+ * tests.
  *
+ * Configuration for the context is provided via the suites defined in the behat.yml file, where the "typo3Setup" key
+ * should be provided with the required information.
  */
 class Typo3SetupContext extends Typo3 implements Context
 {
@@ -48,6 +52,7 @@ class Typo3SetupContext extends Typo3 implements Context
             }
 
             // extend default local configuration
+            // TODO make this configurable
             $this->setTYPO3LocalConfiguration(array('SYS' => array('encryptionKey' => 'mysecretencryptionkey')));
 
             // import initial db values

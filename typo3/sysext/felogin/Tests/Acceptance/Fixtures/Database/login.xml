@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dataset>
+	<pages>
+		<uid>1</uid>
+		<pid>0</pid>
+		<title>Root</title>
+		<deleted>0</deleted>
+		<perms_everybody>15</perms_everybody>
+	</pages>
+	<pages>
+		<uid>3</uid>
+		<pid>1</pid>
+		<title>Redirect login page</title>
+		<deleted>0</deleted>
+		<perms_everybody>15</perms_everybody>
+	</pages>
+	<pages>
+		<uid>4</uid>
+		<pid>1</pid>
+		<title>User redirect target</title>
+		<deleted>0</deleted>
+		<perms_everybody>15</perms_everybody>
+	</pages>
+	<pages>
+		<uid>5</uid>
+		<pid>1</pid>
+		<title>Group redirect target</title>
+		<deleted>0</deleted>
+		<perms_everybody>15</perms_everybody>
+	</pages>
+	<pages>
+		<uid>2</uid>
+		<pid>1</pid>
+		<title>Sysfolder</title>
+		<doktype>254</doktype>
+		<deleted>0</deleted>
+		<perms_everybody>15</perms_everybody>
+	</pages>
+	<tt_content>
+		<uid>1</uid>
+		<pid>1</pid>
+		<CType>login</CType>
+	</tt_content>
+	<tt_content>
+		<uid>2</uid>
+		<pid>3</pid>
+		<CType>login</CType>
+		<pi_flexform><![CDATA[<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+		<T3FlexForms>
+		    <data>
+		        <sheet index="s_redirect">
+		            <language index="lDEF">
+		                <field index="redirectMode">
+		                    <value index="vDEF">userLogin,groupLogin</value>
+		                </field>
+		            </language>
+		        </sheet>
+		    </data>
+		</T3FlexForms>
+		]]></pi_flexform>
+	</tt_content>
+	<tt_content>
+		<uid>3</uid>
+		<pid>4</pid>
+		<CType>text</CType>
+		<header>User redirect target</header>
+	</tt_content>
+	<tt_content>
+		<uid>4</uid>
+		<pid>5</pid>
+		<CType>text</CType>
+		<header>Group redirect target</header>
+	</tt_content>
+	<fe_users>
+		<uid>1</uid>
+		<pid>2</pid>
+		<username>john.doe</username>
+		<password>$P$CSfejDKbGzr2D45NuI6J56QS3YGIIX1</password>
+		<usergroup>1</usergroup>
+	</fe_users>
+	<fe_users>
+		<uid>2</uid>
+		<pid>2</pid>
+		<username>john.doe.userredirect</username>
+		<password>$P$CSfejDKbGzr2D45NuI6J56QS3YGIIX1</password>
+		<usergroup>1</usergroup>
+		<felogin_redirectPid>4</felogin_redirectPid>
+	</fe_users>
+	<fe_users>
+		<uid>3</uid>
+		<pid>2</pid>
+		<username>john.doe.groupredirect</username>
+		<password>$P$CSfejDKbGzr2D45NuI6J56QS3YGIIX1</password>
+		<usergroup>2</usergroup>
+		<felogin_redirectPid>4</felogin_redirectPid>
+	</fe_users>
+	<fe_groups>
+		<uid>1</uid>
+		<pid>2</pid>
+		<title>users</title>
+		<description>Default users group</description>
+		<subgroup>0</subgroup>
+		<TSconfig></TSconfig>
+	</fe_groups>
+	<fe_groups>
+		<uid>2</uid>
+		<pid>2</pid>
+		<title>users</title>
+		<description>Redirecting user group</description>
+		<subgroup>0</subgroup>
+		<TSconfig></TSconfig>
+		<felogin_redirectPid>5</felogin_redirectPid>
+	</fe_groups>
+</dataset>
