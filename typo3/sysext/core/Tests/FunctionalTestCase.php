@@ -301,9 +301,11 @@ abstract class FunctionalTestCase extends BaseTestCase
 
     /**
      * @param int $pageId
-     * @param array $typoScriptFiles
+     * @param array $typoScriptSetupFiles
+     * @param array $typoScriptConstantsFiles
+     * TODO check if the order of the two TS parameters should be switched to align it with the backend view of sys_template
      */
-    protected function setUpFrontendRootPage($pageId, array $typoScriptFiles = array())
+    protected function setUpFrontendRootPage($pageId, array $typoScriptSetupFiles = array(), array $typoScriptConstantsFiles = array())
     {
         $pageId = (int)$pageId;
         $page = $this->getDatabaseConnection()->exec_SELECTgetSingleRow('*', 'pages', 'uid=' . $pageId);
@@ -322,12 +324,16 @@ abstract class FunctionalTestCase extends BaseTestCase
             'pid' => $pageId,
             'title' => '',
             'config' => '',
+            'constants' => '',
             'clear' => 3,
             'root' => 1,
         );
 
-        foreach ($typoScriptFiles as $typoScriptFile) {
+        foreach ($typoScriptSetupFiles as $typoScriptFile) {
             $templateFields['config'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
+        }
+        foreach ($typoScriptConstantsFiles as $typoScriptFile) {
+            $templateFields['constants'] .= '<INCLUDE_TYPOSCRIPT: source="FILE:' . $typoScriptFile . '">' . LF;
         }
 
         $this->getDatabaseConnection()->exec_INSERTquery('sys_template', $templateFields);
