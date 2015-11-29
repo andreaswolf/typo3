@@ -36,7 +36,7 @@ default:
     extensions:
 
         Behat\MinkExtension:
-            base_url: 'http://behat.typo3.localsite'
+            base_url: 'http://127.0.0.1'
             #goutte: ~
             selenium2:
                 browser: phantomjs
