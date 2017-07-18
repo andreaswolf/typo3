@@ -501,6 +501,18 @@
 			<trans-unit id="sys_domain.prepend_params">
 				<source>Transfer parameters to Redirect URL:</source>
 			</trans-unit>
+			<trans-unit id="sys_site">
+				<source>Site</source>
+			</trans-unit>
+			<trans-unit id="sys_site.domainName">
+				<source>Domain name:</source>
+			</trans-unit>
+			<trans-unit id="sys_site.basePath">
+				<source>Base path:</source>
+			</trans-unit>
+			<trans-unit id="sys_site.language">
+				<source>Language:</source>
+			</trans-unit>
 			<trans-unit id="sys_template">
 				<source>Template</source>
 			</trans-unit>

@@ -15,6 +15,7 @@ namespace TYPO3\CMS\Frontend\Http;
  */
 
 use TYPO3\CMS\Backend\FrontendBackendUserAuthentication;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Core\Bootstrap;
 use TYPO3\CMS\Core\FrontendEditing\FrontendEditingController;
 use TYPO3\CMS\Core\Http\RequestHandlerInterface;
@@ -24,6 +25,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 use TYPO3\CMS\Frontend\Page\PageGenerator;
+use TYPO3\CMS\Frontend\Routing\FrontendRouter;
+use TYPO3\CMS\Frontend\Routing\SiteResolver;
+use TYPO3\CMS\Frontend\Routing\UrlRepository;
 use TYPO3\CMS\Frontend\Utility\CompressionUtility;
 use TYPO3\CMS\Frontend\View\AdminPanelView;
 
@@ -117,6 +121,10 @@ class RequestHandler implements RequestHandlerInterface
         /** @var $GLOBALS['BE_USER'] \TYPO3\CMS\Backend\FrontendBackendUserAuthentication */
         $GLOBALS['BE_USER'] = $this->controller->initializeBackendUser();
 
+        $siteResolver = GeneralUtility::makeInstance(SiteResolver::class);
+        $urlRepository = GeneralUtility::makeInstance(UrlRepository::class);
+        $router = GeneralUtility::makeInstance(FrontendRouter::class, $siteResolver, $urlRepository);
+
         // Process the ID, type and other parameters.
         // After this point we have an array, $page in TSFE, which is the page-record
         // of the current page, $id.
@@ -128,7 +136,15 @@ class RequestHandler implements RequestHandlerInterface
                     ->initializeBackendRouter()
                     ->loadExtTables();
         }
-        $this->controller->checkAlternativeIdMethods();
+        $useNewRouting = GeneralUtility::makeInstance(Features::class)->isFeatureEnabled(Features::NEW_URL_HANDLING);
+        if ($useNewRouting) {
+            $routingResult = $router->route($request);
+            $this->controller->id = $routingResult->getPageId();
+            $this->controller->type = $routingResult->getType();
+            $this->controller->sys_language_uid = $routingResult->getLanguageId();
+        } else {
+            $this->controller->checkAlternativeIdMethods();
+        }
         $this->controller->clear_preview();
         $this->controller->determineId();
 
@@ -175,6 +191,11 @@ class RequestHandler implements RequestHandlerInterface
         $this->controller->getConfigArray();
         // Setting language and locale
         $this->timeTracker->push('Setting language and locale', '');
+        if ($useNewRouting) {
+            $this->controller->sys_language_uid = $routingResult->getLanguageId();
+            $this->controller->sys_language_content = $routingResult->getLanguageId();
+            $this->controller->sys_page->sys_language_uid = $routingResult->getLanguageId();
+        }
         $this->controller->settingLanguage();
         $this->controller->settingLocale();
         $this->timeTracker->pull();

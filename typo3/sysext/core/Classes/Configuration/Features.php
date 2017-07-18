@@ -52,6 +52,9 @@ namespace TYPO3\CMS\Core\Configuration;
  */
 class Features
 {
+
+    const NEW_URL_HANDLING = 'NewUrlHandling';
+
     /**
      * Checks if a feature is active
      *

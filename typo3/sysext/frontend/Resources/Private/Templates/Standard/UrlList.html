@@ -1,0 +1,32 @@
+<div class="t3-page-column-header">
+	<div class="t3-page-column-header-icons btn-group btn-group-sm">
+		<a href="" title="" class="btn btn-default">
+			<span class="t3js-icon icon icon-size-small icon-state-default icon-actions-document-open" data-identifier="actions-document-open">
+				<span class="icon-markup">
+					<f:image src="EXT:core/Resources/Public/Icons/T3Icons/actions/actions-document-open.svg" width="16" height="16" />
+				</span>
+			</span>
+		</a>
+	</div>
+	<div class="t3-page-column-header-label">URLs</div>
+</div>
+
+<div class="t3-grid-cell">
+	<table class="table table-striped table-hover">
+		<thead>
+		<tr>
+			<th>Hostname</th>
+			<th>Path</th>
+			<th>uid</th>
+		</tr>
+		</thead>
+		<tbody>
+		<f:for each="{urls}" as="url">
+			<tr>
+				<td>{url.site.domainName}</td>
+				<td>{url.fullPath}</td>
+				<td>{url.uid}</td>
+			</tr>
+		</f:for>
+		</tbody> </table>
+</div>

@@ -159,6 +159,35 @@ CREATE TABLE sys_domain (
 	KEY getDomainStartPage (pid,hidden,domainName)
 );
 
+CREATE TABLE sys_site (
+	uid int(11) unsigned NOT NULL auto_increment,
+	pid int(11) unsigned DEFAULT '0' NOT NULL,
+	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+	crdate int(11) unsigned DEFAULT '0' NOT NULL,
+	cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+	hidden tinyint(4) unsigned DEFAULT '0' NOT NULL,
+	domainName varchar(80) DEFAULT '' NOT NULL,
+	basePath varchar(80) DEFAULT '' NOT NULL,
+	language int(11) DEFAULT '0' NOT NULL,
+
+	PRIMARY KEY (uid),
+);
+
+CREATE TABLE sys_url (
+	uid int(11) unsigned NOT NULL auto_increment,
+
+	tstamp int(11) unsigned DEFAULT '0' NOT NULL,
+	crdate int(11) unsigned DEFAULT '0' NOT NULL,
+	cruser_id int(11) unsigned DEFAULT '0' NOT NULL,
+
+	site int(11) unsigned DEFAULT '0' NOT NULL,
+	path varchar(30) DEFAULT '' NOT NULL,
+	target_type varchar(50) DEFAULT '' NOT NULL,
+	target_uid varchar(30) DEFAULT '' NOT NULL,
+
+	PRIMARY KEY (uid),
+);
+
 #
 # Table structure for table 'sys_template'
 #

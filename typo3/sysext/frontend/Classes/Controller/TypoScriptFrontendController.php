@@ -22,6 +22,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Charset\CharsetConverter;
 use TYPO3\CMS\Core\Charset\UnknownCharsetException;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Controller\ErrorPageController;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryHelper;
@@ -2529,8 +2530,9 @@ class TypoScriptFrontendController implements LoggerAwareInterface
             $this->metaCharset = $this->config['config']['metaCharset'];
         }
 
-        // Get values from TypoScript, if not set before
-        if ($this->sys_language_uid === 0) {
+        // Get values from TypoScript, if not set before; if the new URL handling is enabled, sys_language_uid has
+        // already been set in Frontend\Http\RequestHandler and we must not override it here again
+        if ($this->sys_language_uid === 0 && !GeneralUtility::makeInstance(Features::class)->isFeatureEnabled(Features::NEW_URL_HANDLING)) {
             $this->sys_language_uid = ($this->sys_language_content = (int)$this->config['config']['sys_language_uid']);
         }
         list($this->sys_language_mode, $sys_language_content) = GeneralUtility::trimExplode(';', $this->config['config']['sys_language_mode']);
