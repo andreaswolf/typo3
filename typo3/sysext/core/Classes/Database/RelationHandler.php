@@ -1016,15 +1016,16 @@ class RelationHandler
         }
 
         // Get the rows from storage
-        $rows = [];
+        $rows = $uids = [];
         $result = $queryBuilder->execute();
         while ($row = $result->fetch()) {
-            $rows[$row['uid']] = $row;
+            $rows[] = $row;
+            $uids[] = $row['uid'];
         }
         if (!empty($rows)) {
             // Retrieve the parsed and prepared ORDER BY configuration for the resolver
             $sortby = $queryBuilder->getQueryPart('orderBy');
-            $ids = $this->getResolver($foreign_table, array_keys($rows), $sortby)->get();
+            $ids = $this->getResolver($foreign_table, $uids, $sortby)->get();
             foreach ($ids as $id) {
                 $this->itemArray[$key]['id'] = $id;
                 $this->itemArray[$key]['table'] = $foreign_table;

@@ -4938,19 +4938,28 @@ class DataHandler
 
         $removeArray = [];
         $mmTable = $inlineSubType === 'mm' && isset($config['MM']) && $config['MM'] ? $config['MM'] : '';
+
         // Fetch children from original language parent:
         /** @var $dbAnalysisOriginal RelationHandler */
         $dbAnalysisOriginal = $this->createRelationHandlerInstance();
         $dbAnalysisOriginal->start($transOrigRecord[$field], $foreignTable, $mmTable, $transOrigRecord['uid'], $transOrigTable, $config);
-        $elementsOriginal = [];
+
+        $elementsOriginal = $originalElementIds = [];
         foreach ($dbAnalysisOriginal->itemArray as $item) {
-            $elementsOriginal[$item['id']] = $item;
+            // Do not use the ID as index here because we want to preserve the order
+            $elementsOriginal[] = $item;
+            $originalElementIds[] = $item['id'];
         }
         unset($dbAnalysisOriginal);
+
         // Fetch children from current localized parent:
         /** @var $dbAnalysisCurrent RelationHandler */
         $dbAnalysisCurrent = $this->createRelationHandlerInstance();
         $dbAnalysisCurrent->start($parentRecord[$field], $foreignTable, $mmTable, $id, $table, $config);
+
+        // a map from original language uids to translated record uids
+        $localizedRecordsUidMap = [];
+
         // Perform synchronization: Possibly removal of already localized records:
         if ($action === 'synchronize') {
             foreach ($dbAnalysisCurrent->itemArray as $index => $item) {
@@ -4958,30 +4967,48 @@ class DataHandler
                 if (isset($childRecord[$childTransOrigPointerField]) && $childRecord[$childTransOrigPointerField] > 0) {
                     $childTransOrigPointer = $childRecord[$childTransOrigPointerField];
                     // If synchronization is requested, child record was translated once, but original record does not exist anymore, remove it:
-                    if (!isset($elementsOriginal[$childTransOrigPointer])) {
+                    if (!in_array($childTransOrigPointer, $originalElementIds)) {
                         unset($dbAnalysisCurrent->itemArray[$index]);
                         $removeArray[$item['table']][$item['id']]['delete'] = 1;
+                    } else {
+                        $localizedRecordsUidMap[$childTransOrigPointer] = $item['id'];
                     }
                 }
             }
         }
+
+        // The item array with localized records, to be written to $dbAnalysisCurrent
+        $localizedItemArray = [];
         // Perform synchronization/localization: Possibly add unlocalized records for original language:
-        if ($action === 'localize' || $action === 'synchronize') {
-            foreach ($elementsOriginal as $originalId => $item) {
-                $item['id'] = $this->localize($item['table'], $item['id'], $language);
-                $item['id'] = $this->overlayAutoVersionId($item['table'], $item['id']);
-                $dbAnalysisCurrent->itemArray[] = $item;
-            }
-        } elseif (!empty($ids)) {
-            foreach ($ids as $childId) {
-                if (!MathUtility::canBeInterpretedAsInteger($childId) || !isset($elementsOriginal[$childId])) {
+        if (!empty($ids) || $action === 'localize' || $action === 'synchronize') {
+            // $elementsOriginal contains a list of all records we also want to have in our translation. Some of them
+            // may already have been translated, others are to be translated; we check that here and add missing
+            // translations. The result of the whole operation is written back to $dbAnalysisCurrent, to be used
+            // later on e.g. when updating the field value of our inline field.
+            foreach ($elementsOriginal as $item) {
+                if (!empty($ids) && !in_array($item['id'], $ids)) {
+                    // this ID should not be processed, continue
                     continue;
                 }
-                $item = $elementsOriginal[$childId];
-                $item['id'] = $this->localize($item['table'], $item['id'], $language);
-                $item['id'] = $this->overlayAutoVersionId($item['table'], $item['id']);
-                $dbAnalysisCurrent->itemArray[] = $item;
+
+                // try localizing the record; if there is a localization already, the ID will be reset to false, and
+                // we can just take the existing ID
+                if (isset($localizedRecordsUidMap[$item['id']])) {
+                    // record was already localized before => replace the original language ID with the translated one
+                    $item['id'] = $localizedRecordsUidMap[$item['id']];
+                } else {
+                    $localizedId = $this->localize($item['table'], $item['id'], $language);
+                    $localizedId = $this->overlayAutoVersionId($item['table'], $localizedId);
+
+                    // TODO any possibility for an error here?
+                    // record was translated just now
+                    $item['id'] = $localizedId;
+                }
+
+                $localizedItemArray[] = $item;
             }
+            // write back our updated array to the RelationHandler instance
+            $dbAnalysisCurrent->itemArray = $localizedItemArray;
         }
         // Store the new values, we will set up the uids for the subtype later on (exception keep localization from original record):
         $value = implode(',', $dbAnalysisCurrent->getValueArray());
