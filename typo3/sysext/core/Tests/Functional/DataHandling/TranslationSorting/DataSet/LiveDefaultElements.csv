@@ -1,0 +1,12 @@
+"sys_language",,,,,,,,,,,,,,
+,"uid","pid","hidden","title","flag",,,,,,,,,
+,3,0,0,"English","en",,,,,,,,,
+"tt_content",,,,,,,,,,,,,,
+,uid,pid,CType,l18n_parent,colPos,sorting,deleted,sys_language_uid,l18n_parent,header,tx_testdatahandler_container,tx_testdatahandler_children
+,1,1,gridelements_pi1,0,0,2048,0,0,0,,0,7
+,2,1,text,0,-1,512,0,0,0,A,1,0
+,3,1,text,0,-1,1536,0,0,0,B,1,0
+,4,1,text,2,-1,1024,0,3,2,[Translate to English:] A,6,0
+,5,1,text,3,-1,1792,0,3,3,[Translate to English:] B,6,0
+,6,1,gridelements_pi1,1,0,2304,0,3,1, (copy 1),0,3
+,7,1,text,0,-1,768,0,0,0,between A and B,1,0
