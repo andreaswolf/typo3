@@ -708,41 +708,43 @@ class FileQueueItem {
       this.progressBar.finalize(SeverityEnum.error, TYPO3.lang['file_upload.fileExtensionDisallowed'].replace(/\{0\}/g, this.dragUploader.filesExtensionsDisallowed));
     } else {
       this.progressBar.update(null, '- ' + DragUploader.fileSizeAsString(this.file.size));
+      this.uploadFile();
+    }
+  }
 
-      const formData = new FormData();
-      formData.append('data[upload][1][target]', this.dragUploader.target);
-      formData.append('data[upload][1][data]', '1');
-      formData.append('overwriteExistingFiles', this.override);
-      formData.append('redirect', '');
-      formData.append('upload_1', this.file);
+  private uploadFile(): void {
+    const formData = new FormData();
+    formData.append('data[upload][1][target]', this.dragUploader.target);
+    formData.append('data[upload][1][data]', '1');
+    formData.append('overwriteExistingFiles', this.override);
+    formData.append('redirect', '');
+    formData.append('upload_1', this.file);
 
-      // We use XMLHttpRequest as we need the `progress` event which isn't supported by fetch()
-      const xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = (): void => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          if (xhr.status === 200) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              if (!response.hasErrors) {
-                this.uploadSuccess(response);
-              } else {
-                this.uploadError(xhr);
-              }
-            }
-            catch {
-              // In case JSON can not be parsed, the upload failed due to server errors,
-              // e.g. "POST Content-Length exceeds limit". Just handle as upload error.
+    // We use XMLHttpRequest as we need the `progress` event which isn't supported by fetch()
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = (): void => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (!response.hasErrors) {
+              this.uploadSuccess(response);
+            } else {
               this.uploadError(xhr);
             }
-          } else {
+          } catch {
+            // In case JSON can not be parsed, the upload failed due to server errors,
+            // e.g. "POST Content-Length exceeds limit". Just handle as upload error.
             this.uploadError(xhr);
           }
+        } else {
+          this.uploadError(xhr);
         }
-      };
-      xhr.upload.addEventListener('progress', (e: ProgressEvent) => this.updateProgress(e));
-      xhr.open('POST', TYPO3.settings.ajaxUrls.file_process);
-      xhr.send(formData);
-    }
+      }
+    };
+    xhr.upload.addEventListener('progress', (e: ProgressEvent) => this.updateProgress(e));
+    xhr.open('POST', TYPO3.settings.ajaxUrls.file_process);
+    xhr.send(formData);
   }
 
   /**
