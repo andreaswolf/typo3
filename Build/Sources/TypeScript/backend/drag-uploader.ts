@@ -27,11 +27,17 @@ import RegularEvent from '@typo3/core/event/regular-event';
 import DomHelper from '@typo3/backend/utility/dom-helper';
 import { KeyTypesEnum } from '@typo3/backend/enum/key-types';
 import { UploadProgress } from '@typo3/backend/file-upload/upload-progress';
+import FileUploadHandler, { QueueItemState } from '@typo3/backend/file-upload/file-upload-handler';
+import {
+  CheckAllowedDisallowedExtensions,
+  CheckFileDenyPattern,
+  CheckFileSize
+} from '@typo3/backend/file-upload/file-checks';
 
 /**
  * Possible actions for conflicts w/ existing files
  */
-enum Action {
+export enum Action {
   OVERRIDE = 'replace',
   RENAME = 'rename',
   SKIP = 'cancel',
@@ -75,10 +81,6 @@ export default class DragUploader {
   public irreObjectUid: string;
   public fileList: HTMLElement;
   public fileListColumnCount: number;
-  public filesExtensionsAllowed: string;
-  public filesExtensionsDisallowed: string;
-  public fileDenyPattern: RegExp | null;
-  public maxFileSize: number;
   public trigger: HTMLElement;
   public target: string;
   public reloadUrl: string;
@@ -101,6 +103,8 @@ export default class DragUploader {
   private queueLength: number;
   private readonly defaultAction: Action;
   private manuallyTriggered: boolean;
+
+  private readonly uploadHandler: FileUploadHandler;
 
   /**
    * This property controls whether a drag was started within the document. If true, dropzones become unavailable.
@@ -135,12 +139,18 @@ export default class DragUploader {
 
     this.fileList = document.querySelector(this.element.dataset.progressContainer);
     this.fileListColumnCount = this.fileList?.querySelectorAll('thead tr:first-child th').length + 1;
-    this.filesExtensionsAllowed = this.element.dataset.fileAllowed;
-    this.filesExtensionsDisallowed = this.element.dataset.fileDisallowed;
-    this.fileDenyPattern = this.element.dataset.fileDenyPattern ? new RegExp(this.element.dataset.fileDenyPattern, 'i') : null;
-    this.maxFileSize = parseInt(this.element.dataset.maxFileSize, 10);
     this.target = this.element.dataset.targetFolder;
     this.reloadUrl = this.element.dataset.reloadUrl;
+
+    const filesExtensionsAllowed = this.element.dataset.fileAllowed;
+    const filesExtensionsDisallowed = this.element.dataset.fileDisallowed;
+    const fileDenyPattern = this.element.dataset.fileDenyPattern ? new RegExp(this.element.dataset.fileDenyPattern, 'i') : null;
+    const maxFileSize = parseInt(this.element.dataset.maxFileSize, 10);
+    this.uploadHandler = new FileUploadHandler([
+      new CheckFileSize(maxFileSize),
+      new CheckFileDenyPattern(fileDenyPattern),
+      new CheckAllowedDisallowedExtensions(filesExtensionsAllowed, filesExtensionsDisallowed),
+    ], this);
 
     this.browserCapabilities = {
       fileReader: typeof FileReader !== 'undefined',
@@ -389,7 +399,7 @@ export default class DragUploader {
           });
           NProgress.inc(this.percentagePerFile);
         } else {
-          new FileQueueItem(this, file, Action.SKIP);
+          this.uploadHandler.processFile(file, Action.SKIP);
         }
       });
       ajaxCalls.push(request);
@@ -595,7 +605,7 @@ export default class DragUploader {
               fileInfo.original,
             );
           } else if (fileInfo.action !== Action.SKIP) {
-            new FileQueueItem(this, fileInfo.uploaded, fileInfo.action);
+            this.uploadHandler.processFile(fileInfo.uploaded, fileInfo.action);
           }
         }
         this.askForOverride = [];
@@ -609,9 +619,10 @@ export default class DragUploader {
   }
 }
 
-class FileQueueItem {
+export class FileQueueItem {
+  public readonly file: File;
+  public state: QueueItemState = QueueItemState.CHECKING;
   private readonly row: HTMLElement;
-  private readonly file: File;
   private readonly override: Action;
   private readonly selector: HTMLElement;
   private readonly iconCol: HTMLElement;
@@ -666,30 +677,11 @@ class FileQueueItem {
     // set dummy file icon
     this.iconCol.innerHTML = '<typo3-backend-icon identifier="mimetypes-other-other" />';
 
-    // check file size
-    if (this.dragUploader.maxFileSize > 0 && this.file.size > this.dragUploader.maxFileSize) {
-      this.progress.finalize(
-        SeverityEnum.error,
-        TYPO3.lang['file_upload.maxFileSizeExceeded']
-          .replace(/\{0\}/g, this.file.name)
-          .replace(/\{1\}/g, DragUploader.fileSizeAsString(this.dragUploader.maxFileSize))
-      );
-
-      // check filename/extension against deny pattern
-    } else if (this.dragUploader.fileDenyPattern && this.file.name.match(this.dragUploader.fileDenyPattern)) {
-      this.progress.finalize(SeverityEnum.error, TYPO3.lang['file_upload.fileNotAllowed'].replace(/\{0\}/g, this.file.name));
-
-    } else if (this.isProhibitedByAllowedExtensionsList()) {
-      this.progress.finalize(SeverityEnum.error, TYPO3.lang['file_upload.fileExtensionExpected'].replace(/\{0\}/g, this.dragUploader.filesExtensionsAllowed));
-    } else if (this.isProhibitedByDisallowedExtensionsList()) {
-      this.progress.finalize(SeverityEnum.error, TYPO3.lang['file_upload.fileExtensionDisallowed'].replace(/\{0\}/g, this.dragUploader.filesExtensionsDisallowed));
-    } else {
-      this.progress.update(null, '- ' + DragUploader.fileSizeAsString(this.file.size));
-      this.uploadFile();
-    }
+    this.progress.update(null, '- ' + DragUploader.fileSizeAsString(this.file.size));
+    this.uploadFile();
   }
 
-  private uploadFile(): void {
+  public uploadFile(): void {
     const formData = new FormData();
     formData.append('data[upload][1][target]', this.dragUploader.target);
     formData.append('data[upload][1][data]', '1');
@@ -722,6 +714,10 @@ class FileQueueItem {
     xhr.upload.addEventListener('progress', (e: ProgressEvent) => this.updateProgress(e));
     xhr.open('POST', TYPO3.settings.ajaxUrls.file_process);
     xhr.send(formData);
+  }
+
+  public markAsFailed(error: string): void {
+    this.progress.finalize(SeverityEnum.error, error);
   }
 
   /**
@@ -860,26 +856,6 @@ class FileQueueItem {
     for (let i = this.row.querySelectorAll('td').length; i < this.dragUploader.fileListColumnCount; i++) {
       this.row.append(document.createElement('td'));
     }
-  }
-
-  public isProhibitedByAllowedExtensionsList(): boolean {
-    if (!this.dragUploader.filesExtensionsAllowed) {
-      return false;
-    }
-    const extension = this.file.name.split('.').pop();
-    const allowed = this.dragUploader.filesExtensionsAllowed.split(',');
-
-    return !allowed.includes(extension.toLowerCase());
-  }
-
-  public isProhibitedByDisallowedExtensionsList(): boolean {
-    if (!this.dragUploader.filesExtensionsDisallowed) {
-      return false;
-    }
-    const extension = this.file.name.split('.').pop();
-    const disallowed = this.dragUploader.filesExtensionsDisallowed.split(',');
-
-    return disallowed.includes(extension.toLowerCase());
   }
 }
 
