@@ -85,11 +85,6 @@ export default class DragUploader {
   public reloadUrl: string;
   public manualTable: boolean;
 
-  /**
-   * Array of files which are asked for being overridden
-   */
-  private askForOverride: Array<FileConflict> = [];
-
   private percentagePerFile: number = 1;
 
   private readonly body: HTMLElement;
@@ -375,6 +370,11 @@ export default class DragUploader {
 
     // Check for each file if is already exist before adding it to the queue
     const ajaxCalls: Promise<void>[] = [];
+
+    /**
+     * Array of files which need user intervention because a file with the same name already exists
+     */
+    const fileConflicts: FileConflict[] = [];
     Array.from(files).forEach((file: File) => {
       const request = new AjaxRequest(TYPO3.settings.ajaxUrls.file_exists).withQueryArguments({
         fileName: file.name,
@@ -383,7 +383,7 @@ export default class DragUploader {
         const data = await response.resolve();
         const fileExists = typeof data.uid !== 'undefined';
         if (fileExists) {
-          this.askForOverride.push({
+          fileConflicts.push({
             original: data,
             uploaded: file,
             action: this.irreObjectUid ? Action.USE_EXISTING : this.defaultAction,
@@ -397,7 +397,7 @@ export default class DragUploader {
     });
 
     Promise.all(ajaxCalls).then((): void => {
-      this.drawOverrideModal();
+      this.drawOverrideModal(fileConflicts);
       NProgress.done();
     });
 
@@ -472,8 +472,8 @@ export default class DragUploader {
   /**
    * Renders the modal for existing files
    */
-  public drawOverrideModal(): void {
-    const amountOfItems = Object.keys(this.askForOverride).length;
+  public drawOverrideModal(questions: FileConflict[]): void {
+    const amountOfItems = Object.keys(questions).length;
     if (amountOfItems === 0) {
       return;
     }
@@ -495,17 +495,17 @@ export default class DragUploader {
       const $record = `
         <tr>
           <td>
-  ${this.askForOverride[i].original.thumbUrl !== ''
-    ? `<img src="${this.askForOverride[i].original.thumbUrl}" height="40" />`
-    : this.askForOverride[i].original.icon}
+  ${questions[i].original.thumbUrl !== ''
+    ? `<img src="${questions[i].original.thumbUrl}" height="40" />`
+    : questions[i].original.icon}
           </td>
           <td>
-            ${this.askForOverride[i].original.name} (${DragUploader.fileSizeAsString(this.askForOverride[i].original.size)})<br />
-            ${DateTime.fromSeconds(this.askForOverride[i].original.mtime).toLocaleString(DateTime.DATETIME_MED)}
+            ${questions[i].original.name} (${DragUploader.fileSizeAsString(questions[i].original.size)})<br />
+            ${DateTime.fromSeconds(questions[i].original.mtime).toLocaleString(DateTime.DATETIME_MED)}
           </td>
           <td>
-            ${this.askForOverride[i].uploaded.name} (${DragUploader.fileSizeAsString(this.askForOverride[i].uploaded.size)})<br />
-            ${DateTime.fromMillis(this.askForOverride[i].uploaded.lastModified).toLocaleString(DateTime.DATETIME_MED)}
+            ${questions[i].uploaded.name} (${DragUploader.fileSizeAsString(questions[i].uploaded.size)})<br />
+            ${DateTime.fromMillis(questions[i].uploaded.lastModified).toLocaleString(DateTime.DATETIME_MED)}
           </td>
           <td>
             <select class="form-select t3js-actions" data-override="${i}">
@@ -570,7 +570,7 @@ export default class DragUploader {
           const index = parseInt(select.dataset.override, 10);
           select.value = target.value;
           select.disabled = true;
-          this.askForOverride[index].action = <Action>select.value;
+          questions[index].action = <Action>select.value;
         }
       } else {
         modal.querySelectorAll('.t3js-actions').forEach((select: HTMLSelectElement) => select.disabled = false);
@@ -580,16 +580,15 @@ export default class DragUploader {
     new RegularEvent('change', (event: Event) => {
       const actionSelect = event.target as HTMLSelectElement,
         index = parseInt(actionSelect.dataset.override, 10);
-      this.askForOverride[index].action = <Action>actionSelect.value;
+      questions[index].action = <Action>actionSelect.value;
     }).delegateTo(modal, '.t3js-actions');
 
     modal.addEventListener('button.clicked', (e: Event): void => {
       const button = e.target as HTMLButtonElement;
       if (button.name === 'cancel') {
-        this.askForOverride = [];
         Modal.dismiss();
       } else if (button.name === 'continue') {
-        for (const fileInfo of this.askForOverride) {
+        for (const fileInfo of questions) {
           if (fileInfo.action === Action.USE_EXISTING) {
             DragUploader.addFileToIrre(
               this.irreObjectUid,
@@ -599,13 +598,8 @@ export default class DragUploader {
             new FileQueueItem(this, fileInfo.uploaded, fileInfo.action);
           }
         }
-        this.askForOverride = [];
         modal.hideModal();
       }
-    });
-
-    modal.addEventListener('typo3-modal-hidden', () => {
-      this.askForOverride = [];
     });
   }
 }
