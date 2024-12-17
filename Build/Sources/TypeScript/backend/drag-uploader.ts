@@ -401,7 +401,7 @@ export default class DragUploader {
     });
 
     Promise.all(ajaxCalls).then((): void => {
-      this.drawOverrideModal(fileConflicts);
+      (new FilenameConflictModal(this.irreObjectUid, this.defaultAction, this.uploadHandler, fileConflicts)).draw();
       NProgress.done();
     });
 
@@ -472,15 +472,25 @@ export default class DragUploader {
       }
     }
   }
+}
+
+class FilenameConflictModal {
+  constructor(
+    private readonly irreObjectUid: string,
+    private readonly defaultAction: Action,
+    private readonly uploadHandler: FileUploadHandler,
+    private readonly questions: FileConflict[]
+  ) {}
 
   /**
    * Renders the modal for existing files
    */
-  public drawOverrideModal(questions: FileConflict[]): void {
-    const amountOfItems = Object.keys(questions).length;
+  public draw(): void {
+    const amountOfItems = Object.keys(this.questions).length;
     if (amountOfItems === 0) {
       return;
     }
+
     const $modalContent = document.createElement('div');
     let htmlContent = `
       <p>${TYPO3.lang['file_upload.existingfiles.description']}</p>
@@ -499,17 +509,17 @@ export default class DragUploader {
       const $record = `
         <tr>
           <td>
-  ${questions[i].original.thumbUrl !== ''
-    ? `<img src="${questions[i].original.thumbUrl}" height="40" />`
-    : questions[i].original.icon}
+  ${this.questions[i].original.thumbUrl !== ''
+    ? `<img src="${this.questions[i].original.thumbUrl}" height="40" />`
+    : this.questions[i].original.icon}
           </td>
           <td>
-            ${questions[i].original.name} (${DragUploader.fileSizeAsString(questions[i].original.size)})<br />
-            ${DateTime.fromSeconds(questions[i].original.mtime).toLocaleString(DateTime.DATETIME_MED)}
+            ${this.questions[i].original.name} (${DragUploader.fileSizeAsString(this.questions[i].original.size)})<br />
+            ${DateTime.fromSeconds(this.questions[i].original.mtime).toLocaleString(DateTime.DATETIME_MED)}
           </td>
           <td>
-            ${questions[i].uploaded.name} (${DragUploader.fileSizeAsString(questions[i].uploaded.size)})<br />
-            ${DateTime.fromMillis(questions[i].uploaded.lastModified).toLocaleString(DateTime.DATETIME_MED)}
+            ${this.questions[i].uploaded.name} (${DragUploader.fileSizeAsString(this.questions[i].uploaded.size)})<br />
+            ${DateTime.fromMillis(this.questions[i].uploaded.lastModified).toLocaleString(DateTime.DATETIME_MED)}
           </td>
           <td>
             <select class="form-select t3js-actions" data-override="${i}">
@@ -574,7 +584,7 @@ export default class DragUploader {
           const index = parseInt(select.dataset.override, 10);
           select.value = target.value;
           select.disabled = true;
-          questions[index].action = <Action>select.value;
+          this.questions[index].action = <Action>select.value;
         }
       } else {
         modal.querySelectorAll('.t3js-actions').forEach((select: HTMLSelectElement) => select.disabled = false);
@@ -584,7 +594,7 @@ export default class DragUploader {
     new RegularEvent('change', (event: Event) => {
       const actionSelect = event.target as HTMLSelectElement,
         index = parseInt(actionSelect.dataset.override, 10);
-      questions[index].action = <Action>actionSelect.value;
+      this.questions[index].action = <Action>actionSelect.value;
     }).delegateTo(modal, '.t3js-actions');
 
     modal.addEventListener('button.clicked', (e: Event): void => {
@@ -592,7 +602,7 @@ export default class DragUploader {
       if (button.name === 'cancel') {
         Modal.dismiss();
       } else if (button.name === 'continue') {
-        for (const fileInfo of questions) {
+        for (const fileInfo of this.questions) {
           if (fileInfo.action === Action.USE_EXISTING) {
             DragUploader.addFileToIrre(
               this.irreObjectUid,
