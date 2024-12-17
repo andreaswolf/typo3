@@ -28,6 +28,7 @@ import DomHelper from '@typo3/backend/utility/dom-helper';
 import { KeyTypesEnum } from '@typo3/backend/enum/key-types';
 import '@typo3/backend/element/progress-bar-element';
 import type { ProgressBarElement } from '@typo3/backend/element/progress-bar-element';
+import { ModifyFilesModal } from '@typo3/backend/uploader/modify-files-modal';
 
 /**
  * Possible actions for conflicts w/ existing files
@@ -369,41 +370,50 @@ export default class DragUploader {
       this.fileList.closest('.filelist-main')?.querySelector('.t3-filelist-info-container')?.setAttribute('hidden', 'hidden');
     }
 
-    NProgress.start();
-    this.percentagePerFile = 1 / files.length;
-
-    // Check for each file if is already exist before adding it to the queue
-    const ajaxCalls: Promise<void>[] = [];
-
     /**
      * Array of files which need user intervention because a file with the same name already exists
      */
     const fileConflicts: FileConflict[] = [];
-    Array.from(files).forEach((file: File) => {
-      const request = new AjaxRequest(TYPO3.settings.ajaxUrls.file_exists).withQueryArguments({
-        fileName: file.name,
-        fileTarget: this.target,
-      }).get({ cache: 'no-cache' }).then(async (response: AjaxResponse): Promise<void> => {
-        const data = await response.resolve();
-        const fileExists = typeof data.uid !== 'undefined';
-        if (fileExists) {
-          fileConflicts.push({
-            original: data,
-            uploaded: file,
-            action: this.irreObjectUid ? Action.USE_EXISTING : this.defaultAction,
-          });
-          NProgress.inc(this.percentagePerFile);
-        } else {
-          this.uploadHandler.processFile(file, Action.SKIP);
+    (new ModifyFilesModal(Array.from(files)))
+      .draw()
+      .then(async (files) => {
+        if (files === null) {
+          return null;
         }
-      });
-      ajaxCalls.push(request);
-    });
+        NProgress.start();
+        this.percentagePerFile = 1 / files.length;
 
-    Promise.all(ajaxCalls).then((): void => {
-      (new FilenameConflictModal(this.irreObjectUid, this.defaultAction, this.uploadHandler, fileConflicts)).draw();
-      NProgress.done();
-    });
+        // Check for each file if is already exist before adding it to the queue
+        const ajaxCalls: Promise<void>[] = [];
+        Array.from(files).forEach((file: File) => {
+          const request = new AjaxRequest(TYPO3.settings.ajaxUrls.file_exists).withQueryArguments({
+            fileName: file.name,
+            fileTarget: this.target,
+          }).get({ cache: 'no-cache' }).then(async (response: AjaxResponse): Promise<void> => {
+            const data = await response.resolve();
+            const fileExists = typeof data.uid !== 'undefined';
+            if (fileExists) {
+              fileConflicts.push({
+                original: data,
+                uploaded: file,
+                action: this.irreObjectUid ? Action.USE_EXISTING : this.defaultAction,
+              });
+              NProgress.inc(this.percentagePerFile);
+            } else {
+              this.uploadHandler.processFile(file, Action.SKIP);
+            }
+          });
+          ajaxCalls.push(request);
+        });
+
+        return Promise.all(ajaxCalls);
+      })
+      .then((): void => {
+        (new FilenameConflictModal(this.irreObjectUid, this.defaultAction, this.uploadHandler, fileConflicts)).draw()
+      })
+      .then(() => {
+        NProgress.done();
+      });
 
     this.fileInput.value = '';
   }
