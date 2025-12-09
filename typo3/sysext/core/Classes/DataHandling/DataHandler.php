@@ -6379,8 +6379,15 @@ class DataHandler
                 return null;
             }
         }
-        if (!$this->hasPagePermission(Permission::PAGE_SHOW, $pageRecord)) {
+        // if we have a parent page, the permission check including check for web mount restrictions is done in
+        // hasPagePermission() => just use that result
+        if ($row['pid'] > 0 && !$this->hasPagePermission(Permission::PAGE_SHOW, $pageRecord)) {
             $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to create workspace version of "{table}:{uid}" without read permissions', null, ['table' => $table, 'uid' => (int)$id]);
+            return null;
+        // for pid 0, the page permission check will always yield false for non-admins, so we cannot use that, but
+        // must check if the *table* allows ignoring the root level restriction
+        } elseif ($row['pid'] === 0 && !$schema->getCapability(TcaSchemaCapability::RestrictionRootLevel)->shallIgnoreRootLevelRestriction()) {
+            $this->log($table, $id, SystemLogDatabaseAction::VERSIONIZE, null, SystemLogErrorClassification::USER_ERROR, 'Attempt to create workspace version of "{table}:{uid}" on page 0 with active web mount restriction', null, ['table' => $table, 'uid' => (int)$id]);
             return null;
         }
 
